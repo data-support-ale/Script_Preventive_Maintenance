@@ -1,0 +1,8 @@
+iptables -A INPUT -p icmp -j ACCEPT #ping
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT #ask from server
+iptables -A INPUT -p tcp -i eth0 --dport ssh -j ACCEPT #ssh change portname
+iptables -A INPUT -p tcp --dport 5200 -j ACCEPT #allows web request
+iptables -I INPUT 2 -i lo -j ACCEPT #allows loopback
+iptables -P INPUT DROP
+
+
