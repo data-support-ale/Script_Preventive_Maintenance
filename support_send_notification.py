@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 import sys
 import os
@@ -55,7 +54,7 @@ def send_message_request(info,jid,receiver):
 
 
 
-def send_file(info,jid,ipadd):
+def send_file(info,jid,ipadd,filename =''):
     """ 
     Send the attachement to a Rainbowbot. This bot will send this file to the jid in parameters
     :param str info:                Message to send to the rainbow bot
@@ -64,13 +63,44 @@ def send_file(info,jid,ipadd):
     :return:                        None
     """
 
+
+#    if re.search("A Pattern has been detected in switch",info) :
+#       cmd = "ls -t /tftpboot/"
+#       run=cmd.split()
+#       p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
+#       p = subprocess.Popen(('grep',ipadd),stdin=p.stdout, stdout=subprocess.PIPE)
+#       p =  subprocess.Popen(('head','-n','1'),stdin=p.stdout,stdout=subprocess.PIPE)
+#       out, err = p.communicate()
+#       out=out.decode('UTF-8').strip()
+
+#       fp = open("/tftpboot/{0}".format(out),'rb')
+#       info = "Log of device : {0}".format(ipadd)
+#       url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifFile/"
+#       headers = { 'Content-Transfer-Encoding': 'application/gzip', 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
+#       files = {'file': open('/tftpboot/{0}'.format(out),'rb')}
+#       params = {'filename'  :'{0}'.format(out)}
+#       response = requests.post(url,files=files,params=params, headers=headers)
+
+    if not filename =='':
+       fp = open("{0}".format(filename),'rb')
+       info = "Log of device : {0}".format(ipadd)
+       url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifFile/"
+       headers = {  'Content-type':"multipart/form-data",'Content-Disposition': "attachment;filename=filename.tar".format(filename) , 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
+       files = {'file': open('{0}'.format(filename),'rb')}
+       response = requests.post(url,files=files, headers=headers)
+
+
+
+
     save_attachment(ipadd)
     info = "Log of device : {0}".format(ipadd)
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifFile/"
-    headers = {  'Content-type':"text/plain", 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
+    headers = {  'Content-type':"text/plain",'Content-Disposition': "attachment;filename=journal.txt", 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
     files = {'file': open('/var/log/devices/attachment.log','rb')}
-    params = {'filename'  :'logfile.log'}
-    response = requests.post(url,files=files,params=params, headers=headers)
+    response = requests.post(url,files=files, headers=headers)
+
+
+
 
 
 
@@ -287,7 +317,7 @@ def send_mail(ip_switch_1,ip_switch_2,info,subject,gmail_user,gmail_password,mai
    if ip_switch_2 != "0":
       message.attach(part4)
    if re.search("A Pattern has been detected in switch",subject) :
-#      message.attach(part5)
+      message.attach(part5)
       message.attach(part6)
 
    #email send request
