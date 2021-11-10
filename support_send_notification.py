@@ -31,6 +31,20 @@ def send_message(info,jid):
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info),'Card': '0'}
     response = requests.get(url, headers=headers)
 
+def send_alert(info,jid):
+    """
+    Send the message in info to a Rainbowbot. This bot will send this message to the jid in parameters
+
+    :param str info:                Message to send to the rainbow bot
+    :param str jid:                 Rainbow jid where the message will be send
+    :return:                        None
+    """
+
+
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifAlert/"
+    headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info),'Card': '0'}
+    response = requests.get(url, headers=headers)
+
 def send_message_request(info,jid,receiver):
     """ 
     Send the message, with a URL requests  to a Rainbowbot. This bot will send this message and request to the jid in parameters
@@ -85,7 +99,7 @@ def send_file(info,jid,ipadd,filename =''):
        fp = open("{0}".format(filename),'rb')
        info = "Log of device : {0}".format(ipadd)
        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifFile/"
-       headers = {  'Content-type':"multipart/form-data",'Content-Disposition': "attachment;filename=filename.tar".format(filename) , 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
+       headers = {  'Content-type':"multipart/form-data",'Content-Disposition': "attachment;filename={}.tar".format(filename) , 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
        files = {'file': open('{0}'.format(filename),'rb')}
        response = requests.post(url,files=files, headers=headers)
 
@@ -94,11 +108,42 @@ def send_file(info,jid,ipadd,filename =''):
 
     save_attachment(ipadd)
     info = "Log of device : {0}".format(ipadd)
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifFile/"
-    headers = {  'Content-type':"text/plain",'Content-Disposition': "attachment;filename=journal.txt", 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
-    files = {'file': open('/var/log/devices/attachment.log','rb')}
-    response = requests.post(url,files=files, headers=headers)
 
+    with open("/var/log/devices/attachment.log", "r+") as log_file:
+        for line in log_file:
+            timestamp = ""
+            if re.search(r"\d?\d \d\d:\d\d:\d\d", line):
+                timestamp = re.findall(r"\d?\d \d\d:\d\d:\d\d", line)[0]
+                break
+        if re.search(r"\d?\d (\d\d):(\d\d):(\d\d)", timestamp):
+            hour, min, sec = re.findall(r"\d?\d (\d\d):(\d\d):(\d\d)", timestamp)[0]
+            sec = int(sec) + 20
+            if sec > 60:
+                min = int(min) + 1
+                sec -= 60
+        else:
+            hour, min, sec = (24, 59, 59)
+    
+        new_file = ""
+        for line in log_file:
+            if re.search(r"\d?\d \d\d:\d\d:\d\d", line):
+                timestamp = re.findall(r"\d?\d \d\d:\d\d:\d\d", line)[0]
+                new_hour, new_min, new_sec = re.findall(r"\d?\d (\d\d):(\d\d):(\d\d)", str(timestamp))[0]
+                new_file += line
+                if int(new_hour) >= int(hour) and int(new_min) >= int(min) and int(new_sec) >= int(sec):
+                    break
+    
+    with open("/var/log/devices/short_attachment.log", "w+") as s_log:
+        print(new_file)
+        s_log.write(new_file)
+
+
+
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifFile/"
+    headers = {  'Content-type':"text/plain",'Content-Disposition': "attachment;filename=short_attachment.log", 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
+    files = {'file': open('/var/log/devices/short_attachment.log','r')}
+    response = requests.post(url,files=files, headers=headers)
+    sleep(5)
 
 
 

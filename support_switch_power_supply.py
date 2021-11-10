@@ -22,11 +22,11 @@ ip_switch,nb_power_supply  = extract_ip_port("power_supply_down")
 if jid !='':
          info = "Log of device : {0}".format(ip_switch)
          send_file(info,jid,ip_switch)
-         info = "A default on Power supply {} from device {} as been detected".format(nb_power_supply,ip_switch)
+         info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply,ip_switch)
          send_message(info,jid)
 if gmail_user !='':
-         info = "A default on Power supply {} from device {} as been detected".format(nb_power_supply,ip_switch)
-         subject = "A default on Power supply as been detected"
+         info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply,ip_switch)
+         subject = "A default on Power supply has been detected"
          send_mail(ip_switch,"0",info,subject,gmail_user,gmail_password,mails)
 
 

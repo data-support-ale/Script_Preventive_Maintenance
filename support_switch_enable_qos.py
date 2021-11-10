@@ -38,13 +38,13 @@ else:
       subject = "A port scan has been detected on your network "
       if gmail_user !='' and jid !='':
          info = "A port scan has been detected on your network by the IP Address {0}  on device {1}. (if you click on Yes, the following actions will be done: Policy action block)".format(ipadd_ddos, ip_switch)
-         answer = request_handler_both(ip_switch,'0',portnumber,'0',info,subject,gmail_user,gmail_password,mails,jid,ip_server_log,id_client,"ddos")
+         answer = request_handler_both(idadd_ddos,'0',portnumber,'0',info,subject,gmail_user,gmail_password,mails,jid,ip_server_log,id_client,"ddos")
       elif gmail_user !='':
          info = "A port scan has been detected on your network by the IP Address {0}  on device {1}. (if you click on Yes, the following actions will be done: Policy action block)".format(ipadd_ddos, ip_switch)
-         answer = request_handler_mail(ip_switch,'0',portnumber,'0',info,subject,gmail_user,gmail_password,mails,ip_server_log,id_client,"ddos") #new method
+         answer = request_handler_mail(ipadd_ddos,'0',portnumber,'0',info,subject,gmail_user,gmail_password,mails,ip_server_log,id_client,"ddos") #new method
       elif jid !='':
          info = "A port scan has been detected on your network by the IP Address {0}  on device {1}. (if you click on Yes, the following actions will be done: Policy action block)".format(ipadd_ddos, ip_switch)
-         answer = request_handler_rainbow(ip_switch,'0',portnumber,'0',info,jid,ip_server_log,id_client,"ddos") #new method
+         answer = request_handler_rainbow(ipadd_ddos,'0',portnumber,'0',info,jid,ip_server_log,id_client,"ddos") #new method
 
       else :
          answer = '1'

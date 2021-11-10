@@ -6,6 +6,7 @@ import getopt
 import json
 import logging
 import subprocess
+import re
 from time import gmtime, strftime, localtime, sleep
 import requests
 import datetime
@@ -31,6 +32,18 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 #user = "admin"
 #password = "switch"
 #host = "192.168.80.27"
+
+
+def format_mac(mac):
+    mac = re.sub('[.:-]', '', mac).lower()  # remove delimiters and convert to lower case
+    mac = ''.join(mac.split())  # remove whitespaces
+    assert len(mac) == 12  # length should be now exactly 12 (eg. 008041aefd7e)
+    assert mac.isalnum()  # should only contain letters and numbers
+    # convert mac in canonical form (eg. 00:80:41:ae:fd:7e)
+    mac = ":".join(["%s" % (mac[i:i+2]) for i in range(0, 12, 2)])
+    return mac
+
+
 
 def enable_debugging(user,password,ipadd):
     """ 
@@ -157,9 +170,12 @@ def disable_qos_ddos(user,password,ipadd,ipadd_ddos):
   os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(password, user, ipadd,cmd))
 
 
-def file_setup_qos(ipadd):
+def file_setup_qos(addr):
     content_variable = open ('/opt/ALE_Script/configqos','w')
-    setup_config= "policy condition scanner_{0} source ip {0}\npolicy action block_scanner port-disable\npolicy rule rule_{0} condition scanner_{0} action block_scanner\nqos apply".format(ipadd)
+    if re.search(r"\:", addr): #mac
+        setup_config= "policy condition scanner_{0} source mac {0}\npolicy action block_mac disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_mac\nqos apply".format(addr)
+    else:	
+    	setup_config= "policy condition scanner_{0} source ip {0}\npolicy action block_ip disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_ip\nqos apply".format(addr)
     content_variable.write(setup_config)
     content_variable.close()
 
@@ -349,8 +365,8 @@ def save_attachment(ipadd):
   content_variable = open (path_log_attachment,'r')
   file_lines = content_variable.readlines()
   content_variable.close()
-  if len(file_lines)>30:
-    attachment = file_lines[-30:]
+  if len(file_lines)>100:
+    attachment = file_lines[-100:]
   else:
     attachment = file_lines[-len(file_lines)-1:]
   f_attachment = open('/var/log/devices/attachment.log','w')
@@ -453,7 +469,11 @@ def extract_ip_port(log):
            content_variable = open ('/var/log/devices/get_log_switch.json','r')
         if log =="deauth_ap":
            content_variable = open ('/var/log/devices/lastlog_deauth.json','r')
-       
+        if log == "power_supply_down":
+           content_variable = open ('/var/log/devices/lastlog_power_supply_down.json','r')
+        if log == "vc_down":
+           content_variable = open ('/var/log/devices/lastlog_vc_down.json','r')
+
         file_lines = content_variable.readlines()
         content_variable.close()
         if len(file_lines)!=0:
@@ -485,11 +505,32 @@ def extract_ip_port(log):
                     Prtnum = x.replace('\\','')   #modify the format of the port number to suit the switch interface
 
           if "reason" in element:
-             pattern_AP_MAC = re.compile('.*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*')
-             pattern_Device_MAC = re.compile('.*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*')
-             device_mac = re.search(pattern_Device_MAC, str(f)).group(1)
-             ap_mac = re.search(pattern_AP_MAC, str(f)).group(1)
+            element_split = element.split()
+            for i in range(len(element_split)):
+               if element_split[i]=="reason":
+                  reason_violation = 0
+                  reason_violation_a = element_split[i+1]
+                  reason_violation_b = element_split[i+2]
+                  reason_violation = reason_violation_a  + reason_violation_b
+                  reason_violation = reason_violation.strip(" \"[]")
+                  print(reason_violation)
+                  os.system('logger -t montag -p user.info Violation on port reason: ' + reason_violation)
+               else:
+                  pattern_AP_MAC = re.compile('.*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*')
+                  pattern_Device_MAC = re.compile('.*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*')
+#                 device_mac = re.search(pattern_Device_MAC, str(f)).group(1)
+#                 ap_mac = re.search(pattern_AP_MAC, str(f)).group(1)
 
+          if "Supply" in element:
+             element_split = element.split()
+             for i in range(len(element_split)):
+                 if element_split[i]=="Supply":
+                    nb_power_supply = element_split[i+1]
+          if "chassis" in element:
+             element_split = element.split()
+             for i in range(len(element_split)):
+                 if element_split[i]=="chassis":
+                    nb_vc = element_split[i+1]
 
         else:
           print("Lastlog file is empty")
@@ -498,6 +539,10 @@ def extract_ip_port(log):
           Prtnum = "0"
         if log =="deauth_ap":
            return ipadd,device_mac,ap_mac
+        if log == "power_supply_down":
+           return ipadd, nb_power_supply
+        if log == "vc_down":
+           return ipadd, nb_vc
         else:
            return ipadd,Prtnum
 

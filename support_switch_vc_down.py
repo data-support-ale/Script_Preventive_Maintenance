@@ -22,11 +22,11 @@ ip_switch,nb_vc = extract_ip_port("vc_down")
 if jid !='':
          info = "Log of device : {0}".format(ip_switch)
          send_file(info,jid,ip_switch)
-         info = "A default on VC unity {} from device {} as been detected".format(nb_vc,ip_switch)
+         info = "A default on VC unity {} from device {} has been detected".format(nb_vc,ip_switch)
          send_message(info,jid)
 if gmail_user !='':
-         info = "A default on VC unity {} from device {} as been detected".format(nb_vc,ip_switch)
-         subject = "A default on VC unity as been detected"
+         info = "A default on VC unity {} from device {} has been detected".format(nb_vc,ip_switch)
+         subject = "A default on VC unity has been detected"
          send_mail(ip_switch,"0",info,subject,gmail_user,gmail_password,mails)
 
 
