@@ -16,6 +16,8 @@ from email import encoders
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
+from support_tools import get_credentials
+from support_send_notification import send_message,send_file,send_alert
 
 script_name = sys.argv[0]
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
@@ -29,40 +31,53 @@ timestamp = 300
 timestamp = (timestamp/60)*100
 
 def deassociation(ipadd,device_mac,ap_mac,timestamp,z):
-  print("Deassociation reason is: " + str(z))
-  message = "deassociation detected with reason: {0}".format(z)
+  z = str(z)
+  print("Deassociation reason is: " + z)
+  message = "WLAN Deassociation detected with reason: {0}".format(z)
   os.system('logger -t montag -p user.info ' + message)
   subject_content="[TS LAB] A deassociation is detected on Stellar AP!"
-  message_content_1= "This email to notify there is a WLAN deassociation detected on server {0} from Stellar AP {1} MAC-Address: {2} , Device's MAC Address: {3}.".format(system_name,ipadd,ap_mac,device_mac)
-  message_content_2="Reason number: {0}.".format(z)
+  message_content_1= "WLAN Alert - There is a WLAN deassociation detected on server {0} from Stellar AP {1} MAC-Address: {2} , Device's MAC Address: {3}.".format(system_name,ipadd,ap_mac,device_mac)
+  print(message_content_1)
+  message_content_2="Reason number".format(z)
+  print(message_content_2)
+  send_alert(message,jid)
+  send_message(message_reason,jid)
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
 def reboot(ipadd,timestamp):
   os.system('logger -t montag -p user.info reboot detected')
   subject_content="[TS LAB] A reboot is detected on Stellar AP!"
-  message_content_1= "This email to notify there is a Stellar reboot detected on server {0} from Stellar AP {1}".format(system_name,ipadd)
+  message_content_1= "WLAN Alert - There is a Stellar reboot detected on server {0} from Stellar AP {1}".format(system_name,ipadd)
   message_content_2="sysreboot"
+  send_alert(message_content_1,jid)
+  send_message(message_reason,jid)
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
 def exception(ipadd,timestamp):
   os.system('logger -t montag -p user.info exception detected')
   subject_content="[TS LAB] An exception (Fatal exception, Exception stack, Kernel Panic) is detected on Stellar AP!"
-  message_content_1= "This email to notify there is a Stellar exception detected on server {0} from Stellar AP {1}".format(system_name,ipadd)
+  message_content_1= "WLAN Alert - There is a Stellar exception detected on server {0} from Stellar AP {1}".format(system_name,ipadd)
   message_content_2="Exception"
+  send_alert(message_content_1,jid)
+  send_message(message_reason,jid)
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
 def internal_error(ipadd,timestamp):
   os.system('logger -t montag -p user.info internal error detected')
   subject_content="[TS LAB] An Internal Error is detected on Stellar AP!"
-  message_content_1= "This email to notify there is an Internal Error detected on server {0} from Stellar AP {1}".format(system_name,ipadd)
+  message_content_1= "WLAN Alert - There is an Internal Error detected on server {0} from Stellar AP {1}".format(system_name,ipadd)
   message_content_2="Internal Error"
+  send_alert(message_content_1,jid)
+  send_message(message_reason,jid)
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
 def target_asserted(ipadd,timestamp):
   os.system('logger -t montag -p user.info target asserted detected')
   subject_content="[TS LAB] A Target Asserted Error is detected on Stellar AP!"
-  message_content_1= "This email to notify there is a Target Asserted error detected on server {0} from Stellar AP {1}".format(system_name,ipadd)
+  message_content_1= "WLAN Alert - There is a Target Asserted error detected on server {0} from Stellar AP {1}".format(system_name,ipadd)
   message_content_2="Target Asserted"
+  send_alert(message_content_1,jid)
+  send_message(message_reason,jid)
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
 def send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd):
@@ -75,11 +90,6 @@ def send_mail(timestamp,subject_content,message_content_1,message_content_2,ipad
   file_lines = content_variable.readlines()
   content_variable.close()
 
-  find_reason = open (json_file,'r')
-  file_lines_reason = find_reason.readlines()
-  find_reason.close()
-  message_reason = file_lines_reason[-1]
-  print(message_reason)
   logs_saved = list()
 
   last_line = file_lines[-1].split(',')
@@ -188,8 +198,7 @@ def send_mail(timestamp,subject_content,message_content_1,message_content_2,ipad
        print(e)
        print ('Something went wrong...')
 
-
-def extract_ip_port():
+def extract_reason():
         #open the file lastlog  and take the first line of the file
         pattern_AP_MAC = re.compile('.*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*')
         pattern_Device_MAC = re.compile('.*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*')
@@ -198,16 +207,9 @@ def extract_ip_port():
         content_variable.close()
         last_line = file_lines[-1]
         f=last_line.split(',')
-        #For each element, look if relayip is present. If yes,  separate the text and the ip address
+        device_mac= ap_mac = reason = z = 0
+        #For each element, look if reason is present. If yes,  separate the text and the ip address
         for element in f:
-         if "relayip" in element:
-           element_split = element.split(':')
-           ipadd_quot = element_split[1]
-           #delete quotations
-           ipadd = ipadd_quot[-len(ipadd_quot)+1:-1]
-           print("AP IP Address: " + str(ipadd))
-           device_mac= ap_mac = reason = z = 0
-
          #For each element, look if reason is present, if yes, we take the AP MAC Address and the Device MAC Address
          if "reason" in element:
             device_mac = re.search(pattern_Device_MAC, str(f)).group(1)
@@ -218,36 +220,39 @@ def extract_ip_port():
               z = element_split[i+1]
               z = z.replace("(", " ", 2)
               z = z.replace(")", " ", 2)
+        return device_mac,ap_mac,z;
 
-        return ipadd,device_mac,ap_mac,z;
+def extract_ipadd():
+   last = ""
+   with open("/var/log/devices/lastlog_deauth.json", "r") as log_file:
+    for line in log_file:
+        last = line
 
-def get_credentials():
-     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r')
-     file_lines = content_variable.readlines()
-     content_variable.close()
-     credentials_line = file_lines[0]
-     credentials_line_split = credentials_line.split(',')
-     user = credentials_line_split[0]
-     password = credentials_line_split[1]
-     if credentials_line_split[3] != "":
-        id= '&jid1=' + credentials_line_split[3]
-     elif credentials_line_split[3] == "":
-        id=''
+   with open("/var/log/devices/lastlog_deauth.json", "w") as log_file:
+    log_file.write(last)
 
-     gmail_usr = credentials_line_split[4]
-     gmail_passwd = credentials_line_split[5]
-     mails = credentials_line_split[2].split(';')
-     mails = [ element  for element  in mails]
-     #mails= ", ".join(mails)
-     return user,password,id,gmail_usr,gmail_passwd,mails
+   with open("/var/log/devices/lastlog_deauth.json", "r") as log_file:
+    log_json = json.load(log_file)
+    ipadd = log_json["relayip"]
+    host = log_json["hostname"]
+    message_reason = log_json["message"]
+    ipadd = str(ipadd)
+    print(ipadd)
+    l = []
+    l.append('/code ')
+    l.append(message_reason)
+    message_reason = ''.join(l)
+   return ipadd,message_reason;
 
-ipadd,device_mac,ap_mac,z = extract_ip_port()   #returning relayIP and port number where loop detected
-user,password,jid,gmail_user,gmail_password,mails = get_credentials()
-print("Mail sent to: " + str(mails))
+#ipadd,device_mac,ap_mac,z = extract_ip_port()   #returning relayIP and port number where loop detected
+switch_user, switch_password, jid, gmail_user, gmail_password, mails,ip_server_log = get_credentials()
+#print("Mail sent to: " + str(mails))
 
 if sys.argv[1] == "deauth":
       print("call function deassociation")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,message_reason = extract_ipadd()
+      device_mac,ap_mac,z = extract_reason()
       deassociation(ipadd,device_mac,ap_mac,timestamp,z)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
@@ -263,6 +268,7 @@ elif sys.argv[1] == "leaving":
 elif sys.argv[1] == "reboot":
       print("call function reboot")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,message_reason = extract_ipadd()
       reboot(ipadd,timestamp)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
@@ -270,6 +276,7 @@ elif sys.argv[1] == "reboot":
 elif sys.argv[1] == "exception":
       print("call function exception")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,message_reason = extract_ipadd()
       exception(ipadd,timestamp)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
@@ -277,6 +284,7 @@ elif sys.argv[1] == "exception":
 elif sys.argv[1] == "target_asserted":
       print("call function target_asserted")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,message_reason = extract_ipadd()
       target_asserted(ipadd,timestamp)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
@@ -284,6 +292,7 @@ elif sys.argv[1] == "target_asserted":
 elif sys.argv[1] == "internal_error":
       print("call function internal_error")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,message_reason = extract_ipadd()
       internal_error(ipadd,timestamp)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')

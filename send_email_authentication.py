@@ -7,7 +7,7 @@ import json
 import logging
 import subprocess
 from time import gmtime, strftime, localtime, sleep
-import requests
+#import requests
 import datetime
 import smtplib
 import mimetypes
@@ -450,17 +450,17 @@ def get_credentials():
      mails = [ element  for element  in mails]
      return user,password,id,gmail_usr,gmail_passwd,mails
 
-ipadd,device_mac,ap_mac,auth_type,user_name,ssid,deassociation = extract_ip_port()   #returning relayIP and port number where loop detected
-arp,device_mac_auth,source,reason = extract_ARP() #return Access role Profile and Device authenticated
-ip_dhcp = extract_ip_dhcp()
-
-auth_result,device_8021x_auth,accounting_status = extract_RADIUS()
+#ipadd,device_mac,ap_mac,auth_type,user_name,ssid,deassociation = extract_ip_port()   #returning relayIP and port number where loop detected
+#arp,device_mac_auth,source,reason = extract_ARP() #return Access role Profile and Device authenticated
+#ip_dhcp = extract_ip_dhcp()
+#auth_result,device_8021x_auth,accounting_status = extract_RADIUS()
 user,password,jid,gmail_user,gmail_password,mails = get_credentials()
 
 ## if $msg contains 'Recv the  wam module  notify  data user'##
 if sys.argv[1] == "auth_step1":
       print("call function authentication step1")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,device_mac,ap_mac,auth_type,user_name,ssid,deassociation = extract_ip_port()
       authentication_step1(ipadd,device_mac,auth_type,ssid,deassociation)
       sys.exit(0)
 
@@ -469,6 +469,7 @@ if sys.argv[1] == "auth_step1":
 if sys.argv[1] == "mac_auth":
       print("call function mac_authentication")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      arp,device_mac_auth,source,reason = extract_ARP()
       mac_authentication(device_mac_auth,arp,source,reason)
       sys.exit(0)
 
@@ -477,6 +478,7 @@ if sys.argv[1] == "mac_auth":
 if sys.argv[1] == "8021X":
       print("call function radius_authentication")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      auth_result,device_8021x_auth,accounting_status = extract_RADIUS()
       radius_authentication(auth_result,device_8021x_auth,accounting_status)
       sys.exit(0)
 
@@ -493,6 +495,8 @@ if sys.argv[1] == "policy":
 if sys.argv[1] == "dhcp":
       print("call function dhcp_ack")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,device_mac,ap_mac,auth_type,user_name,ssid,deassociation = extract_ip_port()
+      ip_dhcp = extract_ip_dhcp()
       dhcp_ack(ipadd,device_mac)
       sys.exit(0)
 
@@ -507,6 +511,7 @@ if sys.argv[1] == "wcf_block":
 if sys.argv[1] == "auth_step2":
       print("call function authentication step2")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,device_mac,ap_mac,auth_type,user_name,ssid,deassociation = extract_ip_port()
       authentication_step2(ipadd,user_name,ssid)
       sys.exit(0)
 else:
