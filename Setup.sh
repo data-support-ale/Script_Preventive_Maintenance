@@ -640,7 +640,7 @@ if \$msg contains 'ALRM: Core dump' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpmd\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/send_email_pmd.py pmd\")
+     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_pmd.py pmd\")
      stop
 }
 
