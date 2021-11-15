@@ -6,9 +6,10 @@ import getopt
 import json
 import logging
 import subprocess
+import requests
 import re
 from time import gmtime, strftime, localtime, sleep
-import requests
+
 import datetime
 import pysftp
 

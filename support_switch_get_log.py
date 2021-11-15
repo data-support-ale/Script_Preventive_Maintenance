@@ -17,12 +17,26 @@ switch_user, switch_password, jid, gmail_user, gmail_password, mails,ip_server_l
 ip_switch,port = extract_ip_port("get_log_switch")
 filename = 'tech_support_complete.tar'
 
+last = ""
+with open("/var/log/devices/get_log_switch.json", "r") as log_file:
+   for line in log_file:
+      last = line
+
+with open("/var/log/devices/get_log_switch.json", "w") as log_file:
+   log_file.write(last)
+
+with open("/var/log/devices/get_log_switch.json", "r") as log_file:
+   log_json = json.load(log_file)
+   ipadd = log_json["relayip"]
+   host = log_json["hostname"]
+   msg = log_json["message"]
+   print(msg)
 
 pattern = ""
 if len(sys.argv) > 1:
    pattern = sys.argv[1]
    print(pattern)
-   send_message(pattern,jid)
+#   send_message(pattern,jid)
 
 os.system('logger -t montag -p user.info Executing script ' + pattern)
 cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  rm -rf {3}".format(switch_password,switch_user,ip_switch,filename)
@@ -93,6 +107,7 @@ if jid !='':
          info = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. A snapshot has been sent in the directory /tftpboot/ on syslog server".format(ip_switch,pattern)
          send_file(info,jid,ip_switch,f_filename)
          send_message(info,jid)
+         send_message(msg,jid)
 if gmail_user !='':
          info = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. A snapshot has been sent in the directory /tftpboot/ on syslog server".format(ip_switch, pattern)
          subject = "A Pattern has been detected in switch log"
