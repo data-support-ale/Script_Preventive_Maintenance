@@ -487,6 +487,15 @@ mail.err                        /var/log/mail.err
 # if a syslog message contains \"error\" string, we redirect to a specific log
 #:msg, contains, \"error\"         /var/log/syslog-error.log
 *.* ?DynamicFile;json_syslog
+
+####### GARBAGE #####
+:hostname, isequal, \"haveged\" ~
+:hostname, isequal, \"kernel\" ~
+if \$msg contains 'rsyslogd' then /var/log/devices/omprog.log
+if \$msg contains 'omprog' then /var/log/devices/omprog.log
+:hostname, isequal, \"debian2\" ~
+:hostname, isequal, \"root\" ~
+
 # Rules
 #
 
