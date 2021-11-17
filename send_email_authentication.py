@@ -220,18 +220,26 @@ def radius_failover():
            if "RADIUS Authentication server 10.130.7.25" in element:
              os.system('logger -t montag -p user.info Authentication sent to Backup Radius Server 10.130.7.25')
 
-def extract_RADIUS():
-#open the file lastlog_8021X_authentication.json  and get the Radius Authentication status
-        pattern_Device_MAC = re.compile('.*\<(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\>.*')
-        content_variable = open ('/var/log/devices/lastlog_8021X_authentication.json','r')
-        file_lines = content_variable.readlines()
-        content_variable.close()
-        last_line = file_lines[-1]
-        f=last_line.split(',')
-        # Variables initialized to null
-        auth_result = device_8021x_auth = accounting_status = "null"
-        for element in f:
-         if "RADIUS" in element:
+def extract_RADIUS_new():
+  last = ""
+  with open("/var/log/devices/lastlog_8021X_authentication.json", "r") as log_file:
+    for line in log_file:
+        last = line
+
+  with open("/var/log/devices/lastlog_8021X_authentication.json", "w") as log_file:
+    log_file.write(last)
+
+  with open("/var/log/devices/lastlog_8021X_authentication.json", "r") as log_file:
+    log_json = json.load(log_file)
+    ipadd = log_json["relayip"]
+    host = log_json["hostname"]
+    msg =log_json["message"]
+    auth_result = "null"
+    device_8021x_auth = accounting_status = "null"
+    f=msg.split(',')
+    for element in f:
+       print(element)
+       if "RADIUS" in element:
            if "RADIUS packet send to" in element:
              element_split = element.split(' ')
              for i in range(len(element_split)):
@@ -239,21 +247,24 @@ def extract_RADIUS():
                 server = element_split[i+1]
                 server = server.replace("\"","")
                 os.system('logger -t montag -p user.info Authentication sent to Radius Server ' + server)
-         else:
-          element_split = element.split(' ')
-          for i in range(len(element_split)):
-            if element_split[i]=="8021x-Auth":
-              device_8021x_auth = re.search(pattern_Device_MAC, str(f)).group(1)
-              print("802.1x authentication result")
-              auth_result = element_split[i+1]
-              accounting_status = element_split[i+2]
-            if element_split[i]=="Success":
-              device_8021x_auth = re.search(pattern_Device_MAC, str(f)).group(1)
-              auth_result = "Success"
-            if element_split[i]=="Reject":
-              device_8021x_auth = re.search(pattern_Device_MAC, str(f)).group(1)
-              auth_result = "Failed"
-        return auth_result,device_8021x_auth,accounting_status;
+       if "8021x Authentication" in element:
+        auth_result,device_8021x_auth = re.findall(r"8021x-Auth (.*?) for Sta<(.*?)>", msg)[0]
+        print("Authentication success use case")
+        # Wireless roam_trace[10065] <INFO> [AP DC:08:56:54:2D:40@10.130.7.76] [Employee_EAP @ ath11]: 8021x Authentication Success for Sta<de:ab:50:25:b8:71>
+       if "8021x-Auth Failed" in element:
+        auth_result = "Failed"
+        device_8021x_auth = re.findall(r"STA <(.*?)>", msg)[0]
+        print("Authentication failure use case")
+        # Wireless roam_trace[10065] <INFO> [AP DC:08:56:54:2D:40@10.130.7.76] [Employee_EAP @ ath11]: 8021x-Auth Failed, STA <de:ab:50:25:b8:71> Disconnect
+       if "8021x-Auth Accounting" in element:
+        accounting_status,device_8021x_auth = re.findall(r"8021x-Auth Accounting (.*?) for STA <(.*?)>", msg)[0]
+        auth_result = "0"
+        print("accounting use case")
+        # Wireless roam_trace[10065] <INFO> [AP DC:08:56:54:2D:40@10.130.7.76] [Employee_EAP @ ath11]: 8021x-Auth Accounting start for STA <de:ab:50:25:b8:71> 
+       print(auth_result)
+       print(device_8021x_auth)
+       print(accounting_status)
+  return auth_result,device_8021x_auth,accounting_status;
 
 def extract_WCF():
         pattern_Device_MAC = re.compile('.*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*')
@@ -478,7 +489,8 @@ if sys.argv[1] == "mac_auth":
 if sys.argv[1] == "8021X":
       print("call function radius_authentication")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
-      auth_result,device_8021x_auth,accounting_status = extract_RADIUS()
+      #device_8021x_auth,accounting_status = extract_RADIUS()
+      auth_result,device_8021x_auth,accounting_status = extract_RADIUS_new()
       radius_authentication(auth_result,device_8021x_auth,accounting_status)
       sys.exit(0)
 

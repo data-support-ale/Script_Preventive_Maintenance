@@ -496,9 +496,10 @@ if \$msg contains 'omprog' then /var/log/devices/omprog.log
 :hostname, isequal, \"debian2\" ~
 :hostname, isequal, \"root\" ~
 
-# Rules
+############### Rules Preventive Maintenance ##########
 #
 
+#### Rules WLAN #####
 if \$msg contains 'Recv the  wam module  notify  data user' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -613,6 +614,7 @@ if \$msg contains 'Received deauth' then {
   stop
 }
 
+##### Rules MAC-SEC ########
 if \$msg contains 'intfNi Mka' or \$msg contains 'intfNi Drv' or \$msg contains 'intfNi Msec' then {
   action(type=\"omfile\" DynaFile=\"deviceloghistory\" dirCreateMode=\"0755\" FileCreateMode=\"0755\")
   if \$msg contains 'ieee802_1x_cp_connect_secure' then {
@@ -645,6 +647,7 @@ if \$msg contains 'intfNi Mka' or \$msg contains 'intfNi Drv' or \$msg contains 
   }
 }
 
+#### Rules Core DUMP - LAN #########
 if \$msg contains 'ALRM: Core dump' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -661,6 +664,7 @@ if \$msg contains 'PMD generated at' then {
      stop
 }
 
+#### Rules Port Flapping - LAN ######
 if \$msg contains 'pmnHALLinkStatusCallback:206' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -669,6 +673,8 @@ if \$msg contains 'pmnHALLinkStatusCallback:206' then {
      action(type=\"omprog\" binary=\"$dir/support_switch_port_flapping.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
+
+#### Rules DDOS - LAN #####
 if \$msg contains 'Denial of Service attack detected: <port-scan>' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogddosdebug\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -682,6 +688,8 @@ if \$msg contains 'ALV4 event: PSCAN' then {
      action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_enable_qos.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
+
+#### Rules Additionnal Pattern WLAN #####
 if \$msg contains '$pattern_1_AP' or \$msg contains '$pattern_2_AP' or \$msg contains '$pattern_3_AP' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"deviceloggetlogap\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -689,6 +697,7 @@ if \$msg contains '$pattern_1_AP' or \$msg contains '$pattern_2_AP' or \$msg con
      stop
 }
 
+#### Rule Duplicate IP Address - LAN ####
 if \$msg contains 'duplicate IP address' or \$msg contains 'Duplicate IP address' then{
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdupip\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -696,6 +705,7 @@ if \$msg contains 'duplicate IP address' or \$msg contains 'Duplicate IP address
      stop
 }
 
+#### Rule Authentication Failure - LAN ####
 if \$msg contains 'CMM Authentication failure detected' then{
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogauthfail\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -703,7 +713,7 @@ if \$msg contains 'CMM Authentication failure detected' then{
      stop
 }
 
-
+#### Rule Network Loop - LAN ####
 if \$msg contains 'Buffer list is empty' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -713,6 +723,7 @@ if \$msg contains 'Buffer list is empty' then {
 }
 
 
+#### Rule Port Violation - LAN ####
 if \$msg contains 'Violation set' or \$msg contains 'in violation'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -721,7 +732,7 @@ if \$msg contains 'Violation set' or \$msg contains 'in violation'  then {
      stop
 }
 
-
+#### Additionnal rules - LAN ####
 if \$msg contains 'bootMgrVCMTopoDataEventHandler' and \$msg contains 'no longer' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -745,7 +756,19 @@ if \$msg contains 'slnHwlrnCbkHandler' and \$msg contains 'port' and \$msg conta
      action(type=\"omprog\" binary=\"$dir/support_switch_port_disable.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
+
+####### TROUBLESHOOTING ########
+
 :syslogtag, contains, \"montag\" /var/log/devices/script_execution.log
+if \$msg contains 'rsyslogd' then /var/log/devices/omprog.log
+if \$msg contains 'omprog' then /var/log/devices/omprog.log
+
+####### GARBAGE ##########
+:hostname, isequal, \"haveged\" ~
+:hostname, isequal, \"kernel\" ~
+:hostname, isequal, \"debian2\" ~
+:hostname, isequal, \"root\" ~
+
 & stop " >  /etc/rsyslog.conf
 
 
