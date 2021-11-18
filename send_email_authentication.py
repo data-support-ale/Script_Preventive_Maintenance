@@ -485,13 +485,18 @@ if sys.argv[1] == "mac_auth":
       sys.exit(0)
 
 ## if $msg contains '8021x-Auth' or $msg contains 'RADIUS' or $msg contains '8021x Authentication' ##
-##    if $msg contains 'too many failed retransmit attempts' or $msg contains 'No response' or $msg contains '8021x-Auth' or $msg contains '8021x Authentication' ##
 if sys.argv[1] == "8021X":
       print("call function radius_authentication")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
-      #device_8021x_auth,accounting_status = extract_RADIUS()
       auth_result,device_8021x_auth,accounting_status = extract_RADIUS_new()
       radius_authentication(auth_result,device_8021x_auth,accounting_status)
+      sys.exit(0)
+
+##    if $msg contains 'too many failed retransmit attempts' or $msg contains 'No response'
+if sys.argv[1] == "failover":
+      print("call function radius_failover")
+      os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      radius_failover()
       sys.exit(0)
 
 ## if $msg contains ':authorize' or $msg contains 'from MAC-Auth' or $msg contains 'Access Role'##
