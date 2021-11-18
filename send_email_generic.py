@@ -30,16 +30,14 @@ system_name = os.uname()[1].replace(" ", "_")
 timestamp = 300
 timestamp = (timestamp/60)*100
 
-def deassociation(ipadd,device_mac,ap_mac,timestamp,z):
-  z = str(z)
-  print("Deassociation reason is: " + z)
-  message = "WLAN Deassociation detected with reason: {0}".format(z)
-  os.system('logger -t montag -p user.info ' + message)
+def deassociation(ipadd,device_mac,timestamp,reason,reason_number):
+  message = "WLAN Deassociation detected reason : {0} from Stellar AP {1}, client MAC Address {2}".format(reason,ipadd,device_mac)
+  message_bis = "WLAN Deassociation detected reason : {0} from Stellar AP {1}".format(reason_number,ipadd)
+  os.system('logger -t montag -p user.info ' + message_bis)
   subject_content="[TS LAB] A deassociation is detected on Stellar AP!"
-  message_content_1= "WLAN Alert - There is a WLAN deassociation detected on server {0} from Stellar AP {1} MAC-Address: {2} , Device's MAC Address: {3}.".format(system_name,ipadd,ap_mac,device_mac)
+  message_content_1= "WLAN Alert - There is a WLAN deassociation detected on server {0} from Stellar AP {1}, Device's MAC Address: {2} .".format(system_name,ipadd,device_mac)
   print(message_content_1)
-  message_content_2="Reason number".format(z)
-  print(message_content_2)
+  message_content_2="Reason number: ".format(reason_number)
   send_alert(message,jid)
   send_message(message_reason,jid)
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
@@ -198,29 +196,34 @@ def send_mail(timestamp,subject_content,message_content_1,message_content_2,ipad
        print(e)
        print ('Something went wrong...')
 
-def extract_reason():
-        #open the file lastlog  and take the first line of the file
-        pattern_AP_MAC = re.compile('.*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*')
-        pattern_Device_MAC = re.compile('.*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*')
-        content_variable = open ('/var/log/devices/lastlog_deauth.json','r')
-        file_lines = content_variable.readlines()
-        content_variable.close()
-        last_line = file_lines[-1]
-        f=last_line.split(',')
-        device_mac= ap_mac = reason = z = 0
-        #For each element, look if reason is present. If yes,  separate the text and the ip address
-        for element in f:
-         #For each element, look if reason is present, if yes, we take the AP MAC Address and the Device MAC Address
-         if "reason" in element:
-            device_mac = re.search(pattern_Device_MAC, str(f)).group(1)
-            ap_mac = re.search(pattern_AP_MAC, str(f)).group(1)
-            element_split = element.split()
-            for i in range(len(element_split)):
-             if element_split[i]=="reason":
-              z = element_split[i+1]
-              z = z.replace("(", " ", 2)
-              z = z.replace(")", " ", 2)
-        return device_mac,ap_mac,z;
+def extract_reason_new():
+  last = ""
+  reason = device_mac = ap_mac = 0
+  with open("/var/log/devices/lastlog_deauth.json", "r") as log_file:
+    for line in log_file:
+        last = line
+
+  with open("/var/log/devices/lastlog_deauth.json", "w") as log_file:
+    log_file.write(last)
+
+  with open("/var/log/devices/lastlog_deauth.json", "r") as log_file:
+    log_json = json.load(log_file)
+    msg =log_json["message"]
+    f=msg.split(',')
+    for element in f:
+       if "reason" in element:
+        reason = re.findall(r"reason (.*)", msg)[0]
+        reason_number = re.findall(r"reason (.*?)\(", msg)[0]
+        reason = str(reason)
+        device_mac = re.findall(r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
+        ap_mac = re.findall(r".*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*", msg)[0]
+        device_mac = str(device_mac[0])
+        ap_mac = str(ap_mac[0])
+        print("WLAN Deauthentication use case")
+        print(reason)
+        print(device_mac)
+        print(ap_mac)
+  return reason,device_mac,reason_number;
 
 def extract_ipadd():
    last = ""
@@ -244,7 +247,6 @@ def extract_ipadd():
     message_reason = ''.join(l)
    return ipadd,message_reason;
 
-#ipadd,device_mac,ap_mac,z = extract_ip_port()   #returning relayIP and port number where loop detected
 switch_user, switch_password, jid, gmail_user, gmail_password, mails,ip_server_log = get_credentials()
 #print("Mail sent to: " + str(mails))
 
@@ -252,8 +254,8 @@ if sys.argv[1] == "deauth":
       print("call function deassociation")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
-      device_mac,ap_mac,z = extract_reason()
-      deassociation(ipadd,device_mac,ap_mac,timestamp,z)
+      reason,device_mac,reason_number = extract_reason_new()
+      deassociation(ipadd,device_mac,timestamp,reason,reason_number)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)

@@ -599,7 +599,7 @@ if \$msg contains 'Send deauth, reason 1' or \$msg contains 'deauth reason 1' th
   stop
 }
 
-if \$msg contains 'Send deauth, reason' or \$msg contains 'Received disassoc' then {
+if \$msg contains 'Send deauth, reason' or \$msg contains 'Send deauth from wam, reason' or \$msg contains 'Received disassoc' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
