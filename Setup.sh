@@ -592,7 +592,7 @@ if \$msg contains 'Fatal exception' or \$msg contains 'Kernel panic' or \$msg co
      stop
 }
 
-if \$msg contains 'Send deauth, reason 1' or \$msg contains 'deauth reason 1' then {
+if \$msg contains 'Send deauth, reason 1' or \$msg contains 'deauth reason 1' or \$msg contains 'Send deauth from wam, reason 36' then {
   \$RepeatedMsgReduction on
   action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
   action(type=\"omprog\" binary=\"/opt/ALE_Script/send_email_generic.py roaming\")

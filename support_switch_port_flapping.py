@@ -23,6 +23,7 @@ id_client = get_id_client()
 subject = "A port flapping was detected in your network !"
 
 ip_switch_1,ip_switch_2,port_switch_1,port_switch_2= detect_port_flapping()
+
 print(ip_switch_1,ip_switch_2,port_switch_1,port_switch_2)
 if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2): #If the portnumber is different than 0,  (not a buffer list is empty log).
 

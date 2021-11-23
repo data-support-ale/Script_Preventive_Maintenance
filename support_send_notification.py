@@ -45,6 +45,20 @@ def send_alert(info,jid):
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info),'Card': '0'}
     response = requests.get(url, headers=headers)
 
+def send_message_aijaz(subject,info,jid):
+    """
+    Send the message in info to a Rainbowbot. This bot will send this message to the jid in parameters
+
+    :param str info:                Message to send to the rainbow bot
+    :param str jid:                 Rainbow jid where the message will be send
+    :return:                        None
+    """
+
+
+    url = "https://tpe-vna.al-mydemo.com/api/flows/aijaz"
+    headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject),'toto': '{0}'.format(info), 'Card': '0'}
+    response = requests.get(url, headers=headers)
+
 def send_message_request(info,jid,receiver):
     """ 
     Send the message, with a URL requests  to a Rainbowbot. This bot will send this message and request to the jid in parameters
@@ -117,7 +131,7 @@ def send_file(info,jid,ipadd,filename =''):
                 break
         if re.search(r"\d?\d (\d\d):(\d\d):(\d\d)", timestamp):
             hour, min, sec = re.findall(r"\d?\d (\d\d):(\d\d):(\d\d)", timestamp)[0]
-            sec = int(sec) + 20
+            sec = int(sec) + 80
             if sec > 60:
                 min = int(min) + 1
                 sec -= 60
