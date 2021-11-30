@@ -74,9 +74,9 @@ unset ap
       if [ -z "$mails" ]
       then
         echo "Cannot be empty"
-      elif !  [[ $mails =~ (([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5};))*(([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5}))$ ]]
-      then
-     echo "The emails list doesn't correspond with what was expected, retry."
+#      elif !  [[ $mails =~ (([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5};))*(([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5}))$ ]]
+#      then
+#     echo "The emails list doesn't correspond with what was expected, retry."
      unset mails
       fi
     done
@@ -488,13 +488,9 @@ mail.err                        /var/log/mail.err
 #:msg, contains, \"error\"         /var/log/syslog-error.log
 *.* ?DynamicFile;json_syslog
 
-####### GARBAGE #####
-:hostname, isequal, \"haveged\" ~
-:hostname, isequal, \"kernel\" ~
+####### Troubleshooting #####
 if \$msg contains 'rsyslogd' then /var/log/devices/omprog.log
 if \$msg contains 'omprog' then /var/log/devices/omprog.log
-:hostname, isequal, \"debian2\" ~
-:hostname, isequal, \"root\" ~
 
 ############### Rules Preventive Maintenance ##########
 #
@@ -760,14 +756,6 @@ if \$msg contains 'slnHwlrnCbkHandler' and \$msg contains 'port' and \$msg conta
 ####### TROUBLESHOOTING ########
 
 :syslogtag, contains, \"montag\" /var/log/devices/script_execution.log
-if \$msg contains 'rsyslogd' then /var/log/devices/omprog.log
-if \$msg contains 'omprog' then /var/log/devices/omprog.log
-
-####### GARBAGE ##########
-:hostname, isequal, \"haveged\" ~
-:hostname, isequal, \"kernel\" ~
-:hostname, isequal, \"debian2\" ~
-:hostname, isequal, \"root\" ~
 
 & stop " >  /etc/rsyslog.conf
 
@@ -852,18 +840,19 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
 " > /etc/logrotate.d/rsyslog
 
 echo
-echo -e "\e[32mConfiguration of services\e[39m"
+echo -e "\e[32mInstallation and configuration of services\e[39m"
 echo
 apt-get -qq -y  update >& /dev/null
-apt-get -qq -y install sshpass
-apt-get -qq -y install python3.7
-apt-get -qq -y install python3-pip
-pip3  install --quiet pysftp
-pip3 install --quiet flask
-apt-get -qq -y install tftpd-hpa
+apt-get -qq -y install sshpass >& /dev/null
+apt-get -qq -y install python3.5 >& /dev/null
+apt-get -qq -y install python3-pip >& /dev/null
+pip3  install --quiet pysftp >& /dev/null
+pip3 install --quiet flask >& /dev/null
+pip3 install --quiet requests >& /dev/null
+apt-get -qq -y install tftpd-hpa >& /dev/null
 export PYTHONPATH=/usr/local/bin/python3.7
 
-#echo "File created /var/log/devices/logtemp.json"
+#echo "Devices log directory /var/log/devices/ created"
 mkdir /var/log/devices/ >& /dev/null
 touch /var/log/devices/logtemp.json
 
