@@ -30,6 +30,7 @@ cp ./*.csv $dir/ >& /dev/null
 chmod 755 $dir/*
 chown admin-support:admin-support $dir/*
 
+
 while [[ "$notif" != 1  && "$notif" != 2 && "$notif" != 3 ]]
 do
 
@@ -39,6 +40,7 @@ read -p "Do you want to be notified by email, Rainbow bot or both?
 if [[ "$notif" == 1 || "$notif" == 2 || "$notif" == 3 ]]
 then
 
+unset company
 unset rainbow_jid
 unset mails
 unset allows_ip
@@ -73,7 +75,7 @@ unset ap
       read -p "Enter address(es) : " mails
       if [ -z "$mails" ]
       then
-        echo "Cannot be empty"
+        echo "Email cannot be empty"
 #      elif !  [[ $mails =~ (([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5};))*(([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5}))$ ]]
 #      then
 #     echo "The emails list doesn't correspond with what was expected, retry."
@@ -96,7 +98,7 @@ unset ap
       read -p "Enter your Rainbow JID (ex :j_xxx@openrainbow.com) : " rainbow_jid
       if [ -z "$rainbow_jid" ]
       then
-        echo "Cannot be empty"
+        echo "Rainbow JID cannot be empty"
       elif ! [[ $rainbow_jid =~ ^.*@openrainbow.com$ ]]
        then
          echo "The Rainbow JID doesn't correspond with what was expected, retry."
@@ -104,6 +106,14 @@ unset ap
       fi
     done
   fi
+
+#===> variable company used when calling setup_called.py script
+echo "What is your Company Name?"
+read -p "Company Name : " company
+if [ -z "$company" ]
+      then
+        echo "Company Name cannot be empty"
+fi
 
 echo
 echo "What are the string patterns you want to apply in the switch collection rules (we support up to 3 patterns)?
@@ -114,12 +124,12 @@ echo
 
 reponse_tab=()
 reponse=""
-read -p 'Entrer stop pour arreter la saisie des paterns : ' reponse
+read -p 'Enter stop for exiting: ' reponse
 while [ -z "$reponse" ] || [ "$reponse" != 'stop' ]
 do
         echo "$reponse"
         reponse_tab+=("$reponse")
-        read -p 'Entrer stop pour arreter la saisie des paterns : ' reponse
+        read -p 'Enter stop for exiting: ' reponse
 done
 
 #===> variable login='admin', prefilled with value "admin", means if the user press enters we use the default value
@@ -251,6 +261,7 @@ if [[ "$notif" == 1 || "$notif" == 3 ]]
 then
 echo "Your mails addresses : $mails"
 fi
+echo "Your company name : $company"
 echo "Your switch parttens :"
 
 for rep in "${reponse_tab[@]}"
@@ -271,7 +282,7 @@ echo "==> $pattern_1_AP"
 echo "==> $pattern_2_AP"
 echo "==> $pattern_3_AP"
 fi
- 
+
 while [[ $yn != "Y" && $yn != "N" && $yn != "y" && $yn != "n" ]]
 do
   read -p   "Do you want to confirm? (Y/N)" yn
@@ -887,21 +898,14 @@ else
 fi
 echo -e "\e[32mWorking directory in /opt/ALE_Script\e[39m"
 
-
 for rep in "${reponse_tab[@]}"
 do
     sudo python3 opt_pattern.py "$rep"
 done
 
-
-
-
-
-
-
-
-
-
+echo "Sending notification to ALE DevOPS team for setup VNA application"
+sudo python3 /opt/ALE_Script/setup_called.py $company
+echo "Setup complete"
 
 
 

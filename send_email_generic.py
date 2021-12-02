@@ -18,6 +18,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from support_tools import get_credentials
 from support_send_notification import send_message,send_file,send_alert
+from support_OV_get_wlan import OvHandler
 
 script_name = sys.argv[0]
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
@@ -40,7 +41,19 @@ def deassociation(ipadd,device_mac,timestamp,reason,reason_number):
   message_content_2="Reason number: ".format(reason_number)
   send_alert(message,jid)
   send_message(message_reason,jid)
-  send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
+  #send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
+  ## REST-API for login on OV
+  ovrest = OvHandler()
+  ## REST-API for getting WLAN information from OV Wireless List
+  channel, clientName = ovrest.postWLANClient(device_mac)
+  category = ovrest.postWLANIoT(device_mac)
+  ## If client does not exist on OV WLAN Client list
+  if clientName != None:
+     info =  "The client {0} MAC Address: {1} is associated to Radio Channel: {2}".format(clientName,device_mac,channel)
+     send_message(info,jid)
+  if category != None:
+     info =  "This client device category is: {0}".format(category)
+     send_message(info,jid)
 
 def reboot(ipadd,timestamp):
   os.system('logger -t montag -p user.info reboot detected')

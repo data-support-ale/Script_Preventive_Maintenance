@@ -27,7 +27,7 @@ def send_message(info,jid):
     """
 
 
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif/"
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info),'Card': '0'}
     response = requests.get(url, headers=headers)
 
@@ -41,7 +41,7 @@ def send_alert(info,jid):
     """
 
 
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifAlert/"
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_EMEA"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info),'Card': '0'}
     response = requests.get(url, headers=headers)
 
@@ -55,7 +55,7 @@ def send_message_aijaz(subject,info,jid):
     """
 
 
-    url = "https://tpe-vna.al-mydemo.com/api/flows/aijaz"
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Aijaz"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject),'toto': '{0}'.format(info), 'Card': '0'}
     response = requests.get(url, headers=headers)
 
@@ -71,7 +71,7 @@ def send_message_request(info,jid,receiver):
     :return:                        None
     """
 
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif/"
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",'Card': '1', 'jid1': '{0}'.format(jid), 'toto': '{0}.'.format(info)}
     response = requests.get(url, headers=headers)
     print(response.text)
@@ -112,12 +112,10 @@ def send_file(info,jid,ipadd,filename =''):
     if not filename =='':
        fp = open("{0}".format(filename),'rb')
        info = "Log of device : {0}".format(ipadd)
-       url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifFile/"
+       url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_EMEA"
        headers = {  'Content-type':"multipart/form-data",'Content-Disposition': "attachment;filename={}.tar".format(filename) , 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
        files = {'file': open('{0}'.format(filename),'rb')}
        response = requests.post(url,files=files, headers=headers)
-
-
 
 
     save_attachment(ipadd)
@@ -153,7 +151,7 @@ def send_file(info,jid,ipadd,filename =''):
 
 
 
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifFile/"
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_EMEA"
     headers = {  'Content-type':"text/plain",'Content-Disposition': "attachment;filename=short_attachment.log", 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
     files = {'file': open('/var/log/devices/short_attachment.log','r')}
     response = requests.post(url,files=files, headers=headers)

@@ -12,6 +12,7 @@ from support_send_notification import send_message,send_file,send_mail,send_mess
 import subprocess
 import re
 import pysftp
+import requests
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 date = datetime.date.today()
@@ -35,10 +36,6 @@ with open("/var/log/devices/get_log_switch.json", "r") as log_file:
    host = log_json["hostname"]
    msg = log_json["message"]
    print(msg)
-   port = re.findall(r"LINKSTS (.*?) DOWN", msg)[0]
-   port = port.replace("\"", "",3)
-   port = port.replace("\\", "",3)
-   print(port)
 
 pattern = ""
 if len(sys.argv) > 1:
@@ -46,12 +43,26 @@ if len(sys.argv) > 1:
    print(pattern)
    #send_message(pattern,jid)
 
+def get_port():
+   with open("/var/log/devices/get_log_switch.json", "r") as log_file:
+      log_json = json.load(log_file)
+      ipadd = log_json["relayip"]
+      host = log_json["hostname"]
+      msg = log_json["message"]
+      print(msg)
+      port = re.findall(r"LINKSTS (.*?) DOWN", msg)[0]
+      port = port.replace("\"", "",3)
+      port = port.replace("\\", "",3)
+      print(port)
+      return port
+
 if sys.argv[1] == "aijaz":
+   port = get_port()
    #{"@timestamp":"2021-11-22T21:57:06+01:00","type":"syslog_json","relayip":"10.130.7.243","hostname":"sw5-bcb","message":"<134>Nov 22 21:57:06 SW5-BCB swlogd portMgrNi main INFO: : [pmnHALLinkStatusCallback:206] LINKSTS 1\/1\/1 DOWN (gport 0x0) Speed 0 Duplex HALF","end_msg":""}
    port=str(port)
    subject = "Preventive Maintenance - Port flapping issue detected on port {0}".format(port)
    print(subject)
-   info = "A port flapping is noticed on Aijaz lab please check in /flash/python directory"
+   info = "A port flapping is noticed on Aijaz lab and collected on Server 10.130.7.14 /tftpboot/ directory"
    send_message_aijaz(subject,info,jid)
    cmd = "python3 /flash/python/get_logs_port_flapping.py".format(port)
    logging.info(runtime + ': upload starting')
@@ -62,8 +73,20 @@ if sys.argv[1] == "aijaz":
       remoteFilePath = '/flash/python/RZW-Core_logs.txt'
       localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ipadd,filename_aijaz)
       sftp.get(remoteFilePath, localFilePath)
-   #get_file_sftp(switch_user,switch_password,ipadd,"/flash/python/RZW-Core_logs.txt")
    logging.info(runtime + ' Process finished and logs downloaded')
+   print(localFilePath)
+   jid1="j_9403700392@openrainbow.com"
+   url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Test_EMEA"
+   headers = {  'Content-type':"text/plain",'Content-Disposition': "attachment;filename=port_flapping.log", 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
+   files = {'file': open(localFilePath,'r')}
+   response = requests.post(url,files=files, headers=headers)
+
+if sys.argv[1] == "aijaz2":
+   #{"@timestamp":"2021-11-22T21:57:06+01:00","type":"syslog_json","relayip":"10.130.7.248","hostname":"sw5-bcb","message":"2021 Nov 24 15:20:35.139 S_CA_1212_196 swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM Device Power Supply operational state changed to UNPOWERED","end_msg":""}
+   subject = "Preventive Maintenance - Power Supply issue detected on switch: {0}".format(ipadd)
+   print(subject)
+   info = "A Power Supply is inoperable on your lab"
+   send_message_aijaz(subject,info,jid)
 
 os.system('logger -t montag -p user.info Executing script ' + pattern)
 cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  rm -rf {3}".format(switch_password,switch_user,ipadd,filename)
@@ -132,7 +155,7 @@ if jid !='':
          info = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. A snapshot has been sent in the directory /tftpboot/ on syslog server".format(ipadd,pattern)
          send_message(info,jid)
          send_message(msg,jid)
-         #send_file(info,jid,ipadd,localFilePath)
+         #send_file(info,jid,ipadd,filename)
 if gmail_user !='':
          info = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. A snapshot has been sent in the directory /tftpboot/ on syslog server".format(ipadd, pattern)
          subject = "A Pattern has been detected in switch log"
