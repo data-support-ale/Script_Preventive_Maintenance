@@ -91,6 +91,15 @@ def target_asserted(ipadd,timestamp):
   send_message(message_reason,jid)
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
+def limit_reached(ipadd,timestamp):
+  os.system('logger -t montag -p user.info Associated STA Limit Reached!')
+  subject_content="[TS LAB] Associated STA Limit Reached!"
+  message_content_1= "WLAN Alert - The Stellar AP {0} has reached the limit of WLAN Client association!".format(ipadd)
+  message_content_2="Associated STA limit reached"
+  send_alert(message_content_1,jid)
+  send_message(message_reason,jid)
+  send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
+
 def send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd):
   myDate = datetime.date.today()
 
@@ -309,6 +318,14 @@ elif sys.argv[1] == "internal_error":
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
       internal_error(ipadd,timestamp)
+      os.system('logger -t montag -p user.info Sending email')
+      os.system('logger -t montag -p user.info Process terminated')
+      sys.exit(0)
+elif sys.argv[1] == "limit_reached":
+      print("call function Associated STA limit reached")
+      os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,message_reason = extract_ipadd()
+      limit_reached(ipadd,timestamp)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)
