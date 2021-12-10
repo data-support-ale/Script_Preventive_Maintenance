@@ -15,13 +15,7 @@ import pysftp
 import requests
 import paramiko
 
-jid = get_credentials()
-
 ##This script contains all functions interacting with OmniSwitches
-
-switch_password="switch"
-switch_user="admin"
-ipadd="10.130.7.244"
 
 ### Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(cmd):
@@ -81,14 +75,92 @@ def debugging(user,password,ipadd,appid_1,subapp_1,level_1):
     cmd = ("swlog appid {0} subapp {1} level {2}").format(appid_1,subapp_1,level_1)
     ssh_device(cmd)
 
+### Function to collect several command outputs related to Power Supply
+def collect_command_output_violation(port,source,host,ipadd):
+  """ 
+  This function takes entries arguments the Interface/Port where violation occurs. This function is called when is port is put into violation and Administrator wants to clear the violation
+  This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+
+  :param str port:                  Switch Interface/Port ID <chasis>/<slot>/>port>
+  :param str source:                Switch Violation reason (lbd, Access Guardian, lps)
+  :param str host:                  Switch Hostname
+  :param str ipadd:                 Switch IP address
+  :return:                          filename_path,subject,action,result,category
+  """
+  text = "More logs about the switch : {0} \n\n\n".format(ipadd)
+
+  l_switch_cmd = []
+  l_switch_cmd.append("show interfaces " + port +" status")
+  l_switch_cmd.append("clear violation port " + port)
+  l_switch_cmd.append("show violation")
+  l_switch_cmd.append("show violation port "  + port)
+
+  for switch_cmd in l_switch_cmd:
+     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
+     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
+     output=output.decode('UTF-8').strip()
+     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+
+  date = datetime.date.today()
+  date_hm = datetime.datetime.today()
+
+  filename= "{0}_{1}-{2}_{3}_vcmm_logs".format(date,date_hm.hour,date_hm.minute,ipadd)
+  filename_path= ('/opt/ALE_Script/{0}.txt').format(filename)
+  f_logs = open(filename_path,'w')
+  f_logs.write(text)
+  f_logs.close()
+  subject = ("Preventive Maintenance Application - Port violation noticed on switch: {0}, reason {1}").format(ipadd,source)
+  action = ("The Port {0} is cleared from violation table on OmniSwitch (Hostname: {1})").format(psid,host)
+  result= "Find enclosed to this notification the log collection of actions done"
+  category = "violation"
+  return filename_path,subject,action,result,category
+
+### Function to collect several command outputs related to Power Supply
+def collect_command_output_ps(psid,host,ipadd):
+  """ 
+  This function takes entries arguments the Power Supply ID. This function is called when an issue is observed on Power Supply hardware
+  This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+
+  :param str psid:                  Switch Power Supply ID
+  :param str host:                  Switch Hostname
+  :param str ipadd:                 Switch IP address
+  :return:                          filename_path,subject,action,result,category
+  """
+  text = "More logs about the switch : {0} \n\n\n".format(ipadd)
+
+  l_switch_cmd = []
+  l_switch_cmd.append("show powersupply")
+  l_switch_cmd.append("show powersupply total")
+
+  for switch_cmd in l_switch_cmd:
+     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
+     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
+     output=output.decode('UTF-8').strip()
+     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+
+  date = datetime.date.today()
+  date_hm = datetime.datetime.today()
+
+  filename= "{0}_{1}-{2}_{3}_vcmm_logs".format(date,date_hm.hour,date_hm.minute,ipadd)
+  filename_path= ('/opt/ALE_Script/{0}.txt').format(filename)
+  f_logs = open(filename_path,'w')
+  f_logs.write(text)
+  f_logs.close()
+  subject = ("Preventive Maintenance Application - Power Supply issue detected on switch: {0}").format(ipadd)
+  action = ("The Power Supply unit {0} is down or running abnormal on OmniSwitch (Hostname: {1})").format(psid,host)
+  result= "Find enclosed to this notification the log collection for further analysis"
+  category = "ps"
+  return filename_path,subject,action,result,category
+
 ### Function to collect several command outputs related to Virtual Chassis
-def collect_command_output_vc(vcid,host):
+def collect_command_output_vc(vcid,host,ipadd):
   """ 
   This function takes entries arguments the Virtual Chassis ID and the Switch System Name. This function is called when an issue is observed on Virtual Chassis category
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
 
   :param str vcid:                  Switch Virtual Chassis ID
   :param str host:                  Switch Hostname
+  :param str ipadd:                 Switch IP address
   :return:                          filename_path,subject,action,result,category
   """
   text = "More logs about the switch : {0} \n\n\n".format(ipadd)
@@ -120,12 +192,14 @@ def collect_command_output_vc(vcid,host):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to Linkagg
-def collect_command_output_linkagg(agg):
+def collect_command_output_linkagg(agg,host,ipadd):
   """ 
   This function takes entries arguments the Link Aggregation ID. This function is called when an issue is observed on Linkagg category
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
 
   :param str agg:                   Link Aggregation ID
+  :param str host:                  Switch Hostname
+  :param str ipadd:                 Switch IP address
   :return:                          filename_path,subject,action,result,category
   """
   text = "More logs about the switch : {0} \n\n\n".format(ipadd)
@@ -151,17 +225,18 @@ def collect_command_output_linkagg(agg):
   f_logs.write(text)
   f_logs.close()
   subject = ("Preventive Maintenance Application - Linkagg issue detected on switch: {0}").format(ipadd)
-  action = ("A Linkagg issue has been detected in switch(IP : {0}) syslogs").format(ipadd)
+  action = ("A Linkagg issue has been detected in switch(Hostname: {0}) Aggregate {1}").format(host,agg)
   result= "Find enclosed to this notification the log collection for further analysis"
   category = "linkagg"
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to PoE
-def collect_command_output_poe():
+def collect_command_output_poe(host,ipadd):
   """ 
-  This function does not take argument as entry. This function is called when an issue is observed on Lanpower category
+  This function takes IP Address and Hostname as argument. This function is called when an issue is observed on Lanpower category
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
-
+  :param str host:                  Switch Hostname
+  :param str ipadd:                 Switch IP address
   :return:                          filename_path,subject,action,result,category
   """
   text = "More logs about the switch : {0} \n\n\n".format(ipadd)
@@ -227,7 +302,7 @@ def collect_command_output_poe():
   else:
       high_resistance_detection_status="disabled"
   subject = ("Preventive Maintenance Application - Lanpower issue detected on switch: {0}").format(ipadd)
-  action = ("A PoE issue has been detected in switch(IP : {0}) syslogs. Capacitor Detection is {1}, High Resistance Detection is {2}").format(ipadd,capacitor_detection_status,high_resistance_detection_status)
+  action = ("A PoE issue has been detected in switch(Hostname : {0}) syslogs. Capacitor Detection is {1}, High Resistance Detection is {2}").format(host,capacitor_detection_status,high_resistance_detection_status)
   result= "Find enclosed to this notification the log collection for further analysis"
   category = "poe"
   return filename_path,subject,action,result,category
@@ -247,19 +322,37 @@ def send_file(filename_path,subject,action,result):
   url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_EMEA"
   request_debug = "Call VNA REST API Method POST path %s"%url
   print(request_debug)
+  os.system('logger -t montag -p user.info Call VNA REST API Method POST')
   headers = {  'Content-type':"text/plain",'Content-Disposition': ("attachment;filename={0}_troubleshooting.log").format(category), 'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject),'toto': '{0}'.format(action),'tutu': '{0}'.format(result), 'Card': '0', 'Email': '0'}
   files = {'file': open(filename_path,'r')}
   response = requests.post(url,files=files, headers=headers)
   print(response)
+  response = "<Response [200]>"
+  response = re.findall(r"<Response \[(.*?)\]>", response)
+  if "200" in response:
+     os.system('logger -t montag -p user.info 200 OK')
+  else:
+     os.system('logger -t montag -p user.info REST API Call Failure') 
 
+jid = "570e12872d768e9b52a8b975@openrainbow.com"
+switch_password="switch"
+switch_user="admin"
+ipadd="10.130.7.244"
 cmd="show system"
+host="LAN-6860N-2"
 ssh_connectivity_check(cmd)
-filename_path,subject,action,result,category = collect_command_output_poe()
+filename_path,subject,action,result,category = collect_command_output_poe(host,ipadd)
 send_file(filename_path,subject,action,result)
 agg = "6"
-filename_path,subject,action,result,category = collect_command_output_linkagg(agg)
+filename_path,subject,action,result,category = collect_command_output_linkagg(agg,host,ipadd)
 send_file(filename_path,subject,action,result)
 vcid="2"
-host="LAN-6860N-2"
-filename_path,subject,action,result,category = collect_command_output_vc(vcid,host)
+filename_path,subject,action,result,category = collect_command_output_vc(vcid,host,ipadd)
+send_file(filename_path,subject,action,result)
+psid = "2"
+filename_path,subject,action,result,category = collect_command_output_ps(psid,host,ipadd)
+send_file(filename_path,subject,action,result)
+source="Access Guardian"
+port="1/1/1"
+filename_path,subject,action,result,category = collect_command_output_violation(port,source,host,ipadd)
 send_file(filename_path,subject,action,result)
