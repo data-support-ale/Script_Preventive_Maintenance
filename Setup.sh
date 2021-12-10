@@ -628,6 +628,12 @@ if \$msg contains 'Received deauth' then {
   stop
 }
 
+if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_sta_assoc' then {
+  \$RepeatedMsgReduction on
+  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+  stop
+}
+
 ##### Rules MAC-SEC ########
 if \$msg contains 'intfNi Mka' or \$msg contains 'intfNi Drv' or \$msg contains 'intfNi Msec' then {
   action(type=\"omfile\" DynaFile=\"deviceloghistory\" dirCreateMode=\"0755\" FileCreateMode=\"0755\")
