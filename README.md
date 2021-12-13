@@ -1,9 +1,9 @@
 # Script_Preventive_Maintenance
 ## Checklist to verify if the Setup is working fine:
 - ###### 1. Add CLI Command ```swlog output socket <ip_address> <port> vrf <vrf_name>```
-Please use the UDP port 10514 as this is set on Rsyslog thru the Setup.sh script:  ```swlog output socket <ip_address> 10514```
+Please use the **UDP** port **10514** as this is set on Rsyslog thru the Setup.sh script:  ```swlog output socket <ip_address> 10514```
 
-- ###### 2. Check if syslogs are received by application, execute command: ```tail -f /var/log/syslog``` and application is listening on UDP port 10514
+- ###### 2. Check if syslogs are received by application, execute command: ```tail -f /var/log/syslog``` and if application is listening on UDP port 10514
 ```
 admin-support@debian2:~$ tail -f /var/log/syslog
 Dec 13 10:16:06 RZW-Core swlogd bcmd rpcs DBG2: _bcm_server_rpc_rcv 431: Reac Recv len 12, mlen 206
@@ -37,7 +37,7 @@ admin-support@debian2:~$ sudo systemctl status rsyslog
 ```
 Here a Child with ID will be created each time a python script is executed
 
-- ###### 5. Check if the scripts are executed, every scripts are logged thru syslog by using a tag "montag" and printed into ```/var/log/devices/script_execution.log file``` . 
+- ###### 5. Check if the scripts are executed, every scripts are logged thru syslog by using a tag **"montag"** and printed into ```/var/log/devices/script_execution.log file``` . 
 ```
 admin-support@debian2:/var/log/devices$ tail -f /var/log/devices/script_execution.log
 Dec 13 10:11:16 debian2 montag: Executing script /opt/ALE_Script/support_switch_port_flapping.py
@@ -106,7 +106,7 @@ EMEA
 ```
 {"@timestamp":"2021-12-08T17:17:13+01:00","type":"syslog_json","relayip":"10.130.7.243","hostname":"rzw-core","message":"<134>Dec  8 17:17:13 RZW-Core swlogd portMgrNi main INFO: : [pmnHALLinkStatusCallback:206] LINKSTS 1\/1\/53A DOWN (gport 0x40) Speed 40000 Duplex FULL","end_msg":""}
 ```
-- ###### 9.a first create the rule on /etc/rsyslog.conf with the pattern you want to match and trigger python execution:
+- ###### **9.a** first create the rule on /etc/rsyslog.conf with the pattern you want to match and trigger python execution:
 ```
 if $msg contains 'specific log generated when issue occurs' then {
        action(type="omfile" DynaFile="deviceloghistory" template="json_syslog" DirCreateMode="0755" FileCreateMode="0755")
@@ -115,12 +115,12 @@ if $msg contains 'specific log generated when issue occurs' then {
        stop
 }
 ```
-- ###### 9.b restart Rsyslog and check status
+- ###### **9.b** restart Rsyslog and check status
 ```
 sudo systemctl restart rsyslog
 sudo systemctl status rsyslog
 ```
-- ###### 9.c create your script /opt/ALE_Script/myscript.py. Script open json file ```/var/log/devices/get_log_switch.json```, get switch ip address, switch hostname, port number with function get_port()
+- ###### **9.c** create your script /opt/ALE_Script/myscript.py. Script open json file ```/var/log/devices/get_log_switch.json```, get switch ip address, switch hostname, port number with function get_port()
 ```
 #!/usr/bin/env python3
 
@@ -299,12 +299,12 @@ Syslog raw message: <134>Dec  8 17:17:13 RZW-Core swlogd portMgrNi main INFO: : 
 port number is : 1/1/53A
 ```
 
-Tech support eng complete is collected from switch and stored into ```/tftpboot/``` directory on Application:
+> Tech support eng complete is collected from switch and stored into ```/tftpboot/``` directory on Application:
 ```
 admin-support@debian2:/tftpboot$ ls -la /tftpboot/
 -rw-r--r--  1 root          root          38139392 Dec 13 11:24 2021-12-13_11-24_10.130.7.243_tech_support_complete.tar
 ```
-CLI Commands outputs are collected in file <date><time><switch_ipadd>_logs.txt in /opt/ALE_Script directory:
+> CLI Commands outputs are collected in file <date><time><switch_ipadd>_logs.txt in **/opt/ALE_Script directory**:
 ```
 admin-support@debian2:/opt/ALE_Script$ ls -la *.txt
 -rw-r--r-- 1 root          root          230463 Dec 13 11:24 2021-12-13_11-24_10.130.7.243_logs.txt
