@@ -1,8 +1,8 @@
-Checklist to verify if the Setup is working fine:
-1. Add CLI Command swlog output socket <ip_address> <port> vrf <vrf_name>
+## Checklist to verify if the Setup is working fine:
+#1. Add CLI Command swlog output socket <ip_address> <port> vrf <vrf_name>
 Please use the UDP port 10514 as this is set on Rsyslog thru the Setup.sh script:  swlog output socket <ip_address> 10514
 
-2. Check if syslogs are received by application, execute command: tail -f /var/log/syslog and application is listening on UDP port 10514
+#2. Check if syslogs are received by application, execute command: tail -f /var/log/syslog and application is listening on UDP port 10514
 admin-support@debian2:~$ tail -f /var/log/syslog
 Dec 13 10:16:06 RZW-Core swlogd bcmd rpcs DBG2: _bcm_server_rpc_rcv 431: Reac Recv len 12, mlen 206
 Dec 13 10:16:06 RZW-Core swlogd bcmd rpcs DBG2: _bcm_server_rpc_rcv 427: Reac Recv len 218, mlen 206 socket 49
@@ -13,7 +13,7 @@ admin-support@debian2:/opt/ALE_Script$ netstat -anp | grep 10514
  will not be shown, you would have to be root to see it all.)
 udp        0      0 0.0.0.0:10514           0.0.0.0:*
 
-3. Check if syslogs are stored in/var/log/devices/<switch_system_name>/syslog.log, execute command ls -la /var/log/devices/
+#3. Check if syslogs are stored in/var/log/devices/<switch_system_name>/syslog.log, execute command ls -la /var/log/devices/
 admin-support@debian2:~$ ls -la /var/log/devices/
 drwxr-xr-x  2 root root      4096 Dec 13 00:09 RZW-Core
 admin-support@debian2:~$ ls -la /var/log/devices/RZW-Core/
