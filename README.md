@@ -1,5 +1,23 @@
 # Script_Preventive_Maintenance
-## Checklist to verify if the Setup is working fine:
+
+# Rsyslog - what is it?
+
+Rsyslog is a rocket-fast system for log processing.
+
+It offers high-performance, great security features and a modular design. While it started as a regular syslogd, rsyslog has evolved into a kind of swiss army knife of logging, being able to accept inputs from a wide variety of sources, transform them, and output to the results to diverse destinations.
+
+Rsyslog can deliver over one million messages per second to local destinations when limited processing is applied (based on v7, December 2013). Even with remote destinations and more elaborate processing the performance is usually considered "stunning".
+
+# Project Overview
+The purpose of this project is to provide scripting for automation of several tasks like:
+- automatic log collection
+- Stellar AP upgrade
+- automatic incidence resolution
+- notifications by email or rainbow
+
+We use Linux Debian or Raspbian Distributions
+
+# Checklist to verify that Setup is working fine:
 ###### 1. Add CLI Command ```swlog output socket <ip_address> <port> vrf <vrf_name>```
 Please use the **UDP** port **10514** as this is set on Rsyslog thru the Setup.sh script:  ```swlog output socket <ip_address> 10514```
 
