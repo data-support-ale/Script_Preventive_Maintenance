@@ -1,9 +1,9 @@
 # Script_Preventive_Maintenance
 ## Checklist to verify if the Setup is working fine:
-###### 1. Add CLI Command ```swlog output socket <ip_address> <port> vrf <vrf_name>```
+- ###### 1. Add CLI Command ```swlog output socket <ip_address> <port> vrf <vrf_name>```
 Please use the UDP port 10514 as this is set on Rsyslog thru the Setup.sh script:  ```swlog output socket <ip_address> 10514```
 
-###### 2. Check if syslogs are received by application, execute command: ```tail -f /var/log/syslog``` and application is listening on UDP port 10514
+- ###### 2. Check if syslogs are received by application, execute command: ```tail -f /var/log/syslog``` and application is listening on UDP port 10514
 ```
 admin-support@debian2:~$ tail -f /var/log/syslog
 Dec 13 10:16:06 RZW-Core swlogd bcmd rpcs DBG2: _bcm_server_rpc_rcv 431: Reac Recv len 12, mlen 206
@@ -15,7 +15,7 @@ admin-support@debian2:/opt/ALE_Script$ netstat -anp | grep 10514
  will not be shown, you would have to be root to see it all.)
 udp        0      0 0.0.0.0:10514           0.0.0.0:*
 ```
-###### 3. Check if syslogs are stored in ```/var/log/devices/<switch_system_name>/syslog.log```, execute command ```ls -la /var/log/devices/```
+- ###### 3. Check if syslogs are stored in ```/var/log/devices/<switch_system_name>/syslog.log```, execute command ```ls -la /var/log/devices/```
 ```
 admin-support@debian2:~$ ls -la /var/log/devices/
 drwxr-xr-x  2 root root      4096 Dec 13 00:09 RZW-Core
@@ -27,7 +27,7 @@ drwxr-xr-x 48 root root     45056 Dec 13 10:11 ..
 -rw-r--r--  1 root adm   10295896 Dec  4 00:09 syslog.log.2021-12-04.gz
 -rw-r--r--  1 root adm   10309944 Dec  5 00:08 syslog.log.2021-12-05.gz
 ```
-###### 4. Check if the Rsyslog service is running: ```sudo systemctl status rsyslog```
+- ###### 4. Check if the Rsyslog service is running: ```sudo systemctl status rsyslog```
 ```
 admin-support@debian2:~$ sudo systemctl status rsyslog
 [sudo] password for admin-support:
@@ -37,7 +37,7 @@ admin-support@debian2:~$ sudo systemctl status rsyslog
 ```
 Here a Child with ID will be created each time a python script is executed
 
-###### 5. Check if the scripts are executed, every scripts are logged thru syslog by using a tag "montag" and printed into ```/var/log/devices/script_execution.log file``` . 
+- ###### 5. Check if the scripts are executed, every scripts are logged thru syslog by using a tag "montag" and printed into ```/var/log/devices/script_execution.log file``` . 
 ```
 admin-support@debian2:/var/log/devices$ tail -f /var/log/devices/script_execution.log
 Dec 13 10:11:16 debian2 montag: Executing script /opt/ALE_Script/support_switch_port_flapping.py
@@ -45,7 +45,7 @@ Dec 13 10:11:18 debian2 montag: Executing script /opt/ALE_Script/support_switch_
 Dec 13 10:11:56 debian2 montag: Executing script /opt/ALE_Script/support_switch_port_flapping.py
 ```
 
-###### 6. Check if the python scripts are executing without errors/exceptions:
+- ###### 6. Check if the python scripts are executing without errors/exceptions:
 Note: several scripts open a json file for processing data and find the ipaddress (column: relayip) the hostname, and additionnal data like port, vcid, power supply ID, therefore if json file is empty the script won't execute
 
 You can edit or create the ```/var/log/devices/lastlog_auth_fail.json``` file with content:
@@ -55,7 +55,7 @@ admin-support@debian2:/opt/ALE_Script$ cat /var/log/devices/lastlog_authfail.jso
 ```
 Then execute the script ```sudo python3 support_switch_auth_fail.py```
 
-###### 7. Check if the application has connectivity with VNA, you can modify the test.py script as below and execute with command ```sudo python3 /opt/ALE_Script/test.py NAR```, it will call VNA workflow thru a HTTPS REST-API and will send message "NBD Preventive Maintenance - This is a test!" on your Rainbow bubble
+- ###### 7. Check if the application has connectivity with VNA, you can modify the test.py script as below and execute with command ```sudo python3 /opt/ALE_Script/test.py NAR```, it will call VNA workflow thru a HTTPS REST-API and will send message "NBD Preventive Maintenance - This is a test!" on your Rainbow bubble
 ```
 admin-support@debian2:/opt/ALE_Script$ cat test.py
 #!/usr/bin/env python3
@@ -98,15 +98,15 @@ admin-support@debian2:/opt/ALE_Script$ sudo python3 /opt/ALE_Script/test.py EMEA
   from cryptography.hazmat.backends import default_backend
 EMEA
 ```
-###### 8. About VNA, I created for you the workflow "Preventive_maintenance_Calabasas", basic things to check:
+- ###### 8. About VNA, I created for you the workflow "Preventive_maintenance_Calabasas", basic things to check:
 - on Rainbow IM check if the bubble is correct, shall be "Tech_support_notif_NAR"
 - on Send Email check if the email destination are correct, user group or user's email address
 
-###### 9. Basic script for collecting CLI command output on OmniSwitch with an example how to get the port number if json file content is ```/var/log/devices/get_log_switch.json```:
+- ###### 9. Basic script for collecting CLI command output on OmniSwitch with an example how to get the port number if json file content is ```/var/log/devices/get_log_switch.json```:
 ```
 {"@timestamp":"2021-12-08T17:17:13+01:00","type":"syslog_json","relayip":"10.130.7.243","hostname":"rzw-core","message":"<134>Dec  8 17:17:13 RZW-Core swlogd portMgrNi main INFO: : [pmnHALLinkStatusCallback:206] LINKSTS 1\/1\/53A DOWN (gport 0x40) Speed 40000 Duplex FULL","end_msg":""}
 ```
-###### 9.a first create the rule on /etc/rsyslog.conf with the pattern you want to match and trigger python execution:
+- ###### 9.a first create the rule on /etc/rsyslog.conf with the pattern you want to match and trigger python execution:
 ```
 if $msg contains 'specific log generated when issue occurs' then {
        action(type="omfile" DynaFile="deviceloghistory" template="json_syslog" DirCreateMode="0755" FileCreateMode="0755")
@@ -115,12 +115,12 @@ if $msg contains 'specific log generated when issue occurs' then {
        stop
 }
 ```
-###### 9.b restart Rsyslog and check status
+- ###### 9.b restart Rsyslog and check status
 ```
 sudo systemctl restart rsyslog
 sudo systemctl status rsyslog
 ```
-###### 9.c create your script /opt/ALE_Script/myscript.py. Script open json file ```/var/log/devices/get_log_switch.json```, get switch ip address, switch hostname, port number with function get_port()
+- ###### 9.c create your script /opt/ALE_Script/myscript.py. Script open json file ```/var/log/devices/get_log_switch.json```, get switch ip address, switch hostname, port number with function get_port()
 ```
 #!/usr/bin/env python3
 
