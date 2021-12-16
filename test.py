@@ -20,7 +20,7 @@ ip_server_log = get_server_log_ip()
 company=0
 
 ## If we put argument when calling the script we can test different Workflows (companies)
-if sys.argv[1] != None:
+if sys.argv[1] != 0:
     company = sys.argv[1]
     print(company)
     info = "NBD Preventive Maintenance - This is a test!"

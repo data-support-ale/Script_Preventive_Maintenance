@@ -308,7 +308,8 @@ def detect_port_flapping():
                  element_split = element.split(':')
                  ipadd_quot = element_split[1] # in the element split the ip address will always be the seconds element.
                  ipadd = ipadd_quot[-len(ipadd_quot)+1:-1]  #delete quotations
-
+                 info = "Port flapping detected on OmniSwitch {0}".format(ipadd)
+                 os.system('logger -t montag -p user.info ' + info)
                  # we need to discriminate the first ip and the second ip , if there is a third ip address we clear the file.
                  print(ipadd)
                  if first_IP=="0":

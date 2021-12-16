@@ -41,7 +41,6 @@ def pmd_issue(ipadd,jid):
 # Function called for collecting pmd file by SFTP
 def get_pmd_sftp(user,password,ipadd,filename_pmd):
    date = datetime.date.today()
-   date_hm = datetime.datetime.today()
    pmd_file = filename_pmd.replace("/", "_")
    with pysftp.Connection(host=ipadd, username=user, password=password) as sftp:
       sftp.get('{0}'.format(filename_pmd), '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,pmd_file))         # get a remote file

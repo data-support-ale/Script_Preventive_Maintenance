@@ -91,6 +91,15 @@ def target_asserted(ipadd,timestamp):
   send_message(message_reason,jid)
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
+def kernel_panic(ipadd,timestamp):
+  os.system('logger -t montag -p user.info Kernel Panic detected')
+  subject_content="[TS LAB] A Kernel Panic is detected on Stellar AP!"
+  message_content_1= "WLAN Alert - There is a Kernel Panic error detected on server {0} from Stellar AP {1}".format(system_name,ipadd)
+  message_content_2="Kernel panic"
+  send_alert(message_content_1,jid)
+  send_message(message_reason,jid)
+  send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
+
 def limit_reached(ipadd,timestamp):
   os.system('logger -t montag -p user.info Associated STA Limit Reached!')
   subject_content="[TS LAB] Associated STA Limit Reached!"
@@ -318,6 +327,14 @@ elif sys.argv[1] == "internal_error":
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
       internal_error(ipadd,timestamp)
+      os.system('logger -t montag -p user.info Sending email')
+      os.system('logger -t montag -p user.info Process terminated')
+      sys.exit(0)
+elif sys.argv[1] == "kernel_panic":
+      print("call function kernel_panic")
+      os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,message_reason = extract_ipadd()
+      kernel_panic(ipadd,timestamp)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)
