@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -19,6 +19,7 @@ from email.mime.multipart import MIMEMultipart
 from support_tools import get_credentials
 from support_send_notification import send_message,send_file,send_alert
 from support_OV_get_wlan import OvHandler
+from database_conf import *
 
 script_name = sys.argv[0]
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
@@ -41,6 +42,9 @@ def deassociation(ipadd,device_mac,timestamp,reason,reason_number):
   message_content_2="Reason number: ".format(reason_number)
   send_alert(message,jid)
   send_message(message_reason,jid)
+  
+  write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason}, "fields": {"count": 1}}])
+
   #send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
   ## REST-API for login on OV
   ovrest = OvHandler()
@@ -62,7 +66,23 @@ def reboot(ipadd,timestamp):
   message_content_2="sysreboot"
   send_alert(message_content_1,jid)
   send_message(message_reason,jid)
+
+  write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "sysreboot"}, "fields": {"count": 1}}])
+
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
+
+def upgrade(ipadd,timestamp):
+  os.system('logger -t montag -p user.info upgrade detected')
+  subject_content="[TS LAB] An upgrade is detected on Stellar AP!"
+  message_content_1= "WLAN Alert - There is a Stellar upgrade detected on server {0} from Stellar AP {1}".format(system_name,ipadd)
+  message_content_2="sysupgrade"
+  send_alert(message_content_1,jid)
+  send_message(message_reason,jid)
+
+  write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "sysupgrade"}, "fields": {"count": 1}}])
+
+  send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
+
 
 def exception(ipadd,timestamp):
   os.system('logger -t montag -p user.info exception detected')
@@ -71,6 +91,9 @@ def exception(ipadd,timestamp):
   message_content_2="Exception"
   send_alert(message_content_1,jid)
   send_message(message_reason,jid)
+
+  write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "exception"}, "fields": {"count": 1}}])
+
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
 def internal_error(ipadd,timestamp):
@@ -80,6 +103,9 @@ def internal_error(ipadd,timestamp):
   message_content_2="Internal Error"
   send_alert(message_content_1,jid)
   send_message(message_reason,jid)
+
+  write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "internal error"}, "fields": {"count": 1}}])
+
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
 def target_asserted(ipadd,timestamp):
@@ -89,6 +115,9 @@ def target_asserted(ipadd,timestamp):
   message_content_2="Target Asserted"
   send_alert(message_content_1,jid)
   send_message(message_reason,jid)
+
+  write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "target asserted"}, "fields": {"count": 1}}])
+
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
 def kernel_panic(ipadd,timestamp):
@@ -98,6 +127,9 @@ def kernel_panic(ipadd,timestamp):
   message_content_2="Kernel panic"
   send_alert(message_content_1,jid)
   send_message(message_reason,jid)
+
+  write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "kernel panic"}, "fields": {"count": 1}}])
+
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
 def limit_reached(ipadd,timestamp):
@@ -107,6 +139,9 @@ def limit_reached(ipadd,timestamp):
   message_content_2="Associated STA limit reached"
   send_alert(message_content_1,jid)
   send_message(message_reason,jid)
+
+  write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "STA limit reached"}, "fields": {"count": 1}}])
+
   send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
 
 def send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd):
@@ -303,6 +338,14 @@ elif sys.argv[1] == "reboot":
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
       reboot(ipadd,timestamp)
+      os.system('logger -t montag -p user.info Sending email')
+      os.system('logger -t montag -p user.info Process terminated')
+      sys.exit(0)
+elif sys.argv[1] == "upgrade":
+      print("call function upgrade")
+      os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+      ipadd,message_reason = extract_ipadd()
+      upgrade(ipadd,timestamp)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)

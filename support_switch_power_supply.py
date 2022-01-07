@@ -32,3 +32,6 @@ if gmail_user !='':
 
 
 open('/var/log/devices/lastlog_power_supply_down.json','w').close()
+
+from database_conf import *
+write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "PS_Unit": nb_power_supply}, "fields": {"count": 1}}])

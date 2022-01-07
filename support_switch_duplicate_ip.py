@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -61,3 +61,7 @@ else:
     print("Mail request set as no")
     os.system('logger -t montag -p user.info Mail request set as no')
     sleep(1)
+
+
+from database_conf import *
+write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "IP_dup": ip_dup, "mac" : mac}, "fields": {"count": 1}}])

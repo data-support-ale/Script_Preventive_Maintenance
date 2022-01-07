@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -29,17 +29,21 @@ with open("/var/log/devices/lastlog_authfail.json","w") as log_file:
 with open("/var/log/devices/lastlog_authfail.json", "r") as log_file:
     log_json = json.load(log_file)
     ip = log_json["relayip"]
-    nom = log_json["hostname"]
+    host = log_json["hostname"]
     msg = log_json["message"]
 
-    user = re.findall(r"user (.*)", msg)[0]
+    user,source_ip,protocol = re.findall(r"Login by (.*?) from (.*?) through (.*?) Failed", msg)[0]
 
 if jid != '':
-    notif = "Authentication failed on " + ip + " user " + user
+    notif = "Authentication failed on OmniSwitch \"" + host + "\" IP: " + ip + " user login: " + user + " from source IP Address: " + source_ip + " protocol: " + protocol
     send_message(notif, jid)
 else:
     print("Mail request set as no")
     os.system('logger -t montag -p user.info Mail request set as no')
     sleep(1)
     open('/var/log/devices/lastlog_auth_fail.json', 'w').close()
+
+
+from database_conf import *
+write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"user": user, "IP": ip, "protocol" : protocol, "source_ip" : source_ip}, "fields": {"count": 1}}])
 

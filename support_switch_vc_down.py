@@ -33,3 +33,5 @@ if gmail_user !='':
 
 open('/var/log/devices/lastlog_vc_down.json','w').close()
 
+from database_conf import *
+write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "VC_Unit": nb_vc}, "fields": {"count": 1}}])

@@ -13,6 +13,7 @@ import subprocess
 import re
 import pysftp
 import requests
+import paramiko
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 date = datetime.date.today()
@@ -41,6 +42,8 @@ pattern = ""
 if len(sys.argv) > 1:
    pattern = sys.argv[1]
    print(pattern)
+   info = ("We received following pattern from RSyslog {0}").format(pattern)
+   os.system('logger -t montag -p user.info ' + info)
    #send_message(pattern,jid)
 
 def get_port():
@@ -62,18 +65,48 @@ if sys.argv[1] == "aijaz":
    port=str(port)
    subject = "Preventive Maintenance - Port flapping issue detected on port {0}".format(port)
    print(subject)
-   info = "A port flapping is noticed on Aijaz lab and collected on Server 10.130.7.14 /tftpboot/ directory"
+   info = "A port flapping is noticed on Aijaz lab and we are collecting logs on Server 10.130.7.14 /tftpboot/ directory"
    send_message_aijaz(subject,info,jid)
    cmd = "python3 /flash/python/get_logs_port_flapping.py".format(port)
-   logging.info(runtime + ': upload starting')
-   os.system("sshpass -p 'switch' ssh -v {0}@{1} {2}".format("admin", ipadd, cmd))
+   os.system('logger -t montag -p user.info ' + info)
+   #os.system("sshpass -p 'switch' ssh -v {0}@{1} {2}".format("admin", ipadd, cmd))
+   try:
+      p = paramiko.SSHClient()
+      p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+      p.connect(ipadd, port=22, username="admin", password="switch")
+      logging.info(runtime + ' Connecting to OmniSwitch ' + ipadd)
+   except paramiko.ssh_exception.AuthenticationException:
+      print("Authentication failed enter valid user name and password")
+      logging.info(runtime + ' SSH Authentication failed when connecting to OmniSwitch ' + ipadd)
+      info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message_aijaz(subject,info,jid)
+      sys.exit(0)
+   except paramiko.ssh_exception.NoValidConnectionsError:
+      print("Device unreachable")
+      logging.info(runtime + ' SSH session does not establish on OmniSwitch ' + ipadd)
+      info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message_aijaz(subject,info,jid)
+      sys.exit(0)
+
+   stdin, stdout, stderr = p.exec_command(cmd)
+   exception = stderr.readlines()
+   exception = str(exception)
+   connection_status = stdout.channel.recv_exit_status()
+   if connection_status != 0:
+      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+      send_message(info,jid)
+      os.system('logger -t montag -p user.info ' + info)
+      sys.exit(2)
    sleep(2)
    filename_aijaz='RZW-Core_logs.txt'
    with pysftp.Connection(host="10.130.7.243", username="admin", password="switch") as sftp:
       remoteFilePath = '/flash/python/RZW-Core_logs.txt'
       localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ipadd,filename_aijaz)
       sftp.get(remoteFilePath, localFilePath)
-   logging.info(runtime + ' Process finished and logs downloaded')
+   info = "Process finished and logs downloaded"
+   os.system('logger -t montag -p user.info Process finished and logs downloaded for Aijaz Port flapping issue ')
    print(localFilePath)
    jid1="j_9403700392@openrainbow.com"
    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Test_EMEA"
@@ -83,40 +116,67 @@ if sys.argv[1] == "aijaz":
 
 if sys.argv[1] == "aijaz2":
    #{"@timestamp":"2021-11-22T21:57:06+01:00","type":"syslog_json","relayip":"10.130.7.248","hostname":"sw5-bcb","message":"2021 Nov 24 15:20:35.139 S_CA_1212_196 swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM Device Power Supply operational state changed to UNPOWERED","end_msg":""}
-   subject = "Preventive Maintenance - Power Supply issue detected on switch: {0}".format(ipadd)
+   subject = ("Preventive Maintenance - Power Supply issue detected on switch: {0}").format(ipadd)
    print(subject)
    info = "A Power Supply is inoperable on your lab"
    send_message_aijaz(subject,info,jid)
+   os.system('logger -t montag -p user.info ' + info)
 
-os.system('logger -t montag -p user.info Executing script ' + pattern)
-cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  rm -rf {3}".format(switch_password,switch_user,ipadd,filename)
-run=cmd.split()
-p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
+try:
+   p = paramiko.SSHClient()
+   p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+   p.connect(ipadd, port=22, username="admin", password="switch")
+except paramiko.ssh_exception.AuthenticationException:
+   print("Authentication failed enter valid user name and password")
+   info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+   os.system('logger -t montag -p user.info {0}').format(info)
+   send_message(info,jid)
+   sys.exit(0)
+except paramiko.ssh_exception.NoValidConnectionsError:
+   print("Device unreachable")
+   logging.info(runtime + ' SSH session does not establish on OmniSwitch ' + ipadd)
+   info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
+   os.system('logger -t montag -p user.info {0}').format(info)
+   send_message(info,jid)
+   sys.exit(0)
+cmd = ("rm -rf {0}").format(filename)
+stdin, stdout, stderr = p.exec_command(cmd)
+exception = stderr.readlines()
+exception = str(exception)
+connection_status = stdout.channel.recv_exit_status()
+if connection_status != 0:
+   info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+   send_message(info,jid)
+   os.system('logger -t montag -p user.info ' + info)
+   sys.exit(2)
 
-
-cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  show tech-support eng complete".format(switch_password,switch_user,ipadd)
-run=cmd.split()
-p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
-
-
+stdin, stdout, stderr = p.exec_command("show tech-support eng complete")
+exception = stderr.readlines()
+exception = str(exception)
+connection_status = stdout.channel.recv_exit_status()
+if connection_status != 0:
+   info = ("\"The show tech support eng complete\" command on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+   send_message(info,jid)
+   os.system('logger -t montag -p user.info ' + info)
+   sys.exit(2)
 
 cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  ls | grep {3}".format(switch_password,switch_user,ipadd,filename)
 run=cmd.split()
 out=''
 i=0
 while not out:
-   print("wait.", end="\r")
+   print(" Tech Support file creation under progress.", end="\r")
    sleep(2)
-   print("wait..", end="\r")
+   print(" Tech Support file creation under progress..", end="\r")
    sleep(2)
-   print("wait...", end="\r")
+   print(" Tech Support file creation under progress...", end="\r")
    print(i)
    sleep(2)
    p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
    out, err = p.communicate()
    out=out.decode('UTF-8').strip()
    if i > 20:
-      print("timeout")
+      print("Tech Support file creation timeout")
       exit()
 
 f_filename= "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ipadd,filename)
@@ -129,16 +189,12 @@ l_switch_cmd = []
 l_switch_cmd.append("show interfaces")
 l_switch_cmd.append("show system")
 l_switch_cmd.append("show date")
+l_switch_cmd.append("show unp user")
 
 for switch_cmd in l_switch_cmd:
    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-   #run=cmd.split()
    output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-   #p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
-   #out, err = p.communicate()
-   #out=out.decode('UTF-8').strip()
    output=output.decode('UTF-8').strip()
-
    text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
 
 date = datetime.date.today()

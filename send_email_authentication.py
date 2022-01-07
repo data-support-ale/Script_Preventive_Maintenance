@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -16,6 +16,7 @@ from email import encoders
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
+from database_conf import *
 
 script_name = sys.argv[0]
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
@@ -29,14 +30,17 @@ timestamp = 300
 timestamp = (timestamp/60)*100
 
 def authentication_step1(ipadd,device_mac,auth_type,ssid,deassociation):
+  write_api.write(bucket, org, [{"measurement": "support_wlan_association", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Auth_type": auth_type, "Association": deassociation}, "fields": {"count": 1}}])
   if "0" in deassociation:
     message = "[{0}] WLAN deassociation detected from client {1} on Stellar AP {2} with Authentication type {3}".format(ssid,device_mac,ipadd,auth_type)
     os.system('logger -t montag -p user.info ' + message)
+
   else:
     message = "[{0}] WLAN association detected from client {1} on Stellar AP {2} with Authentication type {3}".format(ssid,device_mac,ipadd,auth_type)
     os.system('logger -t montag -p user.info ' + message)
-
+    
 def mac_authentication(device_mac_auth,ARP,source,reason):
+  write_api.write(bucket, org, [{"measurement": "support_wlan_mac_auth", "tags": {"Client_MAC": device_mac_auth, "ARP": ARP, "Source": source, "Reason": reason}, "fields": {"count": 1}}])
   if "failed" in reason:
      message = "WLAN Authentication failed from client {0} assigned to {1} from {2}".format(device_mac_auth,ARP,source)
      os.system('logger -t montag -p user.info ' + message)
@@ -48,6 +52,7 @@ def mac_authentication(device_mac_auth,ARP,source,reason):
      os.system('logger -t montag -p user.info ' + message)
 
 def radius_authentication(auth_result,device_mac,accounting_status):
+  write_api.write(bucket, org, [{"measurement": "support_wlan_radius_auth", "tags": {"Client_MAC": device_mac, "Auth_Result": auth_result, "Accounting_status": accounting_status}, "fields": {"count": 1}}])
   if "Failed" in auth_result:
       message = "WLAN 802.1x Authentication {0} for client {1}".format(auth_result,device_mac)
       os.system('logger -t montag -p user.info ' + message)
@@ -61,6 +66,7 @@ def radius_authentication(auth_result,device_mac,accounting_status):
      os.system('logger -t montag -p user.info ' + message)
 
 def dhcp_ack(ipadd,device_mac):
+  write_api.write(bucket, org, [{"measurement": "support_wlan_dhcp", "tags": {"Client_MAC": device_mac, "DHCP_Lease": ip_dhcp}, "fields": {"count": 1}}])
   message="DHCP Ack received with IP Address {0} for client {1}".format(ip_dhcp,device_mac)
   os.system('logger -t montag -p user.info ' + message)
 
@@ -290,6 +296,7 @@ def extract_WCF():
           print("WCF Block FQDN: " + fqdn)
           message = "Web Content Filtering for device {0} when accessing Site {1}".format(device_mac_wcf,fqdn)
           os.system('logger -t montag -p user.info  ' + message)
+          write_api.write(bucket, org, [{"measurement": "support_wlan_wcf", "tags": {"Client_MAC": device_mac_wcf, "URL": fqdn}, "fields": {"count": 1}}])
 
 def extract_ARP():
 #open the file lastlog_mac_authentication.json  and and get the Access Role Profile + result + source

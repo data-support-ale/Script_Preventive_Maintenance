@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -11,6 +11,8 @@ from support_response_handler import request_handler_both, request_handler_mail,
 from time import gmtime, strftime, localtime, sleep
 import re #Regex
 from support_send_notification import send_message,send_file
+from database_conf import *
+
 
 #Script init
 script_name = sys.argv[0]
@@ -63,7 +65,6 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
            info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}, the port {2}  is administratively updated  on device {3}".format(port_switch_1,ip_switch_1,port_switch_2,ip_switch_2)
            send_message(info,jid)
 
-
          disable_debugging(switch_user,switch_password,ip_switch_1)
          disable_debugging(switch_user,switch_password,ip_switch_2)
          sleep(2)
@@ -101,7 +102,6 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
              info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}." .format(port_switch_1,ip_switch_1)
              send_message(info,jid)
 
-
           disable_debugging(switch_user,switch_password,ip_switch_1)
           sleep(2)
          # clear lastlog file
@@ -138,10 +138,7 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
              send_file(info,jid,ip_switch_2)
              info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}" .format(port_switch_2,ip_switch_2)
              send_message(info,jid)
-    #    if gmail_user !='':
-    #      send_mail(ip_switch_1,ip_switch_2,info,subject,gmail_user,gmail_password,mails)
-
-
+ 
 
           disable_debugging(switch_user,switch_password,ip_switch_2)
           sleep(2)

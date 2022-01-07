@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -14,8 +14,48 @@ import re
 import pysftp
 import requests
 import paramiko
+from database_conf import *
 
 ##This script contains all functions interacting with OmniSwitches
+
+## Function for extracting environment information from ALE_script.conf file
+def get_credentials():
+     """ 
+     This function collects all the information about the switch's credentials in the log. 
+     It collects also the information usefull for  notification sender in the file ALE_script.conf.
+
+     :param:                         None
+     :return str user:               Switch user login
+     :return str password:           Switch user password
+     :return str id:                 Rainbow JID  of recipients
+     :return str gmail_usr:          Sender's email userID
+     :return str gmail_passwd:       Sender's email password               
+     :return str mails:              List of email addresses of recipients
+     """
+
+     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r') #'/var/log/devices/192.168.80.27_2021-03-26.json'
+     file_lines = content_variable.readlines()
+     content_variable.close()
+     credentials_line = file_lines[0]
+     credentials_line_split = credentials_line.split(',')
+     switch_user = credentials_line_split[0]
+     switch_password = credentials_line_split[1]
+     if credentials_line_split[3] != "":
+        id= credentials_line_split[3]
+     elif credentials_line_split[3] == "":
+        id=''
+
+     gmail_usr = credentials_line_split[4]
+     gmail_passwd = credentials_line_split[5]
+     mails = credentials_line_split[2].split(';')
+     mails_raw = credentials_line_split[2]
+     mails = [ element  for element  in mails]
+     #mails= ", ".join(mails)
+     ip_server_log = credentials_line_split[6]
+     company = credentials_line_split[11]
+     print(company)
+     return switch_user,switch_password,id,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw
+
 
 ### Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(ipadd,cmd):
@@ -35,15 +75,18 @@ def ssh_connectivity_check(ipadd,cmd):
   except paramiko.ssh_exception.AuthenticationException:
      print("Authentication failed enter valid user name and password")
      info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-     os.system('logger -t montag -p user.info {0}').format(info)
+     os.system('logger -t montag -p user.info ' + info)
      send_message(info,jid)
+     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
      sys.exit(0)
   except paramiko.ssh_exception.NoValidConnectionsError:
      print("Device unreachable")
-     logging.info(runtime + ' SSH session does not establish on OmniSwitch ' + ipadd)
+     logging.info(' SSH session does not establish on OmniSwitch ' + ipadd)
      info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
-     os.system('logger -t montag -p user.info {0}').format(info)
+     print(info)
+     os.system('logger -t montag -p user.info ' + info)
      send_message(info,jid)
+     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
      sys.exit(0)
   stdin, stdout, stderr = p.exec_command(cmd)
   exception = stderr.readlines()
@@ -53,10 +96,12 @@ def ssh_connectivity_check(ipadd,cmd):
      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
      send_message(info,jid)
      os.system('logger -t montag -p user.info ' + info)
+     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
      sys.exit(2)
   else:
       info = ("SSH Session established successfully on OmniSwitch {0}").format(ipadd)
       os.system('logger -t montag -p user.info ' + info)
+      write_api.write(bucket, org, [{"measurement": "support_ssh_success", "tags": {"IP_Address": ipadd}, "fields": {"count": 1}}])
 
 ### Function debug
 def debugging(appid_1,subapp_1,level_1):
@@ -115,15 +160,17 @@ def get_tech_support_sftp(host,ipadd):
   except paramiko.ssh_exception.AuthenticationException:
    print("Authentication failed enter valid user name and password")
    info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-   os.system('logger -t montag -p user.info {0}').format(info)
+   os.system('logger -t montag -p user.info ' + info)
    send_message(info,jid)
+   write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
    sys.exit(0)
   except paramiko.ssh_exception.NoValidConnectionsError:
    print("Device unreachable")
-   logging.info(runtime + ' SSH session does not establish on OmniSwitch ' + ipadd)
+   logging.info(' SSH session does not establish on OmniSwitch ' + ipadd)
    info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
-   os.system('logger -t montag -p user.info {0}').format(info)
+   os.system('logger -t montag -p user.info ' + info)
    send_message(info,jid)
+   write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
    sys.exit(0)
   cmd = ("rm -rf {0}").format(filename)
   stdin, stdout, stderr = p.exec_command(cmd)
@@ -134,6 +181,7 @@ def get_tech_support_sftp(host,ipadd):
      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
      send_message(info,jid)
      os.system('logger -t montag -p user.info ' + info)
+     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
      sys.exit(2)
 
   stdin, stdout, stderr = p.exec_command("show tech-support eng complete")
@@ -144,6 +192,7 @@ def get_tech_support_sftp(host,ipadd):
      info = ("\"The show tech support eng complete\" command on OmniSwitch {0} failed - {1}").format(ipadd,exception)
      send_message(info,jid)
      os.system('logger -t montag -p user.info ' + info)
+     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
      sys.exit(2)
 
   cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  ls | grep {3}".format(switch_password,switch_user,ipadd,filename)
@@ -261,16 +310,12 @@ def collect_command_output_ovc(decision,host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to MQTT failure
-def collect_command_output_mqtt(ovip,decision,host,ipadd):
+def collect_command_output_mqtt(ovip,host,ipadd):
   """ 
-  This function takes entries arguments the OmniVista IP Address used for Device Profiling
-  This function checks the decision received from Admin:
-     if decision is 1, Administrator selected Yes and script disables the Device Profiling
-     if decision is 0, Administrator selected No and we only provide command outputs  
+  This function takes entries arguments the OmniVista IP Address used for Device Profiling  
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
 
   :param str ovip:                  OmniVista IP Address (e.g. 143.209.0.2:1883)
-  :param int desicion:              Administrator decision (1: 'Yes', 0: 'No')
   :param str host:                  Switch Hostname
   :param str ipadd:                 Switch IP address
   :return:                          filename_path,subject,action,result,category
@@ -280,10 +325,6 @@ def collect_command_output_mqtt(ovip,decision,host,ipadd):
   l_switch_cmd = []
   l_switch_cmd.append("show device-profile config")
   l_switch_cmd.append("show appmgr iot-profiler")
-  if decision == "1":
-      l_switch_cmd.append("device-profile admin-state disable")
-      l_switch_cmd.append("show device-profile config")
-      l_switch_cmd.append("show appmgr iot-profiler")
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
@@ -299,13 +340,9 @@ def collect_command_output_mqtt(ovip,decision,host,ipadd):
   f_logs = open(filename_path,'w')
   f_logs.write(text)
   f_logs.close()
-  subject = ("Preventive Maintenance Application - Device Profiling (aka IoT Profiling)  module is enabled on OmniSwitch {0} but is not able to connect to OmniVista IP Address: {1}").format(host,ovip)
-  if decision == "1":
-      action = ("The Device Profiling feature is administratively disabled on OmniSwitch (Hostname: {0})").format(host)
-      result= "Find enclosed to this notification the log collection of actions done"
-  else:
-      action = ("No action done on OmniSwitch (Hostname: {0})").format(host)      
-      result= "Find enclosed to this notification the log collection"
+  subject = ("Preventive Maintenance Application - Device Profiling (aka IoT Profiling)  module is enabled on OmniSwitch {0} but unable to connect to OmniVista IP Address: {1}").format(host,ovip)
+  action = ("No action done on OmniSwitch (Hostname: {0}), please check the IP connectivity with OmniVista, note that Device Profiling is not a VRF-aware feature").format(host)      
+  result= "Find enclosed to this notification the log collection"
   category = "mqtt"
   return filename_path,subject,action,result,category
 
@@ -639,6 +676,83 @@ def collect_command_output_poe(host,ipadd):
   category = "poe"
   return filename_path,subject,action,result,category
 
+### Function to collect OmniSwitch IP Service/AAA Authentication status based on protocol received as argument
+def collect_command_output_aaa(protocol,ipadd):
+  """ 
+  This function takes IP Address and protocol as argument. This function is called when an authentication failure is noticed for specified protocol
+  This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+  :param str protocol:                  AAA Protocol (HTTPS, FTP, TELNET, SSH, NTP, SNMP, RADIUS)
+  :param str ipadd:                     Switch IP address
+  :return:                              filename_path,subject,action,result,category
+  """
+  service_status = 0
+  protocol_a = 0
+  if protocol == "HTTPS": 
+    protocol_a == "http"
+  switch_cmd="show ip service | grep {0}".format(protocol_a)
+  cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
+  service_status=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
+  service_status=service_status.decode('UTF-8').strip()
+  print(service_status)
+  if "enabled" in service_status:
+     print("Protocol " + protocol +  " enabled!")
+     service_status="enabled"
+  else:
+      service_status="disabled"
+	  
+  switch_cmd="show configuration snapshot aaa | grep \"aaa authentication {0}\"".format(protocol)
+  cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
+  try:
+     aaa_status=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
+     aaa_status=aaa.decode('UTF-8').strip()
+     print(aaa_status)
+     if "aaa authentication" in aaa_status:
+        aaa_status="enabled"
+  except subprocess.CalledProcessError as e:
+     aaa_status="disabled"
+  print(aaa_status)
+  return service_status,aaa_status
+
+def authentication_failure(user,source_ip,protocol,service_status,aaa_status,host,ipadd):
+  """ 
+  This function takes entries arguments the Protocol service status, Protocol aaa authentication status as well as User login, destination protocol, source IP Address. This function is called when an authentication failure is noticed
+  This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+
+  :param str user:                       User login trying to authenticate on OmniSwitch
+  :param str source_ip:                  Source IP Address of the User
+  :param str protocol:                   AAA Protocol (HTTPS, FTP, TELNET, SSH, NTP, SNMP, RADIUS)
+  :param str service_status:             Protocol Service status (enabled,disabled)
+  :param str aaa_status:                 Protocol Authentication stauts (enabled,disabled)
+  :param str host:                       Switch Hostname
+  :param str ipadd:                      Switch IP address
+  :return:                               filename_path,subject,action,result,category
+  """
+  text = "More logs about the switch : {0} \n\n\n".format(ipadd)
+
+  l_switch_cmd = []
+  l_switch_cmd.append("show ip service")
+  l_switch_cmd.append("show aaa authentication")
+
+  for switch_cmd in l_switch_cmd:
+     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
+     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
+     output=output.decode('UTF-8').strip()
+     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+
+  date = datetime.date.today()
+  date_hm = datetime.datetime.today()
+
+  filename= "{0}_{1}-{2}_{3}_authentication_logs".format(date,date_hm.hour,date_hm.minute,ipadd)
+  filename_path= ('/opt/ALE_Script/{0}.txt').format(filename)
+  f_logs = open(filename_path,'w')
+  f_logs.write(text)
+  f_logs.close()
+  subject = ("Preventive Maintenance Application - Authentication failure noticed on switch: {0}").format(ipadd)
+  action = ("An Authentication failure has been detected in switch( Hostname: {0} ) from User: {1} - source IP Address: {2} - protocol: {3}").format(host,user,source_ip,protocol)
+  result= ("As per configuration, this service protocol is {0} and aaa authentication is {1}").format(service_status,aaa_status)
+  category = "authentication"
+  return filename_path,subject,action,result,category
+
 def send_file(filename_path,subject,action,result):
   """ 
   This function takes as argument the file containins command outputs, the notification subject, notification action and result. 
@@ -687,7 +801,13 @@ psid = "2"
 source="Access Guardian"
 port="1/1/1"
 decision="0"
-filename_path,subject,action,result,category = collect_command_output_violation(port,source,decision,host,ipadd)
-send_file(filename_path,subject,action,result)
-filename_path,subject,action,result,category = collect_command_output_storm(port,source,decision,host,ipadd)
-send_file(filename_path,subject,action,result)
+#filename_path,subject,action,result,category = collect_command_output_violation(port,source,decision,host,ipadd)
+#send_file(filename_path,subject,action,result)
+#filename_path,subject,action,result,category = collect_command_output_storm(port,source,decision,host,ipadd)
+#send_file(filename_path,subject,action,result)
+protocol="HTTPS"
+user="toto"
+source_ip="10.130.7.17"
+#service_status,aaa_status = collect_command_output_aaa(protocol,ipadd)
+#filename_path,subject,action,result,category = authentication_failure(user,source_ip,protocol,service_status,aaa_status,host,ipadd)
+#send_file(filename_path,subject,action,result)

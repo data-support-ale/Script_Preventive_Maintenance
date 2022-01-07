@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import sys
 import os
 import getopt
@@ -16,6 +16,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from support_web_receiver_class import Receiver,start_web
+from database_conf import *
 
 def send_message(info,jid):
     """ 
@@ -30,6 +31,7 @@ def send_message(info,jid):
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info),'Card': '0'}
     response = requests.get(url, headers=headers)
+    write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
 
 def send_alert(info,jid):
     """
@@ -44,6 +46,7 @@ def send_alert(info,jid):
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_EMEA"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info),'Card': '0'}
     response = requests.get(url, headers=headers)
+    write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
 
 def send_message_aijaz(subject,info,jid):
     """
@@ -58,6 +61,7 @@ def send_message_aijaz(subject,info,jid):
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Aijaz"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject),'toto': '{0}'.format(info), 'Card': '0'}
     response = requests.get(url, headers=headers)
+    write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
 
 def send_message_request(info,jid,receiver):
     """ 
@@ -74,13 +78,12 @@ def send_message_request(info,jid,receiver):
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",'Card': '1', 'jid1': '{0}'.format(jid), 'toto': '{0}.'.format(info)}
     response = requests.get(url, headers=headers)
+    write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
     print(response.text)
     receiver.set_answer(response.text)
     sleep(1)
     url = "http://127.0.0.1:5200/?id=rainbow"
     response = requests.get(url)
-
-
 
 def send_file(info,jid,ipadd,filename =''):
     """ 
@@ -116,6 +119,7 @@ def send_file(info,jid,ipadd,filename =''):
        headers = {  'Content-type':"multipart/form-data",'Content-Disposition': "attachment;filename={}.tar".format(filename) , 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
        files = {'file': open('{0}'.format(filename),'rb')}
        response = requests.post(url,files=files, headers=headers)
+       write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
 
 
     save_attachment(ipadd)
@@ -155,6 +159,7 @@ def send_file(info,jid,ipadd,filename =''):
     headers = {  'Content-type':"text/plain",'Content-Disposition': "attachment;filename=short_attachment.log", 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
     files = {'file': open('/var/log/devices/short_attachment.log','r')}
     response = requests.post(url,files=files, headers=headers)
+    write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
     sleep(5)
 
 

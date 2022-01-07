@@ -9,7 +9,7 @@ import subprocess
 import requests
 import re
 from time import gmtime, strftime, localtime, sleep
-
+from database_conf import *
 import datetime
 import pysftp
 
@@ -265,7 +265,7 @@ def detect_port_loop():
 
 def detect_port_flapping():
      """ 
-     This function detect if there is flapping in the log.
+     This function detects if there is flapping in the log.
      If there is more than 5 logs with 10 seconds apart between each, there is flapping .(10 seconds is for the demo, we can down to 1)
 
      :param:                                  None
@@ -338,7 +338,8 @@ def detect_port_flapping():
  
               if 'DOWN' in element : #only on down log to don't make the action twice(UP/DOWN) 
                  print(current_time,last_time_first_IP,last_time_second_IP) #print for debug the script
-
+                 print("coucou")
+                 write_api.write(bucket, org, [{"measurement": "support_switch_port_flapping.py", "tags": {"IP_Address": ipadd, "Port": portnumber}, "fields": {"count": 1}}])
                  if ipadd == first_IP:
                      if (int(current_time)-int(last_time_first_IP))<10: #ten seconds for the demo, we simulate a flapping . For the real usecase we can down to 1 seconds
                         i_first_IP=i_first_IP+1     #we count how many link down 

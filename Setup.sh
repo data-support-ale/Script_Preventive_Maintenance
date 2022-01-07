@@ -338,6 +338,25 @@ module(load=\"omprog\") # provides support for script
 # provides UDP syslog reception
 module(load=\"imudp\")
 input(type=\"imudp\" port=\"10514\")
+
+# provides stats for node exporter - Prometheus
+module(
+  load=\"impstats\"
+  interval=\"300\"
+  format=\"json\"
+  resetCounters=\"off\"
+  ruleset=\"process_stats\"
+  log.file=\"/var/log/rsyslog-stats\"
+)
+
+ruleset(name=\"process_stats\") {
+  action(
+    type=\"omprog\"
+    name=\"to_exporter\"
+    binary=\"/opt/rsyslog_exporter/rsyslog_exporter\"
+  )
+}
+
 ### Template definition ####
 \$template DynamicFile,\"/var/log/devices/%hostname%/syslog.log\"
 
@@ -868,13 +887,13 @@ echo -e "\e[32mInstallation and configuration of services\e[39m"
 echo
 apt-get -qq -y  update >& /dev/null
 apt-get -qq -y install sshpass >& /dev/null
-apt-get -qq -y install python3.5 >& /dev/null
-apt-get -qq -y install python3-pip >& /dev/null
-pip3  install --quiet pysftp >& /dev/null
-pip3 install --quiet flask >& /dev/null
-pip3 install --quiet requests >& /dev/null
+apt-get -qq -y install python3.10 >& /dev/null
+apt-get -qq -y install python3.10-pip >& /dev/null
+pip3.10 install --quiet pysftp >& /dev/null
+sudo -H pip3.10 install --quiet flask >& /dev/null
+pip3.10 install --quiet requests >& /dev/null
 apt-get -qq -y install tftpd-hpa >& /dev/null
-export PYTHONPATH=/usr/local/bin/python3.7
+export PYTHONPATH=/usr/local/bin/python3.10
 
 #echo "Devices log directory /var/log/devices/ created"
 mkdir /var/log/devices/ >& /dev/null

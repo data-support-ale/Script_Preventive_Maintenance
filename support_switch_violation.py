@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -10,6 +10,7 @@ from support_tools import enable_debugging, disable_debugging, disable_port, ext
 from time import strftime, localtime, sleep
 from support_send_notification import send_message, send_mail, send_file
 from support_response_handler import request_handler_mail, request_handler_rainbow, request_handler_both
+from database_conf import *
 
 # Script init
 script_name = sys.argv[0]
@@ -95,3 +96,6 @@ else:
     print("Mail request set as no")
     os.system('logger -t montag -p user.info Mail request set as no')
     sleep(1)
+
+from database_conf import *
+write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "Reason": reason, "port" : port}, "fields": {"count": 1}}])
