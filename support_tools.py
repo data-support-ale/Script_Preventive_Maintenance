@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -438,7 +438,7 @@ def collect_log_usb(user,password,ipadd):
      """
 
      #ssh session to start python script remotely
-     cmd = "python3 /flash/python/get_logs_usb_key.py"
+     cmd = "python /flash/python/get_logs_usb_key.py"
      logging.info(runtime + ': upload starting')
      os.system("sshpass -p 'Letacla01*' ssh -v {0}@{1} {2}".format(user, ip_host, cmd))
      logging.info(runtime + ' Process finished!')
@@ -540,6 +540,8 @@ def extract_ip_port(log):
           os.system('logger -t montag -p user.info Lastlog file is empty')
           ipadd = "0"
           Prtnum = "0"
+          nb_power_supply = "0"
+          nb_vc = "0"
         if log =="deauth_ap":
            return ipadd,device_mac,ap_mac
         if log == "power_supply_down":

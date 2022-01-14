@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -32,6 +32,7 @@ uname = os.system('uname -a')
 os.system('logger -t montag -p user.info Executing script ' + script_name)
 
 switch_user, switch_password, jid, gmail_user, gmail_password, mails,ip_server_log = get_credentials()
+
 
 # Function called when Core Dump is observed
 def pmd_issue(ipadd,jid):
@@ -96,10 +97,13 @@ def collect_log(ipadd,jid):
   sleep(2)
   get_tech_support_sftp(switch_user,switch_password,ipadd,filename)
   print(pmd_file_rainbow)
+  pmd_file_tar = '{0}.tar.gz'.format(pmd_file_rainbow)
+  os.system("tar  -czvf {0} {1}".format(pmd_file_tar,pmd_file_rainbow))
+ 
   if jid !='':
-         info = "A Core Dump is noticed on switch: {0} syslogs, we are collecting files on server directory {1}".format(ipadd,pmd_file_rainbow)
-         send_file(info,jid,ipadd,pmd_file_rainbow)
+         info = "A Core Dump is noticed on switch: {0} syslogs, we are collecting files on server directory path {1}".format(ipadd,pmd_file_tar)
          send_message(info,jid)
+         send_file(info,jid,ipadd,pmd_file_tar)
 
 def extract_ipadd():
    last = ""
@@ -116,45 +120,49 @@ def extract_ipadd():
     host = log_json["hostname"]
     ipadd = str(ipadd)
     print(ipadd)
-   return ipadd,host;
+   return ipadd,host
 
 def extract_pmd_path():
    last = ""
-   with open("/var/log/devices/lastlog_pmd.json", "r") as log_file:
+   with open("/var/log/devices/lastlog_pmd.json", "r", encoding="utf8", errors='ignore') as log_file:
     for line in log_file:
         last = line
 
-   with open("/var/log/devices/lastlog_pmd.json", "w") as log_file:
+   with open("/var/log/devices/lastlog_pmd.json", "w", encoding="utf8", errors='ignore') as log_file:
     log_file.write(last)
 
-   with open("/var/log/devices/lastlog_pmd.json", "r") as log_file:
-    log_json = json.load(log_file)
-    ipadd = log_json["relayip"]
-    host = log_json["hostname"]
-    msg =log_json["message"]
+   with open("/var/log/devices/lastlog_pmd.json", "r", encoding="utf8", errors='ignore') as log_file:
+    try:
+        log_json = json.load(log_file)
+        ipadd = log_json["relayip"]
+        host = log_json["hostname"]
+        msg = log_json["message"]
+    except json.decoder.JSONDecodeError:
+        print("File /var/log/devices/lastlog_pmd.json empty")
+        exit()
     filename_pmd = re.findall(r"PMD generated at (.*)", msg)[0]
     print(filename_pmd)
-   return filename_pmd;
+   return filename_pmd
   
-if sys.argv[1] == "pmd":
-      print("Core DUMP - call function pmd_issue")
-      os.system('logger -t montag -p user.info Core DUMP - Variable received from rsyslog ' + sys.argv[1])
-      ipadd = extract_ipadd()
-      pmd_issue(ipadd,jid)
-      os.system('logger -t montag -p user.info Core DUMP - Sending Rainbow Notification')
-      sys.exit(0)
+#if sys.argv[1] == "pmd":
+#      print("Core DUMP - call function pmd_issue")
+#      os.system('logger -t montag -p user.info Core DUMP - Variable received from rsyslog ' + sys.argv[1])
+#      ipadd = extract_ipadd()
+#      pmd_issue(ipadd,jid)
+#      os.system('logger -t montag -p user.info Core DUMP - Sending Rainbow Notification')
+#      sys.exit(0)
       
-if sys.argv[1] == "pmd_generated":
-      print("Core DUMP - call function collecting log")
-      os.system('logger -t montag -p user.info Core DUMP - Variable received from rsyslog ' + sys.argv[1])
-      ipadd,host = extract_ipadd()
-      filename_pmd = extract_pmd_path()
-      collect_log(ipadd,jid)
-      os.system('logger -t montag -p user.info Core DUMP - Sending Rainbow Notification')
-      sys.exit(0)
-else:
-      os.system('logger -t montag -p user.info Wrong parameter received ' + sys.argv[1])
-      sys.exit(2)
+#sys.argv[1] == "pmd_generated"
+print("Core DUMP - call function collecting log")
+#os.system('logger -t montag -p user.info Core DUMP - Variable received from rsyslog ' + sys.argv[1])
+ipadd,host = extract_ipadd()
+filename_pmd = extract_pmd_path()
+collect_log(ipadd,jid)
+os.system('logger -t montag -p user.info Core DUMP - Sending Rainbow Notification')
+sys.exit(0)
+#else:
+#      os.system('logger -t montag -p user.info Wrong parameter received ' + sys.argv[1])
+#      sys.exit(2)
 
 
 ### stop process ###
