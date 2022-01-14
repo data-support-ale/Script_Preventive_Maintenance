@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import sys
 import os
 import re
@@ -108,6 +108,20 @@ try:
             tenant_id, id)
         response = requests.request("PUT", url, headers=headers, data=payload)
         print(response)
+
+    # REST-API for sending Welcome gif to Rainbow bubble    
+        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}".format(company)
+        payload=open("/opt/ALE_Script/giphy.gif", "rb")
+        headers = {
+                  'jid1': '{0}'.format(jid),
+                  'toto': 'Welcome to the Club',
+                  'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',
+                  'Content-Type': 'image/gif'
+                  }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+        print(response)
+
     else:
         print("There are no emails saved into the database")
         sys.exit()
