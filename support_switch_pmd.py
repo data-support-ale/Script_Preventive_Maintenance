@@ -104,17 +104,19 @@ def collect_log(ipadd,jid):
          info = "A Core Dump is noticed on switch: {0} syslogs, we are collecting files on server directory path {1}".format(ipadd,pmd_file_tar)
          send_message(info,jid)
          send_file(info,jid,ipadd,pmd_file_tar)
+         write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd}, "fields": {"count": 1}}])
+
 
 def extract_ipadd():
    last = ""
-   with open("/var/log/devices/lastlog_pmd.json", "r") as log_file:
+   with open("/var/log/devices/lastlog_pmd.json", "r", encoding="utf8", errors='ignore') as log_file:
     for line in log_file:
         last = line
 
-   with open("/var/log/devices/lastlog_pmd.json", "w") as log_file:
+   with open("/var/log/devices/lastlog_pmd.json", "w", encoding="utf8", errors='ignore') as log_file:
     log_file.write(last)
 
-   with open("/var/log/devices/lastlog_pmd.json", "r") as log_file:
+   with open("/var/log/devices/lastlog_pmd.json", "r", encoding="utf8", errors='ignore') as log_file:
     log_json = json.load(log_file)
     ipadd = log_json["relayip"]
     host = log_json["hostname"]

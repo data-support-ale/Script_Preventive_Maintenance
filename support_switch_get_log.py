@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -24,19 +24,22 @@ switch_user, switch_password, jid, gmail_user, gmail_password, mails,ip_server_l
 filename = 'tech_support_complete.tar'
 
 last = ""
-with open("/var/log/devices/get_log_switch.json", "r") as log_file:
+with open("/var/log/devices/get_log_switch.json", "r", encoding="utf8", errors='ignore') as log_file:
    for line in log_file:
       last = line
 
-with open("/var/log/devices/get_log_switch.json", "w") as log_file:
+with open("/var/log/devices/get_log_switch.json", "w", encoding="utf8", errors='ignore') as log_file:
    log_file.write(last)
 
-with open("/var/log/devices/get_log_switch.json", "r") as log_file:
-   log_json = json.load(log_file)
-   ipadd = log_json["relayip"]
-   host = log_json["hostname"]
-   msg = log_json["message"]
-   print(msg)
+with open("/var/log/devices/get_log_switch.json", "r", encoding="utf8", errors='ignore') as log_file:
+    try:
+        log_json = json.load(log_file)
+        ipadd = log_json["relayip"]
+        host = log_json["hostname"]
+        msg = log_json["message"]
+    except json.decoder.JSONDecodeError:
+        print("File /var/log/devices/get_log_switch.json empty")
+        exit()
 
 pattern = ""
 if len(sys.argv) > 1:
@@ -48,11 +51,14 @@ if len(sys.argv) > 1:
 
 def get_port():
    with open("/var/log/devices/get_log_switch.json", "r") as log_file:
-      log_json = json.load(log_file)
-      ipadd = log_json["relayip"]
-      host = log_json["hostname"]
-      msg = log_json["message"]
-      print(msg)
+      try:
+         log_json = json.load(log_file)
+         ipadd = log_json["relayip"]
+         host = log_json["hostname"]
+         msg = log_json["message"]
+      except json.decoder.JSONDecodeError:
+         print("File /var/log/devices/get_log_switch.json empty")
+         exit()
       port = re.findall(r"LINKSTS (.*?) DOWN", msg)[0]
       port = port.replace("\"", "",3)
       port = port.replace("\\", "",3)
@@ -67,7 +73,7 @@ if sys.argv[1] == "aijaz":
    print(subject)
    info = "A port flapping is noticed on Aijaz lab and we are collecting logs on Server 10.130.7.14 /tftpboot/ directory"
    send_message_aijaz(subject,info,jid)
-   cmd = "python3 /flash/python/get_logs_port_flapping.py".format(port)
+   cmd = "python /flash/python/get_logs_port_flapping.py".format(port)
    os.system('logger -t montag -p user.info ' + info)
    #os.system("sshpass -p 'switch' ssh -v {0}@{1} {2}".format("admin", ipadd, cmd))
    try:

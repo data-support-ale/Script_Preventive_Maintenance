@@ -214,7 +214,7 @@ def detect_port_loop():
         content_variable.close()
         if len(file_lines) > 150:
            #clear lastlog file
-           open('/var/log/devices/lastlog_loop.json','w').close()
+           open('/var/log/devices/lastlog_loop.json','w', errors='ignore').close()
 
         if len(file_lines) >= 10:
            #check if the time of the last and the tenth last are less than seconds
@@ -253,7 +253,7 @@ def detect_port_loop():
               return 1
            else:
               #clear lastlog file
-              open('/var/log/devices/lastlog_loop.json','w').close()
+              open('/var/log/devices/lastlog_loop.json','w', errors='ignore').close()
               return 0
         else:
            return 0
@@ -320,7 +320,7 @@ def detect_port_flapping():
                     last_time_second_IP=current_time
                  if  first_IP!="0" and ipadd!=first_IP and second_IP!="0" and ipadd!=second_IP:
                          # clear lastlog file
-                        open('/var/log/devices/lastlog_flapping.json','w').close()
+                        open('/var/log/devices/lastlog_flapping.json','w', errors='ignore').close()
 
 
               if "LINKSTS" in element:
@@ -357,7 +357,7 @@ def detect_port_flapping():
            return "0","0","1/1/0","1/1/0"
      else:
         # clear lastlog file
-        open('/var/log/devices/lastlog_flapping.json','w').close()
+        open('/var/log/devices/lastlog_flapping.json','w', errors='ignore').close()
         return "0","0","1/1/0","1/1/0"
 
 def save_attachment(ipadd):
@@ -365,14 +365,14 @@ def save_attachment(ipadd):
   path_log_attachment = "/var/log/devices/{0}_{1}_history.json".format(ipadd,myDate.isoformat())
 
 
-  content_variable = open (path_log_attachment,'r')
+  content_variable = open (path_log_attachment,'r', errors='ignore')
   file_lines = content_variable.readlines()
   content_variable.close()
   if len(file_lines)>100:
     attachment = file_lines[-100:]
   else:
     attachment = file_lines[-len(file_lines)-1:]
-  f_attachment = open('/var/log/devices/attachment.log','w')
+  f_attachment = open('/var/log/devices/attachment.log','w', errors='ignore')
   f_attachment.write("\n".join(attachment))
   f_attachment.close()
 
@@ -421,7 +421,7 @@ def save_attachment_deauth(ipadd,device_mac,timestamp):
 
 
   attachment = reversed(logs_saved)
-  f_attachment = open('/var/log/devices/attachement.log','w')
+  f_attachment = open('/var/log/devices/attachement.log','w', errors='ignore')
   f_attachment.write("".join(attachment))
   f_attachment.close()
 
@@ -574,7 +574,7 @@ def extract_ip_ov():
      new_file = new_file +  element_split[1] + ","
 
 
-  f_attachment = open('/opt/ALE_Script/device_catalog.conf','w')
+  f_attachment = open('/opt/ALE_Script/device_catalog.conf','w', errors='ignore')
   f_attachment.write(new_file)
   f_attachment.close()
 
@@ -596,13 +596,13 @@ def extract_ip_ap():
      new_file = new_file +  element_split[1] + ","
 
 
-  f_attachment = open('/opt/ALE_Script/device_AP_catalog.conf','w')
+  f_attachment = open('/opt/ALE_Script/device_AP_catalog.conf','w', errors='ignore')
   f_attachment.write(new_file)
   f_attachment.close()
 
 
 def extract_ip_ddos():
-  content_variable = open ('/var/log/devices/lastlog_ddos_ip.json','r')
+  content_variable = open ('/var/log/devices/lastlog_ddos_ip.json','r', errors='ignore')
   file_lines = content_variable.readlines()
   if len(file_lines)!=0:
      first_line = file_lines[0]
@@ -666,7 +666,7 @@ def check_timestamp():
         """
         #read time of the current log processed
 
-        content_variable = open('/var/log/devices/lastlog_loop.json','r') 
+        content_variable = open('/var/log/devices/lastlog_loop.json','r', errors='ignore') 
         file_lines = content_variable.readlines()
         content_variable.close()
         last_line = file_lines[0]
@@ -676,15 +676,15 @@ def check_timestamp():
         current_time = timestamp_current[-len(timestamp_current)+26:-7].replace(':' , '')
 
         if not os.path.exists('/var/log/devices/logtemp.json'):
-          open('/var/log/devices/logtemp.json','w').close()
+          open('/var/log/devices/logtemp.json','w', errors='ignore').close()
 
         #read time of the last log  processed
-        f_lastlog = open('/var/log/devices/logtemp.json','r')
+        f_lastlog = open('/var/log/devices/logtemp.json','r', errors='ignore')
         first_line =  f_lastlog.readlines()
 
         #if logtemps is empty or more than 1 line in the file ( avoid error), clear the file
         if len(first_line)!=1 :
-         f_lastlog = open('/var/log/devices/logtemp.json','w')
+         f_lastlog = open('/var/log/devices/logtemp.json','w', errors='ignore')
          f_lastlog.write(last_line)
          f_lastlog.close()
 
@@ -705,7 +705,7 @@ def replace_logtemp():
         last_line = file_lines[0]
 
            #copy log in temp
-        f_lastlog = open('/var/log/devices/logtemp.json','w')
+        f_lastlog = open('/var/log/devices/logtemp.json','w', errors='ignore')
         f_lastlog.write(last_line)
         f_lastlog.close()
 
@@ -844,23 +844,23 @@ def add_new_save(ipadd,port,type,choice = "never"):
   if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
      open ('/opt/ALE_Script/decisions_save.conf','w').close()
 
-  fileR = open("/opt/ALE_Script/decisions_save.conf", "r")
+  fileR = open("/opt/ALE_Script/decisions_save.conf", "r", errors='ignore')
   text = fileR.read()
   fileR.close()
 
   textInsert = "{0},{1},{2},{3}\n".format(ipadd,port,type,choice)
 
-  fileW = open("/opt/ALE_Script/decisions_save.conf", "w")
+  fileW = open("/opt/ALE_Script/decisions_save.conf", "w", errors='ignore')
   fileW.write(textInsert + text)
   fileW.close()
 
 def check_save(ipadd,port,type):
   if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
-     open ('/opt/ALE_Script/decisions_save.conf','w').close()
+     open ('/opt/ALE_Script/decisions_save.conf','w', errors='ignore').close()
      return "0"
 
 
-  content = open("/opt/ALE_Script/decisions_save.conf", "r")
+  content = open("/opt/ALE_Script/decisions_save.conf", "r", errors='ignore')
   file_lines = content.readlines()
   content.close()
 

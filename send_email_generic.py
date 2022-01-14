@@ -40,10 +40,10 @@ def deassociation(ipadd,device_mac,timestamp,reason,reason_number):
   message_content_1= "WLAN Alert - There is a WLAN deassociation detected on server {0} from Stellar AP {1}, Device's MAC Address: {2} .".format(system_name,ipadd,device_mac)
   print(message_content_1)
   message_content_2="Reason number: ".format(reason_number)
-  send_alert(message,jid)
-  send_message(message_reason,jid)
+  #send_alert(message,jid)
+  #send_message(message_reason,jid)
   
-  write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason}, "fields": {"count": 1}}])
+  write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason, "topic": "deauth"}, "fields": {"count": 1}}])
 
   #send_mail(timestamp,subject_content,message_content_1,message_content_2,ipadd)
   ## REST-API for login on OV
@@ -54,10 +54,10 @@ def deassociation(ipadd,device_mac,timestamp,reason,reason_number):
   ## If client does not exist on OV WLAN Client list
   if clientName != None:
      info =  "The client {0} MAC Address: {1} is associated to Radio Channel: {2}".format(clientName,device_mac,channel)
-     send_message(info,jid)
+     #send_message(info,jid)
   if category != None:
      info =  "This client device category is: {0}".format(category)
-     send_message(info,jid)
+     #send_message(info,jid)
 
 def reboot(ipadd,timestamp):
   os.system('logger -t montag -p user.info reboot detected')
@@ -316,6 +316,8 @@ def extract_ipadd():
 switch_user, switch_password, jid, gmail_user, gmail_password, mails,ip_server_log = get_credentials()
 #print("Mail sent to: " + str(mails))
 
+#sys.argv[1] == "roaming"
+
 if sys.argv[1] == "deauth":
       print("call function deassociation")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
@@ -328,11 +330,16 @@ if sys.argv[1] == "deauth":
 elif sys.argv[1] == "roaming":
       print("WLAN Roaming - deauth reason 1")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
-      os.system('logger -t montag -p user.info Roaming occurs on Stellar AP ' + sys.argv[2])
+      ipadd,message_reason = extract_ipadd()
+      reason,device_mac,reason_number = extract_reason_new()
+      write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason, "topic": "roaming"}, "fields": {"count": 1}}])      
 elif sys.argv[1] == "leaving":
       print("WLAN Client disconnection")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
-      os.system('logger -t montag -p user.info Client is leaving SSID on Stellar AP ' + sys.argv[2])
+      ipadd,message_reason = extract_ipadd()
+      reason,device_mac,reason_number = extract_reason_new()
+      write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason, "topic": "leaving"}, "fields": {"count": 1}}])      
+#      os.system('logger -t montag -p user.info Client is leaving SSID on Stellar AP ' + sys.argv[2])
 elif sys.argv[1] == "reboot":
       print("call function reboot")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])

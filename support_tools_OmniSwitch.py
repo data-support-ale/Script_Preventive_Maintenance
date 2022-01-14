@@ -773,7 +773,8 @@ def send_file(filename_path,subject,action,result):
   files = {'file': open(filename_path,'r')}
   response = requests.post(url,files=files, headers=headers)
   print(response)
-  response = "<Response [200]>"
+  response = str(response)
+  #response = "<Response [408]>"
   response = re.findall(r"<Response \[(.*?)\]>", response)
   if "200" in response:
      os.system('logger -t montag -p user.info 200 OK')

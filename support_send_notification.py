@@ -85,7 +85,7 @@ def send_message_request(info,jid,receiver):
     url = "http://127.0.0.1:5200/?id=rainbow"
     response = requests.get(url)
 
-def send_file(info,jid,ipadd,filename =''):
+def send_file(info,jid,ipadd,filename_path =''):
     """ 
     Send the attachement to a Rainbowbot. This bot will send this file to the jid in parameters
     :param str info:                Message to send to the rainbow bot
@@ -112,20 +112,23 @@ def send_file(info,jid,ipadd,filename =''):
 #       params = {'filename'  :'{0}'.format(out)}
 #       response = requests.post(url,files=files,params=params, headers=headers)
 
-    if not filename =='':
-       fp = open("{0}".format(filename),'rb')
+    if not filename_path =='':
+       payload=open("{0}".format(filename_path),'rb')
+       filename = filename_path.split("/")
+       filename = filename[-1]
        info = "Log of device : {0}".format(ipadd)
        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_EMEA"
-       headers = {  'Content-type':"multipart/form-data",'Content-Disposition': "attachment;filename={}.tar".format(filename) , 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
-       files = {'file': open('{0}'.format(filename),'rb')}
-       response = requests.post(url,files=files, headers=headers)
+       headers = {  'Content-type':"application/x-tar",'Content-Disposition': "attachment;filename={0}".format(filename), 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
+       #files = {'file': fp}
+       response = requests.post(url, headers=headers, data=payload)
+       print(response)
        write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
 
 
     save_attachment(ipadd)
     info = "Log of device : {0}".format(ipadd)
 
-    with open("/var/log/devices/attachment.log", "r+") as log_file:
+    with open("/var/log/devices/attachment.log", "r+", errors='ignore') as log_file:
         for line in log_file:
             timestamp = ""
             if re.search(r"\d?\d \d\d:\d\d:\d\d", line):
@@ -149,7 +152,7 @@ def send_file(info,jid,ipadd,filename =''):
                 if int(new_hour) >= int(hour) and int(new_min) >= int(min) and int(new_sec) >= int(sec):
                     break
     
-    with open("/var/log/devices/short_attachment.log", "w+") as s_log:
+    with open("/var/log/devices/short_attachment.log", "w+", errors='ignore') as s_log:
         print(new_file)
         s_log.write(new_file)
 

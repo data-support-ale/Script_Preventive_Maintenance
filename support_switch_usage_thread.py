@@ -54,8 +54,7 @@ SYSTEM_ROUTING_IBGP = prometheus_client.Gauge(
     "Routing_Table_Ibgp_Entries", 'Metrics scraped with python', ['name', 'ip'])
 SYSTEM_ROUTING_EBGP = prometheus_client.Gauge(
     "Routing_Table_Ebgp_Entries", 'Metrics scraped with python', ['name', 'ip'])
-SYSTEM_ROUTING_TOTAL = prometheus_client.Gauge(
-    "Routing_Table_Total_Entries", 'Metrics scraped with python', ['name', 'ip'])
+
 path = "/opt/ALE_Script/"
 
 switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server = get_credentials()
@@ -115,20 +114,20 @@ class IPThread(threading.Thread):
             try:
                 _, stdout, _ = self.ssh.exec_command(switch_cmd)
                 output = stdout.read().decode('utf-8')
+                name = re.findall(r"([A-Za-z0-9-]*),", output)[0]
             except Exception:
-                name = re.findall("Name:         (\d*?),", output)
                 return 1
-            name = re.findall(r"([A-Za-z0-9-]*),", output)[0]
 
             # MEMORY
             switch_cmd = "show health all memory"
             try:
                 _, stdout, _ = self.ssh.exec_command(switch_cmd)
                 output = stdout.read().decode('utf-8')
+                matchs_mem = re.findall(
+                r"Slot  (\d+?)\/ (\d+?) *(\d*?) ", output)
             except Exception:
                 return 2
-            matchs_mem = re.findall(
-                r"Slot  (\d+?)\/ (\d+?) *(\d*?) ", output)
+
             for chassis, slot, mem in matchs_mem:
                 try:
 
@@ -143,10 +142,11 @@ class IPThread(threading.Thread):
             try:
                 _, stdout, _ = self.ssh.exec_command(switch_cmd)
                 output = stdout.read().decode('utf-8')
+                matchs_cpu = re.findall(
+                r"Slot  (\d+?)\/ (\d+?) *(\d*?) ", output)
             except Exception:
                 return 4
-            matchs_cpu = re.findall(
-                r"Slot  (\d+?)\/ (\d+?) *(\d*?) ", output)
+
             for chassis, slot, cpu in matchs_cpu:
                 try:
 
@@ -177,9 +177,10 @@ class IPThread(threading.Thread):
             try:
                 _, stdout, _ = self.ssh.exec_command(switch_cmd)
                 output = stdout.read().decode('utf-8')
+                matchs_arp_entries = re.findall(r"Total (\d*) arp entries", output)
             except Exception:
                 return 8
-            matchs_arp_entries = re.findall(r"Total (\d*) arp entries", output)
+
 
             for arp_entries in matchs_arp_entries:
 
@@ -190,14 +191,15 @@ class IPThread(threading.Thread):
             try:
                 _, stdout, _ = self.ssh.exec_command(switch_cmd)
                 output = stdout.read().decode('utf-8')
+                count = dict(Counter(output.split()))
             except Exception:
                 return 9
+
             matchs_mac_learning_bridging_entries = 0
             matchs_mac_learning_servicing_entries = 0
             matchs_mac_learning_filtering_entries = 0
             matchs_mac_learning_total_entries = 0
             matchs_mac_filtering_ratio_entries = 0
-            count = dict(Counter(output.split()))
             try:
                 matchs_mac_learning_bridging_entries = count['bridging']
 
@@ -226,7 +228,6 @@ class IPThread(threading.Thread):
             try:
                 matchs_mac_learning_total_entries = (matchs_mac_learning_bridging_entries + matchs_mac_learning_servicing_entries + matchs_mac_learning_filtering_entries)          
                 matchs_mac_filtering_ratio_entries = (matchs_mac_learning_filtering_entries / matchs_mac_learning_total_entries) * 100
-                print(matchs_mac_filtering_ratio_entries)
                 SYSTEM_MAC_FILTERING_RATIO.labels(name=name, ip=self.ip).set(matchs_mac_filtering_ratio_entries)
             except KeyError:
                 pass
@@ -238,13 +239,13 @@ class IPThread(threading.Thread):
             try:
                 _, stdout, _ = self.ssh.exec_command(switch_cmd)
                 output = stdout.read().decode('utf-8')
+                count = dict(Counter(output.split()))
             except Exception:
                 return 10
             matchs_unp_user_active_entries = 0
             matchs_unp_user_block_entries = 0
             matchs_unp_user_total_entries = 0
             matchs_unp_user_ratio_entries = 0
-            count = dict(Counter(output.split()))
             try:
                 matchs_unp_user_active_entries = count['Active']
                 SYSTEM_UNP_USER_ACTIVE.labels(name=name, ip=self.ip).set(
@@ -263,7 +264,6 @@ class IPThread(threading.Thread):
 
             try:
                 matchs_unp_user_total_entries = count['Bridge']
-                print(matchs_unp_user_total_entries)
                 SYSTEM_UNP_USER_TOTAL.labels(name=name, ip=self.ip).set(matchs_unp_user_total_entries)
             except KeyError:
                 pass
@@ -271,7 +271,6 @@ class IPThread(threading.Thread):
             # Ratio (number of UNP User Block State / number of UNP User Total) * 100
             try:           
                 matchs_unp_user_ratio_entries = (matchs_unp_user_block_entries / matchs_unp_user_total_entries) * 100
-                print(matchs_unp_user_ratio_entries)
                 SYSTEM_UNP_USER_RATIO.labels(name=name, ip=self.ip).set(matchs_unp_user_ratio_entries)
             except KeyError:
                  pass
@@ -283,26 +282,14 @@ class IPThread(threading.Thread):
             try:
                 _, stdout, _ = self.ssh.exec_command(switch_cmd)
                 output = stdout.read().decode('utf-8')
+                count = dict(Counter(output.split()))
             except Exception:
                 return 11
-
-            matchs_routing_table_total_entries = 0
-            try:
-                matchs_routing_table_total_entries = re.findall(r" Total (\d*) routes", output)
-                print(matchs_routing_table_total_entries)
-                for routing_table_total_entries in matchs_routing_table_total_entries:
-                    SYSTEM_ROUTING_TOTAL.labels(name=name, ip=self.ip).set(
-                                         routing_table_total_entries)
-
-            except KeyError:
-                pass
-
             matchs_routing_table_local_entries = 0
             matchs_routing_table_static_entries = 0
             matchs_routing_table_ospf_entries = 0
             matchs_routing_table_ibgp_entries = 0
             matchs_routing_table_ebgp_entries = 0
-            count = dict(Counter(output.split()))
             try:
                 matchs_routing_table_local_entries = count['LOCAL']
                 SYSTEM_ROUTING_LOCAL.labels(name=name, ip=self.ip).set(
@@ -353,7 +340,7 @@ class IPThread(threading.Thread):
 
 
 if __name__ == '__main__':
-    prometheus_client.start_http_server(9999)
+    prometheus_client.start_http_server(9998)
 
     ips_address = list()
     with open(path + 'Devices.csv') as csv_file:

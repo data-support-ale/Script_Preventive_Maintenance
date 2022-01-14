@@ -19,18 +19,23 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server = get_credentials()
 
 last = ""
-with open("/var/log/devices/lastlog_dupip.json", "r") as log_file:
+with open("/var/log/devices/lastlog_dupip.json", "r", encoding="utf8", errors='ignore') as log_file:
     for line in log_file:
         last = line
 
-with open("/var/log/devices/lastlog_dupip.json", "w") as log_file:
+with open("/var/log/devices/lastlog_dupip.json", "w", encoding="utf8", errors='ignore') as log_file:
     log_file.write(last)
 
 with open("/var/log/devices/lastlog_dupip.json", "r") as log_file:
-    log_json = json.load(log_file)
-    ip = log_json["relayip"]
-    nom = log_json["hostname"]
-    msg = log_json["message"]
+    try:
+        log_json = json.load(log_file)
+        ip = log_json["relayip"]
+        nom = log_json["hostname"]
+        msg = log_json["message"]
+    except json.decoder.JSONDecodeError:
+        print("File /var/log/devices/lastlog_dupip.json empty")
+        exit()
+
 
     ip_dup, port, mac = re.findall(r"duplicate IP address (.*?) from port (.*?) eth addr (.*)", msg)[0]
     mac = format_mac(mac)
@@ -57,11 +62,6 @@ if answer == '1':
         send_file(info, jid, ip)
         info = "A IP duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(mac, ip)
         send_message(info, jid)
-else:
-    print("Mail request set as no")
-    os.system('logger -t montag -p user.info Mail request set as no')
-    sleep(1)
-
 
 from database_conf import *
 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "IP_dup": ip_dup, "mac" : mac}, "fields": {"count": 1}}])

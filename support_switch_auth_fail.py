@@ -19,18 +19,22 @@ switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server 
 ip_server_log = get_server_log_ip()
 
 last = ""
-with open("/var/log/devices/lastlog_authfail.json", "r") as log_file:
+with open("/var/log/devices/lastlog_authfail.json", "r", encoding="utf8", errors='ignore') as log_file:
     for line in log_file:
         last = line
 
-with open("/var/log/devices/lastlog_authfail.json","w") as log_file:
+with open("/var/log/devices/lastlog_authfail.json","w", encoding="utf8", errors='ignore') as log_file:
     log_file.write(last)
 
-with open("/var/log/devices/lastlog_authfail.json", "r") as log_file:
-    log_json = json.load(log_file)
-    ip = log_json["relayip"]
-    host = log_json["hostname"]
-    msg = log_json["message"]
+with open("/var/log/devices/lastlog_authfail.json", "r", encoding="utf8", errors='ignore') as log_file:
+    try:
+        log_json = json.load(log_file)
+        ip = log_json["relayip"]
+        host = log_json["hostname"]
+        msg = log_json["message"]
+    except json.decoder.JSONDecodeError:
+        print("File /var/log/devices/lastlog_authfail.json empty")
+        exit()
 
     user,source_ip,protocol = re.findall(r"Login by (.*?) from (.*?) through (.*?) Failed", msg)[0]
 

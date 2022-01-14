@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.5
+#!/usr/bin/env python.5
 
 from prometheus_client import start_http_server, Counter
 import time
