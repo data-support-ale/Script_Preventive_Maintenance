@@ -2,12 +2,9 @@
 
 import sys
 import os
-import getopt
-import json
 import logging
 import datetime
-from time import gmtime, strftime, localtime,sleep
-from support_tools import get_credentials,get_server_log_ip,get_jid,get_mail,send_python_file_sftp,get_file_sftp
+from time import sleep
 from support_send_notification import send_message,send_file,send_mail,send_message_aijaz
 import subprocess
 import re
@@ -72,7 +69,16 @@ def ssh_connectivity_check(ipadd,cmd):
      p = paramiko.SSHClient()
      p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
      p.connect(ipadd, port=22, username=switch_user, password=switch_password)
+  except paramiko.ssh_exception.TimeoutError:
+   exception = "Timeout"
+   print("Authentication failed enter valid user name and password")
+   info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+   os.system('logger -t montag -p user.info ' + info)
+   send_message(info,jid)
+   write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+   sys.exit()
   except paramiko.ssh_exception.AuthenticationException:
+     exception = "AuthenticationException"
      print("Authentication failed enter valid user name and password")
      info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
      os.system('logger -t montag -p user.info ' + info)
@@ -80,6 +86,7 @@ def ssh_connectivity_check(ipadd,cmd):
      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
      sys.exit(0)
   except paramiko.ssh_exception.NoValidConnectionsError:
+     exception = "NoValidConnectionsError"
      print("Device unreachable")
      logging.info(' SSH session does not establish on OmniSwitch ' + ipadd)
      info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
@@ -102,6 +109,45 @@ def ssh_connectivity_check(ipadd,cmd):
       info = ("SSH Session established successfully on OmniSwitch {0}").format(ipadd)
       os.system('logger -t montag -p user.info ' + info)
       write_api.write(bucket, org, [{"measurement": "support_ssh_success", "tags": {"IP_Address": ipadd}, "fields": {"count": 1}}])
+
+def get_file_sftp(ipadd,filename):
+   date = datetime.date.today()
+   date_hm = datetime.datetime.today()
+
+#   with pysftp.Connection(host=ipadd, username=user, password=password) as sftp:
+#      sftp.get('./{0}'.format(filename), '/tftpboot/{0}_{1}-{2}_{3}_{4}'.format(date,date_hm.hour,date_hm.minute,ipadd,filename))         # get a remote file
+   remote_path = '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,filename)
+   ssh = paramiko.SSHClient()
+   ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+   ssh.connect(ipadd, username=switch_user, password=switch_password, timeout=10.0)
+   sftp = ssh.open_sftp()
+   ## In case of SFTP Get timeout thread is closed and going into Exception
+   try:
+      th = threading.Thread(target=sftp.get, args=(filename,remote_path))
+      th.start()
+      th.join(60)
+   except Exception as error:
+      #print(error)
+      exception = "SFTP Get Timeout"
+      #exception = str(exception)
+      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+      print(info)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message(info,jid)
+      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      sys.exit() 
+
+   except paramiko.ssh_exception.SSHException as error:
+      print(error)
+      exception = error.readlines()
+      exception = str(exception)
+      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+      print(info)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message(info,jid)
+      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      sys.exit()
+   sftp.close()
 
 ### Function debug
 def debugging(appid_1,subapp_1,level_1):
@@ -245,10 +291,18 @@ def collect_command_output_tcam(host,ipadd):
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -287,10 +341,18 @@ def collect_command_output_ovc(decision,host,ipadd):
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -328,10 +390,18 @@ def collect_command_output_mqtt(ovip,host,ipadd):
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -376,10 +446,18 @@ def collect_command_output_storm(port,source,decision,host,ipadd):
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -425,10 +503,18 @@ def collect_command_output_violation(port,source,decision,host,ipadd):
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -466,10 +552,18 @@ def collect_command_output_spb(host,ipadd):
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -503,10 +597,18 @@ def collect_command_output_ps(psid,host,ipadd):
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -542,10 +644,18 @@ def collect_command_output_vc(vcid,host,ipadd):
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -581,10 +691,18 @@ def collect_command_output_linkagg(agg,host,ipadd):
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -642,10 +760,18 @@ def collect_command_output_poe(host,ipadd):
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -657,9 +783,18 @@ def collect_command_output_poe(host,ipadd):
   lanpower_settings_status = 0
   switch_cmd="show configuration snapshot lanpower"
   cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-  lanpower_settings_status=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-  lanpower_settings_status=lanpower_settings_status.decode('UTF-8').strip()
-  print(lanpower_settings_status)
+  try:
+     lanpower_settings_status=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+     lanpower_settings_status=lanpower_settings_status.decode('UTF-8').strip()
+     print(lanpower_settings_status)
+  except FileNotFoundError as error:
+     exception = "FileNotFoundError"
+     info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+     print(info)
+     os.system('logger -t montag -p user.info ' + info)
+     send_message(info,jid)
+     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+     sys.exit()
   if "capacitor-detection enable" in lanpower_settings_status:
      print("Capacitor detection enabled!")
      capacitor_detection_status="enabled"
@@ -691,9 +826,18 @@ def collect_command_output_aaa(protocol,ipadd):
     protocol_a == "http"
   switch_cmd="show ip service | grep {0}".format(protocol_a)
   cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-  service_status=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-  service_status=service_status.decode('UTF-8').strip()
-  print(service_status)
+  try:
+     service_status=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+     service_status=service_status.decode('UTF-8').strip()
+     print(service_status)
+  except FileNotFoundError as error:
+      exception = "FileNotFoundError"
+      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+      print(info)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message(info,jid)
+      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      sys.exit()
   if "enabled" in service_status:
      print("Protocol " + protocol +  " enabled!")
      service_status="enabled"
@@ -703,11 +847,19 @@ def collect_command_output_aaa(protocol,ipadd):
   switch_cmd="show configuration snapshot aaa | grep \"aaa authentication {0}\"".format(protocol)
   cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
   try:
-     aaa_status=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
+     aaa_status=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
      aaa_status=aaa.decode('UTF-8').strip()
      print(aaa_status)
      if "aaa authentication" in aaa_status:
         aaa_status="enabled"
+  except FileNotFoundError as error:
+      exception = "FileNotFoundError"
+      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+      print(info)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message(info,jid)
+      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      sys.exit()
   except subprocess.CalledProcessError as e:
      aaa_status="disabled"
   print(aaa_status)
@@ -735,10 +887,18 @@ def authentication_failure(user,source_ip,protocol,service_status,aaa_status,hos
 
   for switch_cmd in l_switch_cmd:
      cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-     output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
-     output=output.decode('UTF-8').strip()
-     text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-
+     try:
+        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True, timeout="5")
+        output=output.decode('UTF-8').strip()
+        text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+     except FileNotFoundError as error:
+        exception = "FileNotFoundError"
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
   date = datetime.date.today()
   date_hm = datetime.datetime.today()
 
@@ -787,7 +947,7 @@ switch_user="admin"
 ipadd="10.130.7.244"
 cmd="show system"
 host="LAN-6860N-2"
-ssh_connectivity_check(ipadd,cmd)
+#ssh_connectivity_check(ipadd,cmd)
 #filename_path,subject,action,result,category = collect_command_output_poe(host,ipadd)
 #send_file(filename_path,subject,action,result)
 agg = "6"

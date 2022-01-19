@@ -23,14 +23,14 @@ switch_user, switch_password, jid, gmail_user, gmail_password, mails,ip_server_l
 filename = 'tech_support_complete.tar'
 
 last = ""
-with open("/var/log/devices/get_log_switch.json", "r") as log_file:
+with open("/var/log/devices/get_log_switch.json", "r", errors='ignore') as log_file:
    for line in log_file:
       last = line
 
-with open("/var/log/devices/get_log_switch.json", "w") as log_file:
+with open("/var/log/devices/get_log_switch.json", "w", errors='ignore') as log_file:
    log_file.write(last)
 
-with open("/var/log/devices/get_log_switch.json", "r") as log_file:
+with open("/var/log/devices/get_log_switch.json", "r", errors='ignore') as log_file:
    log_json = json.load(log_file)
    ipadd = log_json["relayip"]
    host = log_json["hostname"]
@@ -49,7 +49,7 @@ if len(sys.argv) > 1:
    os.system('logger -t montag -p user.info ' + info)
 
 def get_port():
-   with open("/var/log/devices/get_log_switch.json", "r") as log_file:
+   with open("/var/log/devices/get_log_switch.json", "r", errors='ignore') as log_file:
       log_json = json.load(log_file)
       ipadd = log_json["relayip"]
       host = log_json["hostname"]

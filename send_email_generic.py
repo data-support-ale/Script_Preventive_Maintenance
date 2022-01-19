@@ -265,14 +265,14 @@ def send_mail(timestamp,subject_content,message_content_1,message_content_2,ipad
 def extract_reason_new():
   last = ""
   reason = device_mac = ap_mac = 0
-  with open("/var/log/devices/lastlog_deauth.json", "r") as log_file:
+  with open("/var/log/devices/lastlog_deauth.json", "r", errors='ignore') as log_file:
     for line in log_file:
         last = line
 
-  with open("/var/log/devices/lastlog_deauth.json", "w") as log_file:
+  with open("/var/log/devices/lastlog_deauth.json", "w", errors='ignore') as log_file:
     log_file.write(last)
 
-  with open("/var/log/devices/lastlog_deauth.json", "r") as log_file:
+  with open("/var/log/devices/lastlog_deauth.json", "r", errors='ignore') as log_file:
     log_json = json.load(log_file)
     msg =log_json["message"]
     f=msg.split(',')
@@ -293,14 +293,14 @@ def extract_reason_new():
 
 def extract_ipadd():
    last = ""
-   with open("/var/log/devices/lastlog_deauth.json", "r") as log_file:
+   with open("/var/log/devices/lastlog_deauth.json", "r", errors='ignore') as log_file:
     for line in log_file:
         last = line
 
-   with open("/var/log/devices/lastlog_deauth.json", "w") as log_file:
+   with open("/var/log/devices/lastlog_deauth.json", "w", errors='ignore') as log_file:
     log_file.write(last)
 
-   with open("/var/log/devices/lastlog_deauth.json", "r") as log_file:
+   with open("/var/log/devices/lastlog_deauth.json", "r", errors='ignore') as log_file:
     log_json = json.load(log_file)
     ipadd = log_json["relayip"]
     host = log_json["hostname"]

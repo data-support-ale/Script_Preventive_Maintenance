@@ -7,6 +7,7 @@ import json
 import logging
 import subprocess
 import requests
+import paramiko
 import re
 from time import gmtime, strftime, localtime, sleep
 from database_conf import *
@@ -198,8 +199,40 @@ def get_file_sftp(user,password,ipadd,filename):
    date = datetime.date.today()
    date_hm = datetime.datetime.today()
 
-   with pysftp.Connection(host=ipadd, username=user, password=password) as sftp:
-      sftp.get('./{0}'.format(filename), '/tftpboot/{0}_{1}-{2}_{3}_{4}'.format(date,date_hm.hour,date_hm.minute,ipadd,filename))         # get a remote file
+#   with pysftp.Connection(host=ipadd, username=user, password=password) as sftp:
+#      sftp.get('./{0}'.format(filename), '/tftpboot/{0}_{1}-{2}_{3}_{4}'.format(date,date_hm.hour,date_hm.minute,ipadd,filename))         # get a remote file
+   remote_path = '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,filename)
+   ssh = paramiko.SSHClient()
+   ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+   ssh.connect(ipadd, username=user, password=password, timeout=10.0)
+   sftp = ssh.open_sftp()
+   ## In case of SFTP Get timeout thread is closed and going into Exception
+   try:
+      th = threading.Thread(target=sftp.get, args=(filename,remote_path))
+      th.start()
+      th.join(60)
+   except Exception as error:
+      print(error)
+      exception = error.readlines()
+      exception = str(exception)
+      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+      print(info)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message(info,jid)
+      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      sys.exit() 
+
+   except paramiko.ssh_exception.SSHException as error:
+      print(error)
+      exception = error.readlines()
+      exception = str(exception)
+      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+      print(info)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message(info,jid)
+      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      sys.exit()
+   sftp.close()
 
 def detect_port_loop():
         """ 

@@ -28,7 +28,7 @@ with open("/var/log/devices/lastlog_bgp.json", "r", errors='ignore') as log_file
 with open("/var/log/devices/lastlog_bgp.json","w", errors='ignore') as log_file:
     log_file.write(last)
 
-with open("/var/log/devices/lastlog_bgp.json", "r") as log_file:
+with open("/var/log/devices/lastlog_bgp.json", "r", errors='ignore') as log_file:
     try:
         log_json = json.load(log_file)
         ip = log_json["relayip"]

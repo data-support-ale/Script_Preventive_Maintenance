@@ -21,14 +21,14 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server = get_credentials()
 
 last = ""
-with open("/var/log/devices/lastlog_violation.json", "r", encoding="utf8", errors='ignore') as log_file:
+with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as log_file:
     for line in log_file:
         last = line
 
-with open("/var/log/devices/lastlog_violation.json", "w", encoding="utf8", errors='ignore') as log_file:
+with open("/var/log/devices/lastlog_violation.json", "w", errors='ignore') as log_file:
     log_file.write(last)
 
-with open("/var/log/devices/lastlog_violation.json", "r", encoding="utf8", errors='ignore') as log_file:
+with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as log_file:
     try:
         log_json = json.load(log_file)
         ip = log_json["relayip"]
