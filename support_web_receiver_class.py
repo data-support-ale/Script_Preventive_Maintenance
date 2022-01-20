@@ -5,6 +5,7 @@ from time import sleep
 import time
 import threading
 import requests
+import sys
 
 
 class Receiver():
@@ -44,8 +45,22 @@ def start_web(receiver,id_client,id_case):
          while  int(time.time())-int(time_start) < 60 :
              sleep(5)
          url = "http://127.0.0.1:5200/?id={0}{1}&answer=yes".format(id_client,id_case)
-         response = requests.get(url)
-
+         try:
+             response = requests.get(url)
+             print(response)
+         except requests.exceptions.ConnectionError:
+             print("Max retries exceeded when calling URL: " + url)
+             sys.exit()
+         except requests.exceptions.Timeout:
+             print("Request Timeout when calling URL: " + url)
+             sys.exit()    
+         except requests.exceptions.TooManyRedirects:
+             print("Too Many Redirects when calling URL: " + url)
+             sys.exit()    
+         except requests.exceptions.RequestException:
+             print("Request exception when calling URL: " + url)
+             sys.exit()    
+    
       def shutdown_server():
           """function to stop the web service."""
 

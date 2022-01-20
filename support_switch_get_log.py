@@ -6,13 +6,12 @@ import json
 import logging
 import datetime
 from time import gmtime, strftime, localtime,sleep
-from support_tools_OmniSwitch import get_credentials,get_file_sftp
+from support_tools_OmniSwitch import get_credentials,get_file_sftp,get_tech_support_sftp,ssh_connectivity_check
 from support_send_notification import send_message,send_file,send_mail,send_message_aijaz
 import subprocess
 import re
-import paramiko
-import threading
 from database_conf import *
+import threading
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 date = datetime.date.today()
@@ -130,84 +129,13 @@ if jid !='':
          send_message(info,jid)
          send_message(msg,jid)
 
-try:
-   p = paramiko.SSHClient()
-   p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-   p.connect(ipadd, port=22, username="admin", password="switch")
-except paramiko.ssh_exception.TimeoutError:
-   exception = "Timeout"
-   print("Authentication failed enter valid user name and password")
-   info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-   os.system('logger -t montag -p user.info ' + info)
-   send_message(info,jid)
-   write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-   sys.exit()   
-except paramiko.ssh_exception.AuthenticationException:
-   exception = "AuthenticationException"
-   print("Authentication failed enter valid user name and password")
-   info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-   os.system('logger -t montag -p user.info ' + info)
-   send_message(info,jid)
-   write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-   sys.exit()
-except paramiko.ssh_exception.NoValidConnectionsError:
-   exception = "NoValidConnectionsError"
-   print("Device unreachable")
-   logging.info(runtime + ' SSH session does not establish on OmniSwitch ' + ipadd)
-   info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
-   os.system('logger -t montag -p user.info ' + info)
-   send_message(info,jid)
-   write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "NoValidConnectionsError", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-   sys.exit()
-cmd = ("rm -rf {0}").format(filename)
-stdin, stdout, stderr = p.exec_command(cmd)
-exception = stderr.readlines()
-exception = str(exception)
-connection_status = stdout.channel.recv_exit_status()
-if connection_status != 0:
-   info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
-   send_message(info,jid)
-   write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-   os.system('logger -t montag -p user.info ' + info)
-   sys.exit()
+### TECH-SUPPORT ENG COMPLETE ###
+#generate tech_support_sftp(host,ipadd)
 
-stdin, stdout, stderr = p.exec_command("show tech-support eng complete")
-exception = stderr.readlines()
-exception = str(exception)
-connection_status = stdout.channel.recv_exit_status()
-if connection_status != 0:
-   info = ("\"The show tech support eng complete\" command on OmniSwitch {0} failed - {1}").format(ipadd,exception)
-   send_message(info,jid)
-   write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-   os.system('logger -t montag -p user.info ' + info)
-   sys.exit()
+f_filename = "tech_support_complete.tar"
 
-cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  ls | grep {3}".format(switch_password,switch_user,ipadd,filename)
-run=cmd.split()
-out=''
-i=0
-while not out:
-   print(" Tech Support file creation under progress.", end="\r")
-   sleep(2)
-   print(" Tech Support file creation under progress..", end="\r")
-   sleep(2)
-   print(" Tech Support file creation under progress...", end="\r")
-   print(i)
-   sleep(2)
-   p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
-   out, err = p.communicate()
-   out=out.decode('UTF-8').strip()
-   if i > 20:
-      print("Tech Support file creation timeout")
-      sys.exit()
-
-f_filename= "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ipadd,filename)
-file = f_filename.replace("/", "_")
-
-
-#### SFTP GET #####
-get_file_sftp(ipadd,f_filename)
-
+#### SFTP GET tech support #####
+#get_file_sftp(ipadd,f_filename)
 
 print("Starting collecting additionnal logs")
 
@@ -224,13 +152,23 @@ l_switch_cmd.append("show interfaces")
 l_switch_cmd.append("show system")
 l_switch_cmd.append("show date")
 l_switch_cmd.append("show unp user")
-
+print(ipadd)
 for switch_cmd in l_switch_cmd:
    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
    try:
-      output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, timeout="5")
-      output=output.decode('UTF-8').strip()
-      text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+      output = ssh_connectivity_check(ipadd,switch_cmd)
+#      output=subprocess.check_output(target=read_until_EOF, args=(cmd,))
+      if output != None:
+         #output=output.decode('UTF-8').strip()
+         text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+      else:
+         exception = "Timeout"
+         info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+         print(info)
+         os.system('logger -t montag -p user.info ' + info)
+         send_message(info,jid)
+         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+         sys.exit()         
    except FileNotFoundError as error:
       exception = "FileNotFoundError"
       info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
@@ -249,6 +187,8 @@ f_logs.write(text)
 f_logs.close()
 ###############################################################################
 
+filename = '/opt/ALE_Script/{0}.txt'.format(filename)
+print(filename)
 
 if jid !='':
          send_file(info,jid,ipadd,filename)

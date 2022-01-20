@@ -175,7 +175,7 @@ def disable_qos_ddos(user,password,ipadd,ipadd_ddos):
 def file_setup_qos(addr):
     content_variable = open ('/opt/ALE_Script/configqos','w')
     if re.search(r"\:", addr): #mac
-        setup_config= "policy condition scanner_{0} source mac {0}\npolicy action block_mac disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_mac\nqos apply".format(addr)
+        setup_config= "policy condition scanner_{0} source mac {0}\npolicy action block_mac disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_mac\nqos apply\nqos enable\n".format(addr)
     else:	
     	setup_config= "policy condition scanner_{0} source ip {0}\npolicy action block_ip disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_ip\nqos apply".format(addr)
     content_variable.write(setup_config)
@@ -819,7 +819,7 @@ def get_mail():
      return gmail_usr,gmail_passwd,mails
 
 def get_id_client():
-     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r') #'/var/log/devices/192.168.80.27_2021-03-26.json'
+     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r')
      file_lines = content_variable.readlines()
      content_variable.close()
      credentials_line = file_lines[0]
@@ -836,7 +836,7 @@ def get_server_log_ip():
      :return str server_log_ip:  Ip Adress of log server.
      """
 
-     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r') #'/var/log/devices/192.168.80.27_2021-03-26.json'
+     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r')
      file_lines = content_variable.readlines()
      content_variable.close()
      credentials_line = file_lines[0]

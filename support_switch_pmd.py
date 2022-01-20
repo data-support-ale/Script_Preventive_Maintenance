@@ -12,7 +12,7 @@ import datetime
 #import smtplib
 #import mimetypes
 import re
-from support_tools import get_credentials
+from support_tools_OmniSwitch import get_credentials,get_tech_support_sftp
 from support_send_notification import send_message,send_file,send_alert
 import pysftp
 from database_conf import *
@@ -31,7 +31,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 uname = os.system('uname -a')
 os.system('logger -t montag -p user.info Executing script ' + script_name)
 
-switch_user, switch_password, jid, gmail_user, gmail_password, mails,ip_server_log = get_credentials()
+switch_user,switch_password,jid,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw = get_credentials()
 
 
 # Function called when Core Dump is observed
@@ -48,57 +48,16 @@ def get_pmd_sftp(user,password,ipadd,filename_pmd):
    with pysftp.Connection(host=ipadd, username=user, password=password) as sftp:
       sftp.get('{0}'.format(filename_pmd), '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,pmd_file))         # get a remote file
 
-# Function called for collecting tech_support_complete.tar file by SFTP
-def get_tech_support_sftp(user,password,ipadd,filename):
-   date = datetime.date.today()
-   date_hm = datetime.datetime.today()
-
-   with pysftp.Connection(host=ipadd, username=user, password=password) as sftp:
-      sftp.get('./{0}'.format(filename), '/tftpboot/{0}_{1}-{2}_{3}_{4}'.format(date,date_hm.hour,date_hm.minute,ipadd,filename))
-
 # Function called for collecting tech_support_complete.tar and pmd files
-def collect_log(ipadd,jid):
-  date = datetime.date.today()
-  pmd_file = filename_pmd.replace("/", "_")
-  pmd_file_rainbow = '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,pmd_file)
+get_tech_support_sftp(host,ipadd)
 
-  cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  rm -rf {3}".format(switch_password,switch_user,ipadd,filename)
-  run=cmd.split()
-  p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
-
-  os.system('logger -t montag -p user.info show tech-support eng complete generated ' + str(ipadd))
-  cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  show tech-support eng complete".format(switch_password,switch_user,ipadd)
-  run=cmd.split()
-  p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
-
-  cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  ls | grep {3}".format(switch_password,switch_user,ipadd,filename)
-  run=cmd.split()
-  out=''
-  i=0
-  while not out:
-    i=i+1
-    print("Please wait - log ", end="\r")
-    sleep(2)
-    print("wait..", end="\r")
-    sleep(2)
-    print("wait...", end="\r")
-    print(i)
-    sleep(2)
-    p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
-    out, err = p.communicate()
-    out = out.decode('UTF-8').strip()
-    print("I" +out+ "I")
-    if i > 20:
-       print("timeout")
-       exit()
-
-  get_pmd_sftp(switch_user,switch_password,ipadd,filename_pmd)
-  os.system('logger -t montag -p user.info Core Dump reproduced - logs sent ' + ipadd)
-  sleep(2)
-  get_tech_support_sftp(switch_user,switch_password,ipadd,filename)
-  print(pmd_file_rainbow)
-  pmd_file_tar = '{0}.tar.gz'.format(pmd_file_rainbow)
-  os.system("tar  -czvf {0} {1}".format(pmd_file_tar,pmd_file_rainbow))
+  
+get_pmd_sftp(switch_user,switch_password,ipadd,filename_pmd)
+os.system('logger -t montag -p user.info Core Dump reproduced - logs sent ' + ipadd)
+sleep(2)
+print(pmd_file_rainbow)
+pmd_file_tar = '{0}.tar.gz'.format(pmd_file_rainbow)
+os.system("tar  -czvf {0} {1}".format(pmd_file_tar,pmd_file_rainbow))
  
   if jid !='':
          info = "A Core Dump is noticed on switch: {0} syslogs, we are collecting files on server directory path {1}".format(ipadd,pmd_file_tar)
