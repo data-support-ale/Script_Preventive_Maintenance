@@ -1058,6 +1058,24 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
                 sudo systemctl kill -s HUP rsyslog.service
         endscript
 }
+
+/var/log/rsyslog-stats
+{
+        rotate 7
+        daily
+        maxsize 15M
+        missingok
+        notifempty
+        dateext
+        dateformat .%Y-%m-%d
+        delaycompress
+        compress
+        create 0644 admin-support admin-support
+        postrotate
+                invoke-rc.d rsyslog rotate > /dev/null
+        endscript
+}
+
 /var/log/syslog
 {
         rotate 12
