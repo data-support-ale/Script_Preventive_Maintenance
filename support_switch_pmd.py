@@ -12,7 +12,7 @@ import datetime
 #import smtplib
 #import mimetypes
 import re
-from support_tools_OmniSwitch import get_credentials,get_tech_support_sftp
+from support_tools_OmniSwitch import get_credentials,get_tech_support_sftp,get_pmd_file_sftp
 from support_send_notification import send_message,send_file,send_alert
 import pysftp
 from database_conf import *
@@ -41,27 +41,6 @@ def pmd_issue(ipadd,jid):
   send_alert(info,jid)
   write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd}, "fields": {"count": 1}}])
 
-# Function called for collecting pmd file by SFTP
-def get_pmd_sftp(user,password,ipadd,filename_pmd):
-   date = datetime.date.today()
-   pmd_file = filename_pmd.replace("/", "_")
-   with pysftp.Connection(host=ipadd, username=user, password=password) as sftp:
-      sftp.get('{0}'.format(filename_pmd), '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,pmd_file))         # get a remote file
-
-# Function called for collecting tech_support_complete.tar and pmd files
-def get_tech_support_sftp(host,ipadd):
-  get_pmd_sftp(switch_user,switch_password,ipadd,filename_pmd)
-  os.system('logger -t montag -p user.info Core Dump reproduced - logs sent ' + ipadd)
-  sleep(2)
-  print(pmd_file_rainbow)
-  pmd_file_tar = '{0}.tar.gz'.format(pmd_file_rainbow)
-  os.system("tar  -czvf {0} {1}".format(pmd_file_tar,pmd_file_rainbow))
- 
-  if jid !='':
-         info = "A Core Dump is noticed on switch: {0} syslogs, we are collecting files on server directory path {1}".format(ipadd,pmd_file_tar)
-         send_message(info,jid)
-         send_file(info,jid,ipadd,pmd_file_tar)
-         write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd}, "fields": {"count": 1}}])
 
 
 def extract_ipadd():
@@ -101,28 +80,27 @@ def extract_pmd_path():
         exit()
     filename_pmd = re.findall(r"PMD generated at (.*)", msg)[0]
     print(filename_pmd)
-   return filename_pmd
+   return filename_pmd,msg
   
-#if sys.argv[1] == "pmd":
-#      print("Core DUMP - call function pmd_issue")
-#      os.system('logger -t montag -p user.info Core DUMP - Variable received from rsyslog ' + sys.argv[1])
-#      ipadd = extract_ipadd()
-#      pmd_issue(ipadd,jid)
-#      os.system('logger -t montag -p user.info Core DUMP - Sending Rainbow Notification')
-#      sys.exit(0)
-      
-#sys.argv[1] == "pmd_generated"
+
 print("Core DUMP - call function collecting log")
-#os.system('logger -t montag -p user.info Core DUMP - Variable received from rsyslog ' + sys.argv[1])
+
 ipadd,host = extract_ipadd()
-filename_pmd = extract_pmd_path()
-collect_log(ipadd,jid)
-os.system('logger -t montag -p user.info Core DUMP - Sending Rainbow Notification')
-sys.exit(0)
-#else:
-#      os.system('logger -t montag -p user.info Wrong parameter received ' + sys.argv[1])
-#      sys.exit(2)
 
+### Notification Rainbow ###
+pmd_issue(ipadd,jid)
 
-### stop process ###
+### TECH-SUPPORT ENG COMPLETE ###
+get_tech_support_sftp(host,ipadd)
+
+### get PMD FILE ###
+print("Starting collecting PMD file")
+filename_pmd,msg = extract_pmd_path()
+filename_path = get_pmd_file_sftp(ipadd,filename_pmd)
+
+if jid !='':
+         info = "Tech-support eng complete and PMD files are collected and stored in /tftpboot/ on syslog server"
+         send_message(info,jid)
+         send_message(msg,jid)
+
 sys.exit(0)

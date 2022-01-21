@@ -183,6 +183,18 @@ def get_file_sftp(ipadd,filename):
    ssh.close()
    return remote_path
 
+
+def get_pmd_file_sftp(ipadd,filename):
+   print(filename)
+   print(ipadd)
+   date = datetime.date.today()
+   pmd_file = filename.replace("/", "_")
+   remote_path = '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,filename)
+   with pysftp.Connection(host=ipadd, username=switch_user, password=switch_password) as sftp:
+      sftp.get('{0}'.format(filename), '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,pmd_file))         # get a remote file
+   sftp.close()
+   return remote_path
+
 def format_mac(mac):
     mac = re.sub('[.:-]', '', mac).lower()  # remove delimiters and convert to lower case
     mac = ''.join(mac.split())  # remove whitespaces
@@ -1249,4 +1261,4 @@ if __name__ == "__main__":
    send_file(filename_path,subject,action,result)
 
 else:
-   print("Script called by another script")
+   print("Support_Tools_OmniSwitch Script called by another script")
