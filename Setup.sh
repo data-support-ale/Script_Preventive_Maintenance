@@ -1099,93 +1099,93 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
 }
 " > /etc/logrotate.d/rsyslog
 
-# echo
-# echo -e "\e[32mInstallation and configuration of services\e[39m"
-# echo
-# apt-get -qq -y  update >& /dev/null
-# apt-get -qq -y install sshpass >& /dev/null
+echo
+echo -e "\e[32mInstallation and configuration of services\e[39m"
+echo
+apt-get -qq -y  update >& /dev/null
+apt-get -qq -y install sshpass >& /dev/null
 
-# echo
-# echo -e "\e[32mDocker Installation\e[39m"
-# echo
-# #DOCKER
-# apt-get -qq -y install ca-certificates curl gnupg lsb-release
-# curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-# apt-get -qq -y install docker-ce docker-ce-cli containerd.io
-# echo
-# echo -e "\e[32mDocker Installed\e[39m"
-# echo
+echo
+echo -e "\e[32mDocker Installation\e[39m"
+echo
+#DOCKER
+apt-get -qq -y install ca-certificates curl gnupg lsb-release
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get -qq -y install docker-ce docker-ce-cli containerd.io
+echo
+echo -e "\e[32mDocker Installed\e[39m"
+echo
 
-# echo
-# echo -e "\e[32mDocker-compose installation\e[39m"
-# echo
-# #DOCKER COMPOSE
-# wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
-# chmod +x /usr/local/bin/docker-compose
-# echo
-# echo -e "\e[32mDocker-Compose Installed\e[39m"
-# echo
-
-
-
-# #OpenSSL
-# echo
-# echo -e "\e[32mOpenSSL Installation\e[39m"
-# echo
-# apt-get -qq -y install libssl-dev
-# apt-get -qq -y install libncurses5-dev
-# apt-get -qq -y install libsqlite3-dev
-# apt-get -qq -y install libreadline-dev
-# apt-get -qq -y install libtk8.6
-# apt-get -qq -y install libgdm-dev
-# apt-get -qq -y install libdb4o-cil-dev
-# apt-get -qq -y install libpcap-dev
-
-# wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz
-# tar zxvf openssl-1.1.1g.tar.gz
-# cd openssl-1.1.1g
-# ./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2
-# make
-# make install
-
-# echo
-# echo -e "\e[32mOpenSSL Installed\e[39m"
-# echo
-
-# echo
-# echo -e "\e[32mPython 3.10 installation\e[39m"
-# echo
-# #Python 3.10
-# apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
-# wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
-# tar -xf Python-3.10.*.tgz
-# cd Python-3.10.*/
-# ./configure --with-openssl=/home/$USER/openssl
-# sudo make
-# sudo make altinstall
-# update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1
-# update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1
-
-# echo
-# echo -e "\e[32mPython3.10 installed\e[39m"
-# echo
+echo
+echo -e "\e[32mDocker-compose installation\e[39m"
+echo
+#DOCKER COMPOSE
+wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
+chmod +x /usr/local/bin/docker-compose
+echo
+echo -e "\e[32mDocker-Compose Installed\e[39m"
+echo
 
 
-# pip3.10 install --quiet pysftp >& /dev/null
-# pip3.10 install --quiet influx-client >& /dev/null
-# pip3.10 install --quiet prometheus-client >& /dev/null
-# sudo -H pip3.10 install --quiet flask >& /dev/null
-# pip3.10 install --quiet requests >& /dev/null
-# pip install --quiet requests >& /dev/null
-# pip3.10 install --quiet flask >& /dev/null
-# apt-get -qq -y install tftpd-hpa >& /dev/null
-# export PYTHONPATH=/usr/local/bin/python3.10
-# echo
-# echo -e "\e[32mPython3.10 dependences installed\e[39m"
-# echo
 
-#echo "Devices log directory /var/log/devices/ created"
+#OpenSSL
+echo
+echo -e "\e[32mOpenSSL Installation\e[39m"
+echo
+apt-get -qq -y install libssl-dev
+apt-get -qq -y install libncurses5-dev
+apt-get -qq -y install libsqlite3-dev
+apt-get -qq -y install libreadline-dev
+apt-get -qq -y install libtk8.6
+apt-get -qq -y install libgdm-dev
+apt-get -qq -y install libdb4o-cil-dev
+apt-get -qq -y install libpcap-dev
+
+wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz
+tar zxvf openssl-1.1.1g.tar.gz
+cd openssl-1.1.1g
+./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2
+make
+make install
+
+echo
+echo -e "\e[32mOpenSSL Installed\e[39m"
+echo
+
+echo
+echo -e "\e[32mPython 3.10 installation\e[39m"
+echo
+#Python 3.10
+apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
+wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
+tar -xf Python-3.10.*.tgz
+cd Python-3.10.*/
+./configure --with-openssl=/home/$USER/openssl
+sudo make
+sudo make altinstall
+update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1
+update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1
+
+echo
+echo -e "\e[32mPython3.10 installed\e[39m"
+echo
+
+
+pip3.10 install --quiet pysftp >& /dev/null
+pip3.10 install --quiet influx-client >& /dev/null
+pip3.10 install --quiet prometheus-client >& /dev/null
+sudo -H pip3.10 install --quiet flask >& /dev/null
+pip3.10 install --quiet requests >& /dev/null
+pip install --quiet requests >& /dev/null
+pip3.10 install --quiet flask >& /dev/null
+apt-get -qq -y install tftpd-hpa >& /dev/null
+export PYTHONPATH=/usr/local/bin/python3.10
+echo
+echo -e "\e[32mPython3.10 dependences installed\e[39m"
+echo
+
+echo "Devices log directory /var/log/devices/ created"
 mkdir /var/log/devices/ >& /dev/null
 touch /var/log/devices/logtemp.json
 sleep 2
