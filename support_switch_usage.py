@@ -64,9 +64,14 @@ switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server 
 class IPThread(threading.Thread):
     def __init__(self, threadID, ip):
         threading.Thread.__init__(self)
-        IPThread.port = 22
-        IPThread.username = switch_user
-        IPThread.password = switch_password
+        if ip == "10.130.7.240":
+            IPThread.port = 22
+            IPThread.username = switch_user
+            IPThread.password = "Switch01"
+        else:
+            IPThread.port = 22
+            IPThread.username = switch_user
+            IPThread.password = switch_password
 
         self.name = "Thread-{}".format(threadID)
         self.ip = str(ip)

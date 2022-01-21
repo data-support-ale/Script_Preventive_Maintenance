@@ -7,6 +7,7 @@ import json
 import logging
 import subprocess
 import requests
+import paramiko
 import re
 from time import gmtime, strftime, localtime, sleep
 from database_conf import *
@@ -174,7 +175,7 @@ def disable_qos_ddos(user,password,ipadd,ipadd_ddos):
 def file_setup_qos(addr):
     content_variable = open ('/opt/ALE_Script/configqos','w')
     if re.search(r"\:", addr): #mac
-        setup_config= "policy condition scanner_{0} source mac {0}\npolicy action block_mac disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_mac\nqos apply".format(addr)
+        setup_config= "policy condition scanner_{0} source mac {0}\npolicy action block_mac disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_mac\nqos apply\nqos enable\n".format(addr)
     else:	
     	setup_config= "policy condition scanner_{0} source ip {0}\npolicy action block_ip disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_ip\nqos apply".format(addr)
     content_variable.write(setup_config)
@@ -198,8 +199,40 @@ def get_file_sftp(user,password,ipadd,filename):
    date = datetime.date.today()
    date_hm = datetime.datetime.today()
 
-   with pysftp.Connection(host=ipadd, username=user, password=password) as sftp:
-      sftp.get('./{0}'.format(filename), '/tftpboot/{0}_{1}-{2}_{3}_{4}'.format(date,date_hm.hour,date_hm.minute,ipadd,filename))         # get a remote file
+#   with pysftp.Connection(host=ipadd, username=user, password=password) as sftp:
+#      sftp.get('./{0}'.format(filename), '/tftpboot/{0}_{1}-{2}_{3}_{4}'.format(date,date_hm.hour,date_hm.minute,ipadd,filename))         # get a remote file
+   remote_path = '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,filename)
+   ssh = paramiko.SSHClient()
+   ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+   ssh.connect(ipadd, username=user, password=password, timeout=10.0)
+   sftp = ssh.open_sftp()
+   ## In case of SFTP Get timeout thread is closed and going into Exception
+   try:
+      th = threading.Thread(target=sftp.get, args=(filename,remote_path))
+      th.start()
+      th.join(60)
+   except Exception as error:
+      print(error)
+      exception = error.readlines()
+      exception = str(exception)
+      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+      print(info)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message(info,jid)
+      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      sys.exit() 
+
+   except paramiko.ssh_exception.SSHException as error:
+      print(error)
+      exception = error.readlines()
+      exception = str(exception)
+      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+      print(info)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message(info,jid)
+      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      sys.exit()
+   sftp.close()
 
 def detect_port_loop():
         """ 
@@ -786,7 +819,7 @@ def get_mail():
      return gmail_usr,gmail_passwd,mails
 
 def get_id_client():
-     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r') #'/var/log/devices/192.168.80.27_2021-03-26.json'
+     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r')
      file_lines = content_variable.readlines()
      content_variable.close()
      credentials_line = file_lines[0]
@@ -803,7 +836,7 @@ def get_server_log_ip():
      :return str server_log_ip:  Ip Adress of log server.
      """
 
-     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r') #'/var/log/devices/192.168.80.27_2021-03-26.json'
+     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r')
      file_lines = content_variable.readlines()
      content_variable.close()
      credentials_line = file_lines[0]

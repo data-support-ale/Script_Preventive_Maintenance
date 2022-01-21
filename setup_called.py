@@ -45,15 +45,15 @@ try:
         name = "TECH_SUPPORT_NOTIF_" + company
 
     # All generic fields (Rainbow bubble, emails, workflow name) are replaced based on ALE_script.conf file and Room_ID received from api/flows/NBDNotif_New_Bubble
-        with open("/opt/ALE_Script/json/workflow_generic.json", "r") as fichier:
+        with open("/opt/ALE_Script/json/workflow_generic.json", "r", errors='ignore') as fichier:
             json_result = str(fichier.read())
             json_result = re.sub(r"\$room", room, json_result)
             json_result = re.sub(r"\$email", mail, json_result)
             json_result = re.sub(r"\$company", company, json_result)
             json_result = re.sub(r"\$name", name, json_result)
-        with open("/opt/ALE_Script/json/workflow_generic_result.json", "w") as fichier:
+        with open("/opt/ALE_Script/json/workflow_generic_result.json", "w", errors='ignore') as fichier:
             fichier.write(json_result)
-        with open("/opt/ALE_Script/json/workflow_generic_result.json", "r") as fichier:
+        with open("/opt/ALE_Script/json/workflow_generic_result.json", "r", errors='ignore') as fichier:
             data = str(fichier.read())
 
     # REST-API method GET for Login to VNA

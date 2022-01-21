@@ -106,14 +106,14 @@ def collect_log(ip):
 def extract_port():
    last = ""
    port = 0
-   with open("/var/log/devices/lastlog_macsec_event.json", "r") as log_file:
+   with open("/var/log/devices/lastlog_macsec_event.json", "r", errors='ignore') as log_file:
     for line in log_file:
         last = line
 
-   with open("/var/log/devices/lastlog_macsec_event.json", "w") as log_file:
+   with open("/var/log/devices/lastlog_macsec_event.json", "w", errors='ignore') as log_file:
     log_file.write(last)
 
-   with open("/var/log/devices/lastlog_macsec_event.json", "r") as log_file:
+   with open("/var/log/devices/lastlog_macsec_event.json", "r", errors='ignore') as log_file:
     log_json = json.load(log_file)
     ip = log_json["relayip"]
     ipadd = log_json["hostname"]
