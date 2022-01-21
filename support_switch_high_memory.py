@@ -46,7 +46,7 @@ print(bcolors.WARNING + "Collecting interface command output" + bcolors.ENDC)
 print(bcolors.WARNING + "Collecting port flapping su command outputs" + bcolors.ENDC)
 
 #command="echo \"md 0xFF010008\" | su"
-#output=subprocess.check_output(command, stderr=subprocess.DEVNULL, shell=True)
+#output=subprocess.check_output(command, stderr=subprocess.DEVNULL, timeout=40, shell=True)
 #print(output)
 ##########################Get More LOGS########################################
 text = "More logs about the switch : {0} \n\n\n".format(system_name)
@@ -64,7 +64,7 @@ l_switch_cmd.append("echo \"cat \/proc\/meminfo\" | su")
 for switch_cmd in l_switch_cmd:
    cmd = switch_cmd
    run=cmd.split()
-   output=subprocess.check_output(switch_cmd,stderr=subprocess.DEVNULL, shell=True)
+   output=subprocess.check_output(switch_cmd,stderr=subprocess.DEVNULL, timeout=40, shell=True)
    #p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE, executable='/bin/bash')
    #out, err = p.communicate()
    output=output.decode('UTF-8').strip()

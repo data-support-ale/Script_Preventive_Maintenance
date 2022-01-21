@@ -49,15 +49,13 @@ def get_pmd_sftp(user,password,ipadd,filename_pmd):
       sftp.get('{0}'.format(filename_pmd), '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,pmd_file))         # get a remote file
 
 # Function called for collecting tech_support_complete.tar and pmd files
-get_tech_support_sftp(host,ipadd)
-
-  
-get_pmd_sftp(switch_user,switch_password,ipadd,filename_pmd)
-os.system('logger -t montag -p user.info Core Dump reproduced - logs sent ' + ipadd)
-sleep(2)
-print(pmd_file_rainbow)
-pmd_file_tar = '{0}.tar.gz'.format(pmd_file_rainbow)
-os.system("tar  -czvf {0} {1}".format(pmd_file_tar,pmd_file_rainbow))
+def get_tech_support_sftp(host,ipadd):
+  get_pmd_sftp(switch_user,switch_password,ipadd,filename_pmd)
+  os.system('logger -t montag -p user.info Core Dump reproduced - logs sent ' + ipadd)
+  sleep(2)
+  print(pmd_file_rainbow)
+  pmd_file_tar = '{0}.tar.gz'.format(pmd_file_rainbow)
+  os.system("tar  -czvf {0} {1}".format(pmd_file_tar,pmd_file_rainbow))
  
   if jid !='':
          info = "A Core Dump is noticed on switch: {0} syslogs, we are collecting files on server directory path {1}".format(ipadd,pmd_file_tar)

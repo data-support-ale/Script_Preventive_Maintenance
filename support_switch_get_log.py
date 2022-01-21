@@ -130,12 +130,7 @@ if jid !='':
          send_message(msg,jid)
 
 ### TECH-SUPPORT ENG COMPLETE ###
-#generate tech_support_sftp(host,ipadd)
-
-f_filename = "tech_support_complete.tar"
-
-#### SFTP GET tech support #####
-#get_file_sftp(ipadd,f_filename)
+get_tech_support_sftp(host,ipadd)
 
 print("Starting collecting additionnal logs")
 
@@ -156,27 +151,33 @@ print(ipadd)
 for switch_cmd in l_switch_cmd:
    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
    try:
-      output = ssh_connectivity_check(ipadd,switch_cmd)
-#      output=subprocess.check_output(target=read_until_EOF, args=(cmd,))
-      if output != None:
-         #output=output.decode('UTF-8').strip()
-         text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
-      else:
-         exception = "Timeout"
-         info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-         print(info)
-         os.system('logger -t montag -p user.info ' + info)
-         send_message(info,jid)
-         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-         sys.exit()         
-   except FileNotFoundError as error:
-      exception = "FileNotFoundError"
-      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
-      print(info)
-      os.system('logger -t montag -p user.info ' + info)
-      send_message(info,jid)
-      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-      sys.exit()
+       output = ssh_connectivity_check(ipadd,switch_cmd)
+       output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, timeout=40, shell=True)
+       if output != None:
+          output=output.decode('UTF-8').strip()
+          text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
+       else:
+          exception = "Timeout"
+          info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+          print(info)
+          os.system('logger -t montag -p user.info ' + info)
+          send_message(info,jid)
+          write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+          sys.exit()         
+   except subprocess.TimeoutExpired as exception:
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info,jid)
+        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        sys.exit()
+   except subprocess.FileNotFoundError as exception:
+       info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+       print(info)
+       os.system('logger -t montag -p user.info ' + info)
+       send_message(info,jid)
+       write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+       sys.exit()
 
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
@@ -187,6 +188,7 @@ f_logs.write(text)
 f_logs.close()
 ###############################################################################
 
+#### Send file with additionnal logs #####
 filename = '/opt/ALE_Script/{0}.txt'.format(filename)
 print(filename)
 

@@ -177,7 +177,7 @@ def file_setup_qos(addr):
     if re.search(r"\:", addr): #mac
         setup_config= "policy condition scanner_{0} source mac {0}\npolicy action block_mac disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_mac\nqos apply\nqos enable\n".format(addr)
     else:	
-    	setup_config= "policy condition scanner_{0} source ip {0}\npolicy action block_ip disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_ip\nqos apply".format(addr)
+        setup_config= "policy condition scanner_{0} source ip {0}\npolicy action block_ip disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_ip\nqos apply".format(addr)
     content_variable.write(setup_config)
     content_variable.close()
 

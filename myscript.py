@@ -138,7 +138,7 @@ l_switch_cmd.append("echo \"cat \/proc\/meminfo\" | su")
 
 for switch_cmd in l_switch_cmd:
    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
-   output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
+   output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, timeout=40, shell=True)
    output=output.decode('UTF-8').strip()
    text = "{0}{1}: \n{2}\n\n".format(text,switch_cmd,output)
 

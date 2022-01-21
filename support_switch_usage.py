@@ -378,7 +378,7 @@ if __name__ == '__main__':
         for ipaddr in ips_address:
             try:
                 output = subprocess.check_output(
-                    ["ping", "-{}".format('n' if platform.system().lower() == "windows" else 'c'), "1", "{}".format(ipaddr)], stderr=subprocess.DEVNULL
+                    ["ping", "-{}".format('n' if platform.system().lower() == "windows" else 'c'), "1", "{}".format(ipaddr)], stderr=subprocess.DEVNULL, timeout=40
                 )
                 if not re.search(r"TTL|ttl", str(output)):
                     continue

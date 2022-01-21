@@ -26,7 +26,7 @@ def get_credentials():
      :param:                         None
      :return str user:               Switch user login
      :return str password:           Switch user password
-     :return str id:                 Rainbow JID  of recipients
+     :return str jid:                 Rainbow JID  of recipients
      :return str gmail_usr:          Sender's email userID
      :return str gmail_passwd:       Sender's email password               
      :return str mails:              List of email addresses of recipients
@@ -40,9 +40,9 @@ def get_credentials():
      switch_user = credentials_line_split[0]
      switch_password = credentials_line_split[1]
      if credentials_line_split[3] != "":
-        id= credentials_line_split[3]
+        jid= credentials_line_split[3]
      elif credentials_line_split[3] == "":
-        id=''
+        jid=''
 
      gmail_usr = credentials_line_split[4]
      gmail_passwd = credentials_line_split[5]
@@ -53,8 +53,7 @@ def get_credentials():
      ip_server_log = credentials_line_split[6]
      company = credentials_line_split[11]
      print(company)
-     return switch_user,switch_password,id,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw
-
+     return switch_user,switch_password,jid,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw
 
 ### Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(ipadd,cmd):
@@ -71,7 +70,7 @@ def ssh_connectivity_check(ipadd,cmd):
      p = paramiko.SSHClient()
      p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
      p.connect(ipadd, port=22, username=switch_user, password=switch_password,timeout=60.0,banner_timeout=200)
-  except p.SSHException:
+  except paramiko.ssh_exception.SSHException:
      exception = "Timeout"
      print("Timeout when establishing SSH Session")
      info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
@@ -79,7 +78,7 @@ def ssh_connectivity_check(ipadd,cmd):
      send_message(info,jid)
      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
      sys.exit() 
-  except p.ssh_exception.AuthenticationException:
+  except paramiko.ssh_exception.AuthenticationException:
      exception = "AuthenticationException"
      print("Authentication failed enter valid user name and password")
      info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
@@ -87,7 +86,7 @@ def ssh_connectivity_check(ipadd,cmd):
      send_message(info,jid)
      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
      sys.exit(0)
-  except p.ssh_exception.NoValidConnectionsError:
+  except paramiko.ssh_exception.NoValidConnectionsError:
      exception = "NoValidConnectionsError"
      print("Device unreachable")
      logging.info(' SSH session does not establish on OmniSwitch ' + ipadd)
@@ -138,15 +137,13 @@ def get_file_sftp(ipadd,filename):
    ssh = paramiko.SSHClient()
    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
    ssh.connect(ipadd, username=switch_user, password=switch_password, timeout=10.0)
-   stdout = stdout.readlines()
-   print(stdout)
    sftp = ssh.open_sftp()
    ## In case of SFTP Get timeout thread is closed and going into Exception
    try:
       th = threading.Thread(target=sftp.get, args=('./{0}'.format(filename),remote_path))
       th.start()
       th.join(60)
-   except FileNotFoundError as error:
+   except paramiko.ssh_exception.FileNotFoundError as error:
       print(error)
       exception = "File error or wrong path"
       info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
@@ -155,7 +152,7 @@ def get_file_sftp(ipadd,filename):
       send_message(info,jid)
       write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
       sys.exit()
-   except IOError:
+   except paramiko.ssh_exception.IOError:
       exception = "File error or wrong path"
       info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
       print(info)
@@ -163,7 +160,7 @@ def get_file_sftp(ipadd,filename):
       send_message(info,jid)
       write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
       sys.exit() 
-   except Exception as error:
+   except paramiko.ssh_exception.Exception as error:
       print(error)
       exception = "SFTP Get Timeout"
       info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
@@ -184,6 +181,7 @@ def get_file_sftp(ipadd,filename):
       sys.exit()
    sftp.close()
    ssh.close()
+   return remote_path
 
 def format_mac(mac):
     mac = re.sub('[.:-]', '', mac).lower()  # remove delimiters and convert to lower case
@@ -199,7 +197,7 @@ def file_setup_qos(addr):
     if re.search(r"\:", addr): #mac
         setup_config= "policy condition scanner_{0} source mac {0}\npolicy action block_mac disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_mac\nqos apply\nqos enable\n".format(addr)
     else:	
-    	setup_config= "policy condition scanner_{0} source ip {0}\npolicy action block_ip disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_ip\nqos apply".format(addr)
+        setup_config= "policy condition scanner_{0} source ip {0}\npolicy action block_ip disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_ip\nqos apply".format(addr)
     content_variable.write(setup_config)
     content_variable.close()
 
@@ -257,7 +255,7 @@ def get_tech_support_sftp(host,ipadd):
      p = paramiko.SSHClient()
      p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
      p.connect(ipadd, port=22, username="admin", password="switch")
-  except p.SSHException:
+  except paramiko.ssh_exception.SSHException:
    exception = "Timeout"
    print("Timeout when establishing SSH Session on OmniSwitch " + ipadd)
    info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
@@ -265,14 +263,14 @@ def get_tech_support_sftp(host,ipadd):
    send_message(info,jid)
    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
    sys.exit() 
-  except p.ssh_exception.AuthenticationException:
+  except paramiko.ssh_exception.AuthenticationException:
    print("Authentication failed enter valid user name and password on OmniSwitch " + ipadd)
    info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
    os.system('logger -t montag -p user.info ' + info)
    send_message(info,jid)
    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
    sys.exit(0)
-  except p.ssh_exception.NoValidConnectionsError:
+  except paramiko.ssh_exception.NoValidConnectionsError:
    print("Device unreachable")
    logging.info(' SSH session does not establish on OmniSwitch ' + ipadd)
    info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
@@ -324,7 +322,7 @@ def get_tech_support_sftp(host,ipadd):
 
   f_filename = "tech_support_complete.tar"
   #### SFTP GET tech support #####
-  get_file_sftp(ipadd,f_filename)
+  filename_path = get_file_sftp(ipadd,f_filename)
 
   subject = ("Preventive Maintenance Application - Show Tech-Support Complete command executed on switch: {0}").format(ipadd)
   action = ("The Show Tech-Support Complete file {0} is collected from OmniSwitch (Hostname: {1})").format(filename_path,host)
@@ -1067,7 +1065,14 @@ def collect_command_output_aaa(protocol,ipadd):
         send_message(info,jid)
         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         sys.exit()
-  except subprocess.FileNotFoundError as exception:
+  except AttributeError as exception:
+       info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+       print(info)
+       os.system('logger -t montag -p user.info ' + info)
+       send_message(info,jid)
+       write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+       sys.exit()
+  except FileNotFoundError as exception:
        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
        print(info)
        os.system('logger -t montag -p user.info ' + info)
@@ -1095,15 +1100,23 @@ def collect_command_output_aaa(protocol,ipadd):
         send_message(info,jid)
         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         sys.exit()
-  except subprocess.FileNotFoundError as exception:
+  except subprocess.CalledProcessError as e:
+     aaa_status="disabled"
+  except AttributeError as exception:
        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
        print(info)
        os.system('logger -t montag -p user.info ' + info)
        send_message(info,jid)
        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
        sys.exit()
-  except subprocess.CalledProcessError as e:
-     aaa_status="disabled"
+  except FileNotFoundError as exception:
+       info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+       print(info)
+       os.system('logger -t montag -p user.info ' + info)
+       send_message(info,jid)
+       write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+       sys.exit()
+
   print(aaa_status)
   return service_status,aaa_status
 
@@ -1199,34 +1212,41 @@ def send_file(filename_path,subject,action,result):
   else:
      os.system('logger -t montag -p user.info REST API Call Failure') 
 
-jid = "570e12872d768e9b52a8b975@openrainbow.com"
-switch_password="switch"
-switch_user="admin"
-ipadd="10.130.7.244"
-cmd="show system"
-host="LAN-6860N-2"
-ssh_connectivity_check(ipadd,cmd)
-#filename_path,subject,action,result,category = collect_command_output_poe(host,ipadd)
-#send_file(filename_path,subject,action,result)
-agg = "6"
-filename_path,subject,action,result,category = collect_command_output_linkagg(agg,host,ipadd)
-send_file(filename_path,subject,action,result)
-vcid="2"
-filename_path,subject,action,result,category = collect_command_output_vc(vcid,host,ipadd)
-send_file(filename_path,subject,action,result)
-psid = "2"
-filename_path,subject,action,result,category = collect_command_output_ps(psid,host,ipadd)
-send_file(filename_path,subject,action,result)
-source="Access Guardian"
-port="1/1/1"
-decision="0"
-filename_path,subject,action,result,category = collect_command_output_violation(port,source,decision,host,ipadd)
-send_file(filename_path,subject,action,result)
-filename_path,subject,action,result,category = collect_command_output_storm(port,source,decision,host,ipadd)
-send_file(filename_path,subject,action,result)
-protocol="HTTPS"
-user="toto"
-source_ip="10.130.7.17"
-service_status,aaa_status = collect_command_output_aaa(protocol,ipadd)
-filename_path,subject,action,result,category = authentication_failure(user,source_ip,protocol,service_status,aaa_status,host,ipadd)
-send_file(filename_path,subject,action,result)
+switch_user,switch_password,jid,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw = get_credentials()
+
+if __name__ == "__main__":
+
+   jid = "570e12872d768e9b52a8b975@openrainbow.com"
+   switch_password="switch"
+   switch_user="admin"
+   ipadd="10.130.7.247"
+   cmd="show system"
+   host="LAN-6860N-2"
+   #ssh_connectivity_check(ipadd,cmd)
+   #filename_path,subject,action,result,category = collect_command_output_poe(host,ipadd)
+   #send_file(filename_path,subject,action,result)
+   agg = "6"
+   #filename_path,subject,action,result,category = collect_command_output_linkagg(agg,host,ipadd)
+   #send_file(filename_path,subject,action,result)
+   vcid="2"
+   #filename_path,subject,action,result,category = collect_command_output_vc(vcid,host,ipadd)
+   #send_file(filename_path,subject,action,result)
+   psid = "2"
+   #filename_path,subject,action,result,category = collect_command_output_ps(psid,host,ipadd)
+   #send_file(filename_path,subject,action,result)
+   source="Access Guardian"
+   port="1/1/1"
+   decision="0"
+   #filename_path,subject,action,result,category = collect_command_output_violation(port,source,decision,host,ipadd)
+   #send_file(filename_path,subject,action,result)
+   #filename_path,subject,action,result,category = collect_command_output_storm(port,source,decision,host,ipadd)
+   #send_file(filename_path,subject,action,result)
+   protocol="HTTPS"
+   user="toto"
+   source_ip="10.130.7.17"
+   service_status,aaa_status = collect_command_output_aaa(protocol,ipadd)
+   filename_path,subject,action,result,category = authentication_failure(user,source_ip,protocol,service_status,aaa_status,host,ipadd)
+   send_file(filename_path,subject,action,result)
+
+else:
+   print("Script called by another script")

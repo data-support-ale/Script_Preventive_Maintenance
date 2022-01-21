@@ -78,7 +78,7 @@ def get_snapshot_tftp(pass_root,ipadd):
   os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  root@{1} {2}".format(pass_root, ipadd, cmd))
   cmd = "/usr/sbin/getmac"
   cmd = "sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  root@{1} {2}".format(pass_root, ipadd, cmd)
-  output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, shell=True)
+  output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, timeout=40, shell=True)
   ap_mac=output.decode('UTF-8').strip()
   ap_mac = ap_mac.replace(":","")
   ap_mac = ("{0}_snapshot_{1}{2}").format(ap_mac,date,date_hm.hour)
@@ -116,11 +116,12 @@ def send_file(filename_path,subject,action,result):
   else:
      os.system('logger -t montag -p user.info REST API Call Failure') 
 
-jid = "570e12872d768e9b52a8b975@openrainbow.com"
-ap_password="Letacla01*"
-ap_user="support"
-ipadd="10.130.7.76"
-cmd="/usr/sbin/showsysinfo"
-host="10.130.7.76"
-pass_root = ssh_connectivity_check(ipadd,cmd)
-get_snapshot_tftp(pass_root,ipadd)
+if __name__ == "__main__":
+   jid = "570e12872d768e9b52a8b975@openrainbow.com"
+   ap_password="Letacla01*"
+   ap_user="support"
+   ipadd="10.130.7.76"
+   cmd="/usr/sbin/showsysinfo"
+   host="10.130.7.76"
+   pass_root = ssh_connectivity_check(ipadd,cmd)
+   get_snapshot_tftp(pass_root,ipadd)
