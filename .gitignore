@@ -3,6 +3,7 @@ __pycache__/
 openssl*/
 Python*/
 .vscode
+test.*
 
 *.gz
 *.tar
