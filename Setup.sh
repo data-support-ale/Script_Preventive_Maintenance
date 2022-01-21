@@ -1166,7 +1166,7 @@ echo
 echo -e "\e[32mGolang Installation\e[39m"
 echo
 wget  -q --inet4-only https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.14.4.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.14.4.linux-amd64.tar.gz >& /dev/null
 mkdir $home/go && chown admin-support:admin-support go/
 chown admin-support:admin-support /usr/local/go
 echo 'PATH=$PATH:/usr/local/go/bin
@@ -1214,12 +1214,12 @@ apt-get -qq -y install libgdm-dev
 apt-get -qq -y install libdb4o-cil-dev
 apt-get -qq -y install libpcap-dev
 
-wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz
-tar zxvf openssl-1.1.1g.tar.gz
+wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz 
+tar zxvf openssl-1.1.1g.tar.gz >& /dev/null
 cd openssl-1.1.1g
-./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2
-make
-make install
+./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2 >& /dev/null
+make -s >& /dev/null
+make -s install >& /dev/null
 echo 'export PATH=$HOME/openssl/bin:$PATH
 export LD_LIBRARY_PATH=$HOME/openssl/lib
 export LC_ALL="en_US.UTF-8"
@@ -1234,15 +1234,16 @@ echo
 echo -e "\e[32mPython 3.10 installation\e[39m"
 echo
 #Python 3.10
+cd /home/admin-support/Script_Preventive_Maintenance/
 apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
 wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
-tar -xf Python-3.10.*.tgz
+tar -xf Python-3.10.*.tgz >& /dev/null
 cd Python-3.10.*/
-./configure --with-openssl=/home/$USER/openssl
-sudo make
-sudo make altinstall
-update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1
-update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1
+./configure --with-openssl=/home/$USER/openssl >& /dev/null
+sudo make -s >& /dev/null
+sudo make -s altinstall >& /dev/null
+update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1 >& /dev/null
+update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1 >& /dev/null
 
 echo
 echo -e "\e[32mPython3.10 installed\e[39m"
@@ -1296,7 +1297,7 @@ echo -e "\e[32mWorking directory in /opt/ALE_Script\e[39m"
 
 for rep in "${reponse_tab[@]}"
 do
-    sudo python opt_pattern.py "$rep"
+    sudo /opt/ALE_Script/opt_pattern.py "$rep"
 done
 
 echo "Sending notification to ALE DevOPS team for setup VNA application"
