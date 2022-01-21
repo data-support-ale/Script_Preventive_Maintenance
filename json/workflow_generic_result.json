@@ -1,0 +1,1253 @@
+{
+    "name": "Preventive_maintenance_chti_company",
+    "id": "%uuid_0%",
+    "nodes": [
+        {
+            "note": "",
+            "feature": "end",
+            "x": 1104,
+            "name": "End",
+            "y": 1068,
+            "id": "%uuid_1%",
+            "category": "dev",
+            "params": {},
+            "featureVersion": "1.1",
+            "connections": []
+        },
+        {
+            "note": "",
+            "feature": "httpResponse",
+            "x": 672,
+            "name": "HTTP Answer",
+            "y": 840,
+            "id": "%uuid_2%",
+            "category": "http",
+            "params": {
+                "headers": {
+                    "type": "keyValueList",
+                    "value": {}
+                },
+                "response": {
+                    "type": "textareaMentions",
+                    "value": "VAR(answer)"
+                },
+                "statusCode": {
+                    "type": "int",
+                    "value": 200
+                }
+            },
+            "featureVersion": "2.1",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "done",
+                    "targetNodeId": "%uuid_3%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "onHttp",
+            "x": 564,
+            "name": "On HTTP",
+            "y": 36,
+            "id": "%uuid_4%",
+            "category": "http",
+            "params": {
+                "response_timeout": {
+                    "type": "int",
+                    "value": 60
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "displayed": true,
+                            "nameEditable": false,
+                            "originEditable": false,
+                            "editable": true,
+                            "removable": false,
+                            "parameter": "body",
+                            "name": "body",
+                            "parameterEditable": false,
+                            "type": "object"
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "toto",
+                            "name": "toto",
+                            "type": "string",
+                            "mandatory": false
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "jid1",
+                            "name": "jid1",
+                            "type": "string",
+                            "mandatory": false
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "jid2",
+                            "name": "jid2",
+                            "type": "string",
+                            "mandatory": false
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "jid3",
+                            "name": "jid3",
+                            "type": "string",
+                            "mandatory": false
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "card",
+                            "name": "card",
+                            "type": "string",
+                            "mandatory": false
+                        }
+                    ]
+                },
+                "immediate_response": {
+                    "type": "bool",
+                    "value": false
+                },
+                "method": {
+                    "type": "choice",
+                    "value": "GET"
+                },
+                "url": {
+                    "type": "string",
+                    "value": "/api/flows/%tenantName%"
+                }
+            },
+            "featureVersion": "2.3",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "request",
+                    "targetNodeId": "%uuid_5%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "condition",
+            "x": 180,
+            "name": "Condition",
+            "y": 168,
+            "id": "%uuid_5%",
+            "category": "dev",
+            "params": {
+                "condition": {
+                    "type": "choiceWithTranslation",
+                    "value": "equals"
+                },
+                "name": {
+                    "type": "variableName",
+                    "value": "VAR(card)"
+                },
+                "value": {
+                    "type": "variableValues",
+                    "value": [
+                        {
+                            "id": "1",
+                            "value": "1"
+                        },
+                        {
+                            "id": "0",
+                            "value": "0"
+                        }
+                    ]
+                }
+            },
+            "featureVersion": "1.1",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "0",
+                    "targetNodeId": "%uuid_6%"
+                },
+                {
+                    "outputId": "1",
+                    "targetNodeId": "%uuid_7%",
+                    "inputId": "input"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "split",
+            "x": 624,
+            "name": "Split",
+            "y": 228,
+            "id": "%uuid_6%",
+            "category": "dev",
+            "params": {
+                "output": {
+                    "type": "outputsNumber",
+                    "value": 4
+                },
+                "comment": {
+                    "type": "comment",
+                    "value": null
+                }
+            },
+            "featureVersion": "1.1",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "split1",
+                    "targetNodeId": "%uuid_8%"
+                },
+                {
+                    "inputId": "input",
+                    "outputId": "split2",
+                    "targetNodeId": "%uuid_9%"
+                },
+                {
+                    "inputId": "input",
+                    "outputId": "split3",
+                    "targetNodeId": "%uuid_10%"
+                },
+                {
+                    "inputId": "input",
+                    "outputId": "split0",
+                    "targetNodeId": "%uuid_11%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "onHttp",
+            "x": 1464,
+            "name": "On HTTP",
+            "y": 48,
+            "id": "%uuid_12%",
+            "category": "http",
+            "params": {
+                "response_timeout": {
+                    "type": "int",
+                    "value": 60
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "displayed": true,
+                            "nameEditable": false,
+                            "originEditable": false,
+                            "editable": true,
+                            "removable": false,
+                            "parameter": "body",
+                            "name": "body",
+                            "parameterEditable": false,
+                            "type": "file"
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "toto",
+                            "name": "toto",
+                            "type": "string",
+                            "mandatory": false
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "jid1",
+                            "name": "jid1",
+                            "type": "string",
+                            "mandatory": false
+                        }
+                    ]
+                },
+                "immediate_response": {
+                    "type": "bool",
+                    "value": false
+                },
+                "method": {
+                    "type": "choice",
+                    "value": "POST"
+                },
+                "url": {
+                    "type": "string",
+                    "value": "/api/flows/%tenantName%"
+                }
+            },
+            "featureVersion": "2.3",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "request",
+                    "targetNodeId": "%uuid_13%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "rainbowCardMessage",
+            "x": 120,
+            "name": "Rainbow Card",
+            "y": 396,
+            "id": "%uuid_7%",
+            "category": "rainbow",
+            "params": {
+                "cardData": {
+                    "type": "json",
+                    "value": "{\"hasMenu\":[{\"name\":\"Yes\"},{\"name\":\"No\"},{\"name\":\"Yes, and remember\"}],\"ParticipantInfoForm\":{\"log\":\"VAR(toto)\"}}"
+                },
+                "bubbleList": {
+                    "type": "bubble",
+                    "value": [
+                        {
+                            "name": "TECH_SUPPORT_NOTIF_chti_company",
+                            "jid": "room_d5b034fb0f4c433f86de73100131bba0@muc.openrainbow.com"
+                        }
+                    ]
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "name": "rainbowReceivedFromJid",
+                            "parameter": "rainbowMessageReceived.fromJid",
+                            "displayed": false,
+                            "editable": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "rainbowReceivedContent",
+                            "parameter": "rainbowMessageReceived.content",
+                            "displayed": false,
+                            "editable": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "alternativeContent",
+                            "parameter": "rainbowMessageReceived.alternativeContent",
+                            "displayed": false,
+                            "editable": false,
+                            "type": "object"
+                        },
+                        {
+                            "name": "rainbowReceivedFromUser",
+                            "parameter": "rainbowMessageReceived.fromUser",
+                            "displayed": false,
+                            "editable": false,
+                            "type": "object"
+                        },
+                        {
+                            "name": "status",
+                            "parameter": "status",
+                            "displayed": false,
+                            "editable": false,
+                            "type": "object"
+                        }
+                    ]
+                },
+                "jid": {
+                    "type": "textMentions",
+                    "value": "VAR(jid1)"
+                },
+                "cardPayload": {
+                    "type": "adaptiveCard",
+                    "value": "{\"$schema\":\"http://adaptivecards.io/schemas/adaptive-card.json\",\"body\":[{\"type\":\"TextBlock\",\"text\":\"Log: ${ParticipantInfoForm.log}\",\"size\":\"medium\",\"wrap\":true,\"weight\":\"bolder\"}],\"actions\":[{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[0].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[0].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"yes\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[1].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[1].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"no\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[2].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[2].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"save\"}}}}],\"version\":\"1.0\"}"
+                },
+                "value": {
+                    "type": "variableValues",
+                    "value": [
+                        {
+                            "id": "yes",
+                            "value": "yes",
+                            "removable": false
+                        },
+                        {
+                            "id": "no",
+                            "value": "no",
+                            "removable": false
+                        },
+                        {
+                            "id": "save",
+                            "value": "save",
+                            "removable": false
+                        },
+                        {
+                            "id": "timeout",
+                            "color": "#004a6b",
+                            "label": "Timeout",
+                            "value": "timeout",
+                            "isError": true,
+                            "removable": false
+                        }
+                    ]
+                },
+                "timeout": {
+                    "type": "int",
+                    "value": 90
+                }
+            },
+            "featureVersion": "2.5",
+            "connections": [
+                {
+                    "outputId": "no",
+                    "targetNodeId": "%uuid_14%",
+                    "inputId": "input"
+                },
+                {
+                    "outputId": "yes",
+                    "targetNodeId": "%uuid_15%",
+                    "inputId": "input"
+                },
+                {
+                    "outputId": "save",
+                    "targetNodeId": "%uuid_16%",
+                    "inputId": "input"
+                },
+                {
+                    "outputId": "err",
+                    "targetNodeId": "%uuid_17%",
+                    "inputId": "input"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "httpResponse",
+            "x": 1416,
+            "name": "HTTP Answer",
+            "y": 468,
+            "id": "%uuid_18%",
+            "category": "http",
+            "params": {
+                "headers": {
+                    "type": "keyValueList",
+                    "value": {}
+                },
+                "response": {
+                    "type": "textareaMentions",
+                    "value": "Done."
+                },
+                "statusCode": {
+                    "type": "int",
+                    "value": 200
+                }
+            },
+            "featureVersion": "2.1",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "done",
+                    "targetNodeId": "%uuid_3%"
+                },
+                {
+                    "inputId": "input",
+                    "outputId": "err",
+                    "targetNodeId": "%uuid_19%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "sendRainbowMessage",
+            "x": 1428,
+            "name": "Bubble",
+            "y": 252,
+            "id": "%uuid_13%",
+            "category": "rainbow",
+            "params": {
+                "bubbleList": {
+                    "type": "bubble",
+                    "value": [
+                        {
+                            "name": "TECH_SUPPORT_NOTIF_chti_company",
+                            "jid": "room_d5b034fb0f4c433f86de73100131bba0@muc.openrainbow.com"
+                        }
+                    ]
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "displayed": false,
+                            "editable": false,
+                            "parameter": "status",
+                            "name": "status",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "attachments": {
+                    "type": "attachments",
+                    "value": [
+                        "VAR(body)"
+                    ]
+                },
+                "messageType": {
+                    "type": "choice",
+                    "value": "Standard"
+                },
+                "jid": {
+                    "type": "textMentions",
+                    "value": "VAR(jid1)"
+                },
+                "format": {
+                    "type": "choice",
+                    "value": "text"
+                },
+                "groups": {
+                    "type": "groups",
+                    "value": null
+                },
+                "comment": {
+                    "type": "comment"
+                },
+                "message": {
+                    "type": "textareaMentions",
+                    "value": "VAR(toto)"
+                },
+                "users": {
+                    "type": "users",
+                    "value": null
+                }
+            },
+            "featureVersion": "2.5",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "sent",
+                    "targetNodeId": "%uuid_18%"
+                },
+                {
+                    "inputId": "input",
+                    "outputId": "err",
+                    "targetNodeId": "%uuid_18%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "sendRainbowMessage",
+            "x": 588,
+            "name": "Rainbow IM",
+            "y": 396,
+            "id": "%uuid_8%",
+            "category": "rainbow",
+            "params": {
+                "bubbleList": {
+                    "type": "bubble",
+                    "value": [
+                        {
+                            "name": "TECH_SUPPORT_NOTIF_chti_company",
+                            "jid": "room_d5b034fb0f4c433f86de73100131bba0@muc.openrainbow.com"
+                        }
+                    ]
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "displayed": false,
+                            "editable": false,
+                            "parameter": "status",
+                            "name": "status",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "attachments": {
+                    "type": "attachments",
+                    "value": null
+                },
+                "messageType": {
+                    "type": "choice",
+                    "value": "Standard"
+                },
+                "jid": {
+                    "type": "textMentions",
+                    "value": "VAR(jid1)"
+                },
+                "format": {
+                    "type": "choice",
+                    "value": "text"
+                },
+                "groups": {
+                    "type": "groups",
+                    "value": null
+                },
+                "comment": {
+                    "type": "comment"
+                },
+                "message": {
+                    "type": "textareaMentions",
+                    "value": "VAR(toto)"
+                },
+                "users": {
+                    "type": "users",
+                    "value": null
+                }
+            },
+            "featureVersion": "2.5",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "sent",
+                    "targetNodeId": "%uuid_2%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "sendRainbowMessage",
+            "x": 876,
+            "name": "Rainbow IM",
+            "y": 456,
+            "id": "%uuid_9%",
+            "category": "rainbow",
+            "params": {
+                "bubbleList": {
+                    "type": "bubble",
+                    "value": null
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "displayed": false,
+                            "editable": false,
+                            "parameter": "status",
+                            "name": "status",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "attachments": {
+                    "type": "attachments",
+                    "value": null
+                },
+                "messageType": {
+                    "type": "choice",
+                    "value": "Standard"
+                },
+                "jid": {
+                    "type": "textMentions",
+                    "value": "VAR(jid2)"
+                },
+                "format": {
+                    "type": "choice",
+                    "value": "text"
+                },
+                "groups": {
+                    "type": "groups",
+                    "value": null
+                },
+                "comment": {
+                    "type": "comment"
+                },
+                "message": {
+                    "type": "textareaMentions",
+                    "value": "VAR(toto)"
+                },
+                "users": {
+                    "type": "users",
+                    "value": null
+                }
+            },
+            "featureVersion": "2.5",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "sent",
+                    "targetNodeId": "%uuid_2%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "sendRainbowMessage",
+            "x": 1128,
+            "name": "Rainbow IM",
+            "y": 456,
+            "id": "%uuid_10%",
+            "category": "rainbow",
+            "params": {
+                "bubbleList": {
+                    "type": "bubble",
+                    "value": null
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "displayed": false,
+                            "editable": false,
+                            "parameter": "status",
+                            "name": "status",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "attachments": {
+                    "type": "attachments",
+                    "value": null
+                },
+                "messageType": {
+                    "type": "choice",
+                    "value": "Standard"
+                },
+                "jid": {
+                    "type": "textMentions",
+                    "value": "VAR(jid3)"
+                },
+                "format": {
+                    "type": "choice",
+                    "value": "text"
+                },
+                "groups": {
+                    "type": "groups",
+                    "value": null
+                },
+                "comment": {
+                    "type": "comment"
+                },
+                "message": {
+                    "type": "textareaMentions",
+                    "value": "VAR(toto)"
+                },
+                "users": {
+                    "type": "users",
+                    "value": null
+                }
+            },
+            "featureVersion": "2.5",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "sent",
+                    "targetNodeId": "%uuid_2%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "variable",
+            "x": 648,
+            "name": "Answer Tiemout",
+            "y": 600,
+            "id": "%uuid_17%",
+            "category": "dev",
+            "params": {
+                "variable": {
+                    "type": "variableMgt",
+                    "value": [
+                        {
+                            "name": "answer",
+                            "type": "string",
+                            "value": "1"
+                        }
+                    ]
+                },
+                "comment": {
+                    "type": "comment",
+                    "value": null
+                }
+            },
+            "featureVersion": "3.1",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "done",
+                    "targetNodeId": "%uuid_2%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "variable",
+            "x": 36,
+            "name": "Answer Yes",
+            "y": 612,
+            "id": "%uuid_15%",
+            "category": "dev",
+            "params": {
+                "variable": {
+                    "type": "variableMgt",
+                    "value": [
+                        {
+                            "name": "answer",
+                            "type": "string",
+                            "value": "1"
+                        }
+                    ]
+                },
+                "comment": {
+                    "type": "comment",
+                    "value": null
+                }
+            },
+            "featureVersion": "3.1",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "done",
+                    "targetNodeId": "%uuid_2%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "variable",
+            "x": 228,
+            "name": "Answer No",
+            "y": 600,
+            "id": "%uuid_14%",
+            "category": "dev",
+            "params": {
+                "variable": {
+                    "type": "variableMgt",
+                    "value": [
+                        {
+                            "name": "answer",
+                            "type": "string",
+                            "value": "0"
+                        }
+                    ]
+                },
+                "comment": {
+                    "type": "comment",
+                    "value": null
+                }
+            },
+            "featureVersion": "3.1",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "done",
+                    "targetNodeId": "%uuid_2%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "variable",
+            "x": 456,
+            "name": "Answer Save",
+            "y": 600,
+            "id": "%uuid_16%",
+            "category": "dev",
+            "params": {
+                "variable": {
+                    "type": "variableMgt",
+                    "value": [
+                        {
+                            "name": "answer",
+                            "type": "string",
+                            "value": "2"
+                        }
+                    ]
+                },
+                "comment": {
+                    "type": "comment",
+                    "value": null
+                }
+            },
+            "featureVersion": "3.1",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "done",
+                    "targetNodeId": "%uuid_2%"
+                }
+            ]
+        },
+        {
+            "note": "This building block to test the feature Send Email on VNA for comparison with Email sending by Python scripting",
+            "feature": "sendEmail",
+            "x": 1008,
+            "name": "Send Email",
+            "y": 228,
+            "id": "%uuid_11%",
+            "category": "email",
+            "params": {
+                "tootheremailusers": {
+                    "type": "otheremailusers",
+                    "value": [
+                        {
+                            "email": "jonathan.trebaol@al-enterprise.com"}, {"email": "titouan.dhalluin@al-enterprise.com"
+                        }
+                    ]
+                },
+                "attachments": {
+                    "type": "attachments",
+                    "value": null
+                },
+                "togroups": {
+                    "type": "groups",
+                    "value": null
+                },
+                "subject": {
+                    "type": "textMentions",
+                    "value": "Preventive Maintenance Notification - TSLAB"
+                },
+                "from": {
+                    "type": "mail",
+                    "value": "vna.custo@gmail.com"
+                },
+                "text": {
+                    "type": "textareaMentions",
+                    "value": "VAR(toto)"
+                },
+                "tousers": {
+                    "type": "users",
+                    "value": null
+                }
+            },
+            "featureVersion": "3.1",
+            "connections": []
+        },
+        {
+            "note": "",
+            "feature": "sendEmail",
+            "x": 1500,
+            "name": "Send Email",
+            "y": 780,
+            "id": "%uuid_19%",
+            "category": "email",
+            "params": {
+                "tootheremailusers": {
+                    "type": "otheremailusers",
+                    "value": [
+                        {
+                            "email": "jonathan.trebaol@al-enterprise.com"}, {"email": "titouan.dhalluin@al-enterprise.com"
+                        }
+                    ]
+                },
+                "attachments": {
+                    "type": "attachments",
+                    "value": [
+                        "VAR(body)"
+                    ]
+                },
+                "togroups": {
+                    "type": "groups",
+                    "value": null
+                },
+                "subject": {
+                    "type": "textMentions",
+                    "value": "Preventive Maintenance Notification - TSLAB"
+                },
+                "from": {
+                    "type": "mail",
+                    "value": "vna.custo@gmail.com"
+                },
+                "text": {
+                    "type": "textareaMentions",
+                    "value": "VAR(toto)"
+                },
+                "tousers": {
+                    "type": "users",
+                    "value": null
+                }
+            },
+            "featureVersion": "3.1",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "done",
+                    "targetNodeId": "%uuid_3%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "onHttp",
+            "x": 1800,
+            "name": "On HTTP",
+            "y": 60,
+            "id": "%uuid_20%",
+            "category": "http",
+            "params": {
+                "response_timeout": {
+                    "type": "int",
+                    "value": 60
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "displayed": true,
+                            "nameEditable": false,
+                            "originEditable": false,
+                            "editable": true,
+                            "removable": false,
+                            "parameter": "body",
+                            "name": "body",
+                            "parameterEditable": false,
+                            "type": "object"
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "toto",
+                            "name": "toto",
+                            "type": "string",
+                            "mandatory": false
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "jid1",
+                            "name": "jid1",
+                            "type": "string",
+                            "mandatory": false
+                        }
+                    ]
+                },
+                "immediate_response": {
+                    "type": "bool",
+                    "value": true
+                },
+                "method": {
+                    "type": "choice",
+                    "value": "GET"
+                },
+                "url": {
+                    "type": "string",
+                    "value": "/api/flows/%tenantName%"
+                }
+            },
+            "featureVersion": "2.3",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "request",
+                    "targetNodeId": "%uuid_21%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "sendRainbowMessage",
+            "x": 1824,
+            "name": "Rainbow IM",
+            "y": 264,
+            "id": "%uuid_21%",
+            "category": "rainbow",
+            "params": {
+                "bubbleList": {
+                    "type": "bubble",
+                    "value": [
+                        {
+                            "name": "TECH_SUPPORT_NOTIF_chti_company",
+                            "jid": "room_d5b034fb0f4c433f86de73100131bba0@muc.openrainbow.com"
+                        }
+                    ]
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "displayed": false,
+                            "editable": false,
+                            "parameter": "status",
+                            "name": "status",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "attachments": {
+                    "type": "attachments",
+                    "value": null
+                },
+                "messageType": {
+                    "type": "choice",
+                    "value": "Important"
+                },
+                "jid": {
+                    "type": "textMentions",
+                    "value": "VAR(jid1)"
+                },
+                "format": {
+                    "type": "choice",
+                    "value": "text"
+                },
+                "groups": {
+                    "type": "groups",
+                    "value": null
+                },
+                "comment": {
+                    "type": "comment",
+                    "value": null
+                },
+                "message": {
+                    "type": "textareaMentions",
+                    "value": "VAR(toto)"
+                },
+                "users": {
+                    "type": "users",
+                    "value": null
+                }
+            },
+            "featureVersion": "2.5",
+            "connections": []
+        },
+        {
+            "note": "Attente pour ne pas supprimer le fichier avant la fin du split",
+            "feature": "wait",
+            "x": 1296,
+            "name": "Sleep",
+            "y": 960,
+            "id": "%uuid_3%",
+            "category": "dev",
+            "params": {
+                "time": {
+                    "type": "int",
+                    "value": 30
+                }
+            },
+            "featureVersion": "1.1",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "next",
+                    "targetNodeId": "%uuid_1%"
+                }
+            ]
+        },
+        {
+            "note": "Test email",
+            "feature": "onHttp",
+            "x": 1836,
+            "name": "On HTTP  \"Test\" for Service Ability",
+            "y": 492,
+            "id": "%uuid_22%",
+            "category": "http",
+            "params": {
+                "response_timeout": {
+                    "type": "int",
+                    "value": 60
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "displayed": true,
+                            "nameEditable": false,
+                            "originEditable": false,
+                            "editable": true,
+                            "removable": false,
+                            "parameter": "body",
+                            "name": "body",
+                            "parameterEditable": false,
+                            "type": "object"
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "toto",
+                            "name": "toto",
+                            "type": "string",
+                            "mandatory": false
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "tata",
+                            "name": "tata",
+                            "type": "string",
+                            "mandatory": false
+                        },
+                        {
+                            "origin": "headers",
+                            "parameter": "jid1",
+                            "name": "jid1",
+                            "type": "string",
+                            "mandatory": false
+                        }
+                    ]
+                },
+                "immediate_response": {
+                    "type": "bool",
+                    "value": true
+                },
+                "method": {
+                    "type": "choice",
+                    "value": "GET"
+                },
+                "url": {
+                    "type": "string",
+                    "value": "/api/flows/%tenantName%"
+                }
+            },
+            "featureVersion": "2.3",
+            "connections": [
+                {
+                    "inputId": "input",
+                    "outputId": "request",
+                    "targetNodeId": "%uuid_23%"
+                }
+            ]
+        },
+        {
+            "note": "",
+            "feature": "sendRainbowMessage",
+            "x": 1884,
+            "name": "Rainbow IM",
+            "y": 684,
+            "id": "%uuid_23%",
+            "category": "rainbow",
+            "params": {
+                "bubbleList": {
+                    "type": "bubble",
+                    "value": [
+                        {
+                            "name": "TECH_SUPPORT_NOTIF_chti_company",
+                            "jid": "room_d5b034fb0f4c433f86de73100131bba0@muc.openrainbow.com"
+                        }
+                    ]
+                },
+                "variables": {
+                    "type": "VariablesList",
+                    "value": [
+                        {
+                            "displayed": false,
+                            "editable": false,
+                            "parameter": "status",
+                            "name": "status",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "attachments": {
+                    "type": "attachments",
+                    "value": null
+                },
+                "messageType": {
+                    "type": "choice",
+                    "value": "Standard"
+                },
+                "jid": {
+                    "type": "textMentions",
+                    "value": "VAR(jid1)"
+                },
+                "format": {
+                    "type": "choice",
+                    "value": "text"
+                },
+                "groups": {
+                    "type": "groups",
+                    "value": null
+                },
+                "comment": {
+                    "type": "comment",
+                    "value": null
+                },
+                "message": {
+                    "type": "textareaMentions",
+                    "value": "VAR(toto)"
+                },
+                "users": {
+                    "type": "users",
+                    "value": null
+                }
+            },
+            "featureVersion": "2.5",
+            "connections": []
+        }
+    ]
+}

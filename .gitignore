@@ -1,2 +1,9 @@
 git_usage
 __pycache__/
+openssl*/
+Python*/
+.vscode
+
+*.gz
+*.tar
+*.tgz
