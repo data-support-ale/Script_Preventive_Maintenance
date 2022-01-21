@@ -16,6 +16,8 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from ALE_script.conf (mails, mails_raw, company name)
 switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server, company, mails_raw = get_credentials()
+if len(sys.argv) > 1:
+    company = sys.argv[1]
 
 # Notification sent to ALE admin for notifying ALE Admin on a dedicated Rainbow bubble that a setup init is called
 subject = (
@@ -51,7 +53,7 @@ try:
             json_result = re.sub(r"\$email", mail, json_result)
             json_result = re.sub(r"\$company", company, json_result)
             json_result = re.sub(r"\$name", name, json_result)
-        with open("/opt/ALE_Script/json/workflow_generic_result.json", "w", errors='ignore') as fichier:
+        with open("/opt/ALE_Script/json/workflow_generic_result.json", "w+", errors='ignore') as fichier:
             fichier.write(json_result)
         with open("/opt/ALE_Script/json/workflow_generic_result.json", "r", errors='ignore') as fichier:
             data = str(fichier.read())

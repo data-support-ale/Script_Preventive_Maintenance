@@ -51,8 +51,7 @@ def get_credentials():
      mails = [ element  for element  in mails]
      #mails= ", ".join(mails)
      ip_server_log = credentials_line_split[6]
-     company = credentials_line_split[11]
-     print(company)
+     company = credentials_line_split[14].replace("\n","")
      return switch_user,switch_password,jid,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw
 
 ### Function SSH for checking connectivity before collecting logs

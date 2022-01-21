@@ -4,7 +4,9 @@ openssl*/
 Python*/
 .vscode
 test.*
+Analytics/influxdb/data/*
 
 *.gz
 *.tar
 *.tgz
+

@@ -293,7 +293,7 @@ do
   read -p   "Do you want to confirm? (Y/N)" yn
     case $yn in
           [Nn]* ) notif=0 ;;
-          [Yy]* ) echo "$login_switch,$pass_switch,$mails,$rainbow_jid,$gmail_user,$gmail_passwd,$ip_server_log,$login_AP,$pass_AP,$tech_pass,$((1000 + $RANDOM % 9999))$((1000 + $RANDOM % 9999))$((10 + $RANDOM % 99)),$pattern_1,$pattern_2,$pattern_3" > $dir/ALE_script.conf;;
+          [Yy]* ) echo "$login_switch,$pass_switch,$mails,$rainbow_jid,$gmail_user,$gmail_passwd,$ip_server_log,$login_AP,$pass_AP,$tech_pass,$((1000 + $RANDOM % 9999))$((1000 + $RANDOM % 9999))$((10 + $RANDOM % 99)),$pattern_1,$pattern_2,$pattern_3,$company" > $dir/ALE_script.conf;;
           * ) echo "Please answer Y or N.";;
     esac
 
@@ -452,22 +452,22 @@ template (name=\"devicelogbgp\" type=\"string\"
 template(name=\"json_syslog\"
   type=\"list\") {
     constant(value=\"{\")
-    constant(value=\"\\\"\"@timestamp\\\"\":\\\"\""\")       property(name=\"timereported\" dateFormat=\"rfc3339\")
-      constant(value=\"\\\\",\\\"\""type\\\\":\\\"\""syslog_json\")
-#      constant(value=\"\\\\",\\\"\"""tag\\\\":\\\"\""\"")           property(name=\"syslogtag\" format=\"json\")
-#      constant(value=\"\\\\",\\\"\"""relayhost\\\\":\\\"\""\"")     property(name=\"fromhost\")
-      constant(value=\"\\\\",\\\"\"""relayip\\\\":\\\"\""\"")       property(name=\"fromhost-ip\")
-#     constant(value=\"\\\\",\\\"\"""logsource\\\\":\\\"\""\"")     property(name=\"source\")
-      constant(value=\"\\\\",\\\"\"""hostname\\\\":\\\"\""\"")      property(name=\"hostname\" caseconversion=\"lower\")
-#      constant(value=\"\\\\",\\\"\"""program\\\\":\\\"\""\"")      property(name=\"programname\")
-#      constant(value=\"\\\\",\\\"\"""priority\\\\":\\\"\""\"")      property(name=\"pri\")
-#      constant(value=\"\\\\",\\\"\"""severity\\\\":\\\"\""\"")      property(name=\"syslogseverity\")
-#      constant(value=\"\\\\",\\\"\"""facility\\\\":\\\"\""\"")      property(name=\"syslogfacility\")
-#      constant(value=\"\\\\",\\\"\"""severity_label\\\\":\\\"\""\"")   property(name=\"syslogseverity-text\")
-#      constant(value=\"\\\\",\\\"\"""facility_label\\\\":\\\"\""\"")   property(name=\"syslogfacility-text\")
-      constant(value=\"\\\\",\\\"\"""message\\\\":\\\"\""\"")       property(name=\"rawmsg\" format=\"json\")
-      constant(value=\"\\\\",\\\"\"""end_msg\\\\":\\\"\""\"") 
-    constant(value=\"\\\"\"}\\\n\"")
+    constant(value=\"\\"\"@timestamp\\"\":\\"\""\")       property(name=\"timereported\" dateFormat=\"rfc3339\")
+      constant(value=\"\\\",\\"\""type\\\":\\"\""syslog_json\")
+#      constant(value=\"\\\",\\"\"""tag\\\":\\"\""\"")           property(name=\"syslogtag\" format=\"json\")
+#      constant(value=\"\\\",\\"\"""relayhost\\\":\\"\""\"")     property(name=\"fromhost\")
+      constant(value=\"\\\",\\"\"""relayip\\\":\\"\""\"")       property(name=\"fromhost-ip\")
+#     constant(value=\"\\\",\\"\"""logsource\\\":\\"\""\"")     property(name=\"source\")
+      constant(value=\"\\\",\\"\"""hostname\\\":\\"\""\"")      property(name=\"hostname\" caseconversion=\"lower\")
+#      constant(value=\"\\\",\\"\"""program\\\":\\"\""\"")      property(name=\"programname\")
+#      constant(value=\"\\\",\\"\"""priority\\\":\\"\""\"")      property(name=\"pri\")
+#      constant(value=\"\\\",\\"\"""severity\\\":\\"\""\"")      property(name=\"syslogseverity\")
+#      constant(value=\"\\\",\\"\"""facility\\\":\\"\""\"")      property(name=\"syslogfacility\")
+#      constant(value=\"\\\",\\"\"""severity_label\\\":\\"\""\"")   property(name=\"syslogseverity-text\")
+#      constant(value=\"\\\",\\"\"""facility_label\\\":\\"\""\"")   property(name=\"syslogfacility-text\")
+      constant(value=\"\\\",\\"\"""message\\\":\\"\""\"")       property(name=\"rawmsg\" format=\"json\")
+      constant(value=\"\\\",\\"\"""end_msg\\\":\\"\""\"") 
+    constant(value=\"\\"\"}\\\n\"")
 }
 # provides TCP syslog reception
 #module(load=\"imtcp\")
@@ -685,7 +685,7 @@ if \$msg contains 'Send deauth, reason' or \$msg contains 'Send deauth from wam,
 if \$msg contains 'Received deauth' then {
   \$RepeatedMsgReduction on
   action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-  action(type=\"omprog\" binary=\"python3 /opt/ALE_Script/support_wlan_generic.py leaving\")
+  action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py leaving\")
   stop
 }
 
@@ -784,7 +784,7 @@ if \$msg contains '$pattern_1_AP' or \$msg contains '$pattern_2_AP' or \$msg con
 if \$msg contains 'duplicate IP address' or \$msg contains 'Duplicate IP address' then{
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdupip\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/usr/bin/env python3 /opt/ALE_Script/support_switch_duplicate_ip.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_duplicate_ip.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -792,7 +792,7 @@ if \$msg contains 'duplicate IP address' or \$msg contains 'Duplicate IP address
 if \$msg contains 'SES AAA' and \$msg contains 'Failed' then{
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogauthfail\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/usr/bin/env python3 /opt/ALE_Script/support_switch_auth_fail.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_auth_fail.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -811,7 +811,7 @@ if \$msg contains 'Violation set' or \$msg contains 'in violation'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogviolation\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/usr/bin/env python3 /opt/ALE_Script/support_switch_violation.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_violation.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -1082,6 +1082,22 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
 #                sudo systemctl kill -s HUP rsyslog.service
 #        endscript
 }
+/var/log/rsyslog-stats
+{
+        rotate 7
+        daily
+        maxsize 15M
+        missingok
+        notifempty
+        dateext
+        dateformat .%Y-%m-%d
+        delaycompress
+        compress
+        create 0644 admin-support admin-support
+        postrotate
+                invoke-rc.d rsyslog rotate > /dev/null
+        endscript
+}
 /var/log/devices/*.json /var/log/devices/*/*.json
 {
         missingok
@@ -1139,89 +1155,110 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
 }
 " > /etc/logrotate.d/rsyslog
 
-# echo
-# echo -e "\e[32mInstallation and configuration of services\e[39m"
-# echo
-# apt-get -qq -y  update >& /dev/null
-# apt-get -qq -y install sshpass >& /dev/null
+echo
+echo -e "\e[32mInstallation and configuration of services\e[39m"
+echo
+apt-get -qq -y  update >& /dev/null
+apt-get -qq -y install sshpass >& /dev/null
 
-# echo
-# echo -e "\e[32mDocker Installation\e[39m"
-# echo
-# #DOCKER
-# apt-get -qq -y install ca-certificates curl gnupg lsb-release
-# curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-# apt-get -qq -y install docker-ce docker-ce-cli containerd.io
-# echo
-# echo -e "\e[32mDocker Installed\e[39m"
-# echo
+#GOLANG
+echo
+echo -e "\e[32mGolang Installation\e[39m"
+echo
+wget  -q --inet4-only https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.14.4.linux-amd64.tar.gz
+mkdir $home/go && chown admin-support:admin-support go/
+chown admin-support:admin-support /usr/local/go
+echo 'PATH=$PATH:/usr/local/go/bin
+GOPATH=$HOME/go' > ~/.profile
+source ~/.profile
 
-# echo
-# echo -e "\e[32mDocker-compose installation\e[39m"
-# echo
-# #DOCKER COMPOSE
-# wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
-# chmod +x /usr/local/bin/docker-compose
-# echo
-# echo -e "\e[32mDocker-Compose Installed\e[39m"
-# echo
+echo
+echo -e "\e[32mGolang Installed\e[39m"
+echo
 
+echo
+echo -e "\e[32mDocker Installation\e[39m"
+echo
+#DOCKER
+apt-get -qq -y install ca-certificates curl gnupg lsb-release
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get -qq -y install docker-ce docker-ce-cli containerd.io
+echo
+echo -e "\e[32mDocker Installed\e[39m"
+echo
 
-
-# #OpenSSL
-# echo
-# echo -e "\e[32mOpenSSL Installation\e[39m"
-# echo
-# apt-get -qq -y install libssl-dev
-# apt-get -qq -y install libncurses5-dev
-# apt-get -qq -y install libsqlite3-dev
-# apt-get -qq -y install libreadline-dev
-# apt-get -qq -y install libtk8.6
-# apt-get -qq -y install libgdm-dev
-# apt-get -qq -y install libdb4o-cil-dev
-# apt-get -qq -y install libpcap-dev
-
-# wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz
-# tar zxvf openssl-1.1.1g.tar.gz
-# cd openssl-1.1.1g
-# ./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2
-# make
-# make install
-
-# echo
-# echo -e "\e[32mOpenSSL Installed\e[39m"
-# echo
-
-# echo
-# echo -e "\e[32mPython 3.10 installation\e[39m"
-# echo
-# #Python 3.10
-# apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
-# wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
-# tar -xf Python-3.10.*.tgz
-# cd Python-3.10.*/
-# ./configure --with-openssl=/home/$USER/openssl
-# sudo make
-# sudo make altinstall
-# update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1
-# update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1
-
-# echo
-# echo -e "\e[32mPython3.10 installed\e[39m"
-# echo
+echo
+echo -e "\e[32mDocker-compose installation\e[39m"
+echo
+#DOCKER COMPOSE
+wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
+chmod +x /usr/local/bin/docker-compose
+echo
+echo -e "\e[32mDocker-Compose Installed\e[39m"
+echo
 
 
-# sudo -H pip3.10 install --quiet pysftp >& /dev/null
-# sudo -H pip3.10 install --quiet influx-client >& /dev/null
-# sudo -H pip3.10 install --quiet prometheus-client >& /dev/null
-# sudo -H pip3.10 install --quiet flask >& /dev/null
-# sudo -H pip3.10 install --quiet requests >& /dev/null
-# apt-get -qq -y install tftpd-hpa >& /dev/null
-# export PYTHONPATH=/usr/local/bin/python3.10
-# echo
-# echo -e "\e[32mPython3.10 dependances installed\e[39m"
-# echo
+
+#OpenSSL
+echo
+echo -e "\e[32mOpenSSL Installation\e[39m"
+echo
+apt-get -qq -y install libssl-dev
+apt-get -qq -y install libncurses5-dev
+apt-get -qq -y install libsqlite3-dev
+apt-get -qq -y install libreadline-dev
+apt-get -qq -y install libtk8.6
+apt-get -qq -y install libgdm-dev
+apt-get -qq -y install libdb4o-cil-dev
+apt-get -qq -y install libpcap-dev
+
+wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz
+tar zxvf openssl-1.1.1g.tar.gz
+cd openssl-1.1.1g
+./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2
+make
+make install
+echo 'export PATH=$HOME/openssl/bin:$PATH
+export LD_LIBRARY_PATH=$HOME/openssl/lib
+export LC_ALL="en_US.UTF-8"
+export LDFLAGS="-L /home/username/openssl/lib -Wl,-rpath,/home/username/openssl/lib"' > ~/.bash_profile
+source ~/.bash_profile
+
+echo
+echo -e "\e[32mOpenSSL Installed\e[39m"
+echo
+
+echo
+echo -e "\e[32mPython 3.10 installation\e[39m"
+echo
+#Python 3.10
+apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
+wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
+tar -xf Python-3.10.*.tgz
+cd Python-3.10.*/
+./configure --with-openssl=/home/$USER/openssl
+sudo make
+sudo make altinstall
+update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1
+update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1
+
+echo
+echo -e "\e[32mPython3.10 installed\e[39m"
+echo
+
+
+sudo -H pip3.10 install --quiet pysftp >& /dev/null
+sudo -H pip3.10 install --quiet influx-client >& /dev/null
+sudo -H pip3.10 install --quiet prometheus-client >& /dev/null
+sudo -H pip3.10 install --quiet flask >& /dev/null
+sudo -H pip3.10 install --quiet requests >& /dev/null
+apt-get -qq -y install tftpd-hpa >& /dev/null
+export PYTHONPATH=/usr/local/bin/python3.10
+echo
+echo -e "\e[32mPython3.10 dependances installed\e[39m"
+echo
 
 echo "Devices log directory /var/log/devices/ created"
 mkdir /var/log/devices/ >& /dev/null
@@ -1259,7 +1296,7 @@ echo -e "\e[32mWorking directory in /opt/ALE_Script\e[39m"
 
 for rep in "${reponse_tab[@]}"
 do
-    sudo python3 opt_pattern.py "$rep"
+    sudo python opt_pattern.py "$rep"
 done
 
 echo "Sending notification to ALE DevOPS team for setup VNA application"
