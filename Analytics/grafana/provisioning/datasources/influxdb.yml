@@ -1,8 +1,5 @@
 apiVersion: 1
 
-deleteDatasources:
-  - name: "InfluxDB2"
-    orgId: 1
 datasources:
   - name: InfluxDB
     type: influxdb

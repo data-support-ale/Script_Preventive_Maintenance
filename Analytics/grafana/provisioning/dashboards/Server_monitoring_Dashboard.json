@@ -32,7 +32,7 @@
     {
       "type": "datasource",
       "id": "prometheus",
-      "name": "Prometheus",
+      "name": "Prometheus-1",
       "version": "1.0.0"
     },
     {
@@ -13429,7 +13429,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "Debian2 Server monitoring",
+  "title": "Server monitoring Dashboard",
   "uid": "rYdddlPWk",
   "version": 3,
   "weekStart": ""
