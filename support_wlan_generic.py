@@ -16,10 +16,11 @@ from support_send_notification import send_message,send_file,send_alert
 from database_conf import *
 
 script_name = sys.argv[0]
+argument = sys.argv[1]
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 uname = os.system('uname -a')
-os.system('logger -t montag -p user.info Executing script ' + script_name)
+os.system('logger -t montag -p user.info Executing script ' + script_name + ' argument: ' + argument)
 system_name = os.uname()[1].replace(" ", "_")
 
 #Init Timestamp in second
@@ -558,7 +559,7 @@ elif sys.argv[1] == "reboot":
       print("call function reboot")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
-      reboot(ipadd,timestamp)
+      reboot(ipadd)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)
@@ -567,7 +568,7 @@ elif sys.argv[1] == "upgrade":
       print("call function upgrade")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
-      upgrade(ipadd,timestamp)
+      upgrade(ipadd)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)
@@ -576,7 +577,7 @@ elif sys.argv[1] == "exception":
       print("call function exception")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
-      exception(ipadd,timestamp)
+      exception(ipadd)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)
@@ -585,7 +586,7 @@ elif sys.argv[1] == "target_asserted":
       print("call function target_asserted")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
-      target_asserted(ipadd,timestamp)
+      target_asserted(ipadd)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)
@@ -594,7 +595,7 @@ elif sys.argv[1] == "internal_error":
       print("call function internal_error")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
-      internal_error(ipadd,timestamp)
+      internal_error(ipadd)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)
@@ -603,7 +604,7 @@ elif sys.argv[1] == "kernel_panic":
       print("call function kernel_panic")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
-      kernel_panic(ipadd,timestamp)
+      kernel_panic(ipadd)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)
@@ -612,7 +613,7 @@ elif sys.argv[1] == "limit_reached":
       print("call function Associated STA limit reached")
       os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
       ipadd,message_reason = extract_ipadd()
-      limit_reached(ipadd,timestamp)
+      limit_reached(ipadd)
       os.system('logger -t montag -p user.info Sending email')
       os.system('logger -t montag -p user.info Process terminated')
       sys.exit(0)
