@@ -35,7 +35,7 @@ if sys.argv[1] != None:
     write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
 
     url = ("https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}").format(company)
-    payload=open("/opt/ALE_Script/giphy.gif", "rb")
+    payload=open("/opt/ALE_Script/VNA_Workflow/images/giphy.gif", "rb")
     headers = {
               'jid1': '{0}'.format(jid),
               'toto': '{0}'.format(info),

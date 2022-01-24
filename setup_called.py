@@ -16,8 +16,6 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from ALE_script.conf (mails, mails_raw, company name)
 switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server, company, mails_raw = get_credentials()
-if len(sys.argv) > 1:
-    company = sys.argv[1]
 
 # Notification sent to ALE admin for notifying ALE Admin on a dedicated Rainbow bubble that a setup init is called
 subject = (
@@ -47,15 +45,15 @@ try:
         name = "TECH_SUPPORT_NOTIF_" + company
 
     # All generic fields (Rainbow bubble, emails, workflow name) are replaced based on ALE_script.conf file and Room_ID received from api/flows/NBDNotif_New_Bubble
-        with open("/opt/ALE_Script/json/workflow_generic.json", "r", errors='ignore') as fichier:
+        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic.json", "r", errors='ignore') as fichier:
             json_result = str(fichier.read())
             json_result = re.sub(r"\$room", room, json_result)
             json_result = re.sub(r"\$email", mail, json_result)
             json_result = re.sub(r"\$company", company, json_result)
             json_result = re.sub(r"\$name", name, json_result)
-        with open("/opt/ALE_Script/json/workflow_generic_result.json", "w+", errors='ignore') as fichier:
+        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic_result.json", "w", errors='ignore') as fichier:
             fichier.write(json_result)
-        with open("/opt/ALE_Script/json/workflow_generic_result.json", "r", errors='ignore') as fichier:
+        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic_result.json", "r", errors='ignore') as fichier:
             data = str(fichier.read())
 
     # REST-API method GET for Login to VNA
@@ -113,7 +111,7 @@ try:
 
     # REST-API for sending Welcome gif to Rainbow bubble    
         url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}".format(company)
-        payload=open("/opt/ALE_Script/giphy.gif", "rb")
+        payload=open("/opt/ALE_Script/VNA_Workflow/images/giphy.gif", "rb")
         headers = {
                   'jid1': '{0}'.format(jid),
                   'toto': 'Welcome to the Club',
