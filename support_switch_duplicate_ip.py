@@ -53,23 +53,32 @@ def enable_qos_ddos(user,password,ipadd,ipadd_ddos):
    remote_path = '/flash/working/configqos'
    ssh = paramiko.SSHClient()
    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-   ssh.connect(ipadd, username=user, password=password, timeout=20.0)
-   sftp = ssh.open_sftp()
-   ## In case of SFTP Get timeout thread is closed and going into Exception
    try:
-      filename = "/opt/ALE_Script/configqos"
-      th = threading.Thread(target=sftp.put, args=(filename,remote_path))
-      th.start()
-      th.join(120)
-   except IOError:
-      exception = "File error or wrong path"
-      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
-      print(info)
-      os.system('logger -t montag -p user.info ' + info)
-      send_message(info,jid)
-      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-      sys.exit()
-   except Exception:
+        ssh.connect(ipadd, username=user, password=password, timeout=20.0)
+        sftp = ssh.open_sftp()
+        ## In case of SFTP Get timeout thread is closed and going into Exception
+        try:
+            filename = "/opt/ALE_Script/configqos"
+            th = threading.Thread(target=sftp.put, args=(filename,remote_path))
+            th.start()
+            th.join(120)
+        except IOError:
+            exception = "File error or wrong path"
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info,jid)
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            sys.exit()
+        except Exception:
+            exception = "SFTP Get Timeout"
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info,jid)
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            sys.exit()
+   except paramiko.ssh_exception.AuthenticationException:
       exception = "SFTP Get Timeout"
       info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
       print(info)
@@ -77,6 +86,7 @@ def enable_qos_ddos(user,password,ipadd,ipadd_ddos):
       send_message(info,jid)
       write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
       sys.exit()
+
    cmd = "configuration apply ./working/configqos "
    ssh_connectivity_check(ipadd,cmd)  
 
