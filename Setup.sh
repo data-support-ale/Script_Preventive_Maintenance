@@ -1160,6 +1160,22 @@ echo -e "\e[32mInstallation and configuration of services\e[39m"
 echo
 apt-get -qq -y  update >& /dev/null
 apt-get -qq -y install sshpass >& /dev/null
+sudo echo "[Unit]
+Description=Python exporter
+
+[Service]
+ExecStart=/usr/bin/python /opt/ALE_Script/support_switch_usage.py
+Restart=on-failure
+User=admin-support
+Group=admin-support
+WorkingDirectory=/opt/ALE_Script/
+
+[Install]
+WantedBy=multi-user.target" > /etc/systemd/system/python_exporter.service
+
+sudo systemctl start python_exporter.service
+sudo systemctl enable  python_exporter.service
+
 
 #GOLANG
 echo
