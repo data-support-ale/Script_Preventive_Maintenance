@@ -38,8 +38,7 @@ while [[ "$notif" != 1  && "$notif" != 2 && "$notif" != 3 ]]
 do
 
 yn=0 #variable to validate informations
-read -p "Do you want to be notified by email, Rainbow bot or both?
-(1)==>email  (2)==>Rainbow  (3)==>both : " notif
+notif=3
 if [[ "$notif" == 1 || "$notif" == 2 || "$notif" == 3 ]]
 then
 
@@ -270,7 +269,7 @@ echo "Your switch parttens :"
 
 for rep in "${reponse_tab[@]}"
 do
-        echo "$rep \n"
+        echo "$rep"
 done
 
 echo "Networks allowed : $ip_allows"
@@ -1171,7 +1170,7 @@ WorkingDirectory=/opt/ALE_Script/
 
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/python_exporter.service
-
+sudo systemctl daemon-reload
 sudo systemctl start python_exporter.service
 sudo systemctl enable  python_exporter.service
 
@@ -1273,7 +1272,7 @@ sudo -H pip3.10 install --quiet requests >& /dev/null
 apt-get -qq -y install tftpd-hpa >& /dev/null
 export PYTHONPATH=/usr/local/bin/python3.10
 echo
-echo -e "\e[32mPython3.10 dependances installed\e[39m"
+echo -e "\e[32mPython3.10 dependences installed\e[39m"
 echo
 
 echo "Devices log directory /var/log/devices/ created"

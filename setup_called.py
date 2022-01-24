@@ -101,13 +101,23 @@ try:
             'Cookie': 'JSESSIONID=80E64766B76B28CBFF0B44B3876ADA01'
         }
         response = requests.request("PUT", url, headers=headers, data=payload)
-        print(response)
+        if "200" in response:
+              os.system('logger -t montag -p user.info 200 OK')
+              print("VNA Workflow deployment in progress")
+        else:
+              os.system('logger -t montag -p user.info REST API Call Failure')
+              print("VNA Workflow depoyment failed")
 
     # REST-API method PUT /api/tenants/<tenant_id>/flows/<id>/deploy is called for enabling the VNA Workflow
         url = "https://tpe-vna.al-mydemo.com/management/api/tenants/{}/flows/{}/deploy".format(
             tenant_id, id)
         response = requests.request("PUT", url, headers=headers, data=payload)
-        print(response)
+        if "200" in response:
+              os.system('logger -t montag -p user.info 200 OK')
+              print("VNA Workflow deployed and enabled")
+        else:
+              os.system('logger -t montag -p user.info REST API Call Failure')
+              print("VNA Workflow depoyment failed")
 
     # REST-API for sending Welcome gif to Rainbow bubble    
         url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}".format(company)
@@ -120,7 +130,12 @@ try:
                   }
 
         response = requests.request("POST", url, headers=headers, data=payload)
-        print(response)
+        if "200" in response:
+              os.system('logger -t montag -p user.info 200 OK')
+              print("Rainbow bubble created")
+        else:
+              os.system('logger -t montag -p user.info REST API Call Failure')
+              print("Rainbow bubble creation failed")
 
     else:
         print("There are no emails saved into the database")
