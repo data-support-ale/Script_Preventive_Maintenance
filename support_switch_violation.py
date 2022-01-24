@@ -101,5 +101,8 @@ else:
     os.system('logger -t montag -p user.info Mail request set as no')
     sleep(1)
 
-from database_conf import *
-write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "Reason": reason, "port" : port}, "fields": {"count": 1}}])
+try:
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "Reason": reason, "port" : port}, "fields": {"count": 1}}])
+except UnboundLocalError as error:
+    print(error)
+    sys.exit()

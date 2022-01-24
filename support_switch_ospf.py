@@ -7,7 +7,7 @@ import json
 from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
 from support_send_notification import send_message
-
+from database_conf import *
 
 # Script init
 script_name = sys.argv[0]
@@ -50,7 +50,8 @@ else:
     sleep(1)
     open('/var/log/devices/lastlog_ospf.json', 'w', errors='ignore').close()
 
-
-from database_conf import *
-write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"OSPF_Neighbor_IP": neighbor_ip, "IP": ip, "OSPF_Router_ID" : router_id, "State" : final_state}, "fields": {"count": 1}}])
-
+try:
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"OSPF_Neighbor_IP": neighbor_ip, "IP": ip, "OSPF_Router_ID" : router_id, "State" : final_state}, "fields": {"count": 1}}])
+except UnboundLocalError as error:
+    print(error)
+    sys.exit()

@@ -7,7 +7,7 @@ import json
 from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
 from support_send_notification import send_message
-
+from database_conf import *
 
 # Script init
 script_name = sys.argv[0]
@@ -49,7 +49,8 @@ else:
     sleep(1)
     open('/var/log/devices/lastlog_bgp.json', 'w', errors='ignore').close()
 
-
-from database_conf import *
-write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"BGP_Peer_IP": bgp_peer, "IP": ip, "BGP_AS" : bgp_as, "State" : final_state}, "fields": {"count": 1}}])
-
+try:
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"BGP_Peer_IP": bgp_peer, "IP": ip, "BGP_AS" : bgp_as, "State" : final_state}, "fields": {"count": 1}}])
+except UnboundLocalError as error:
+    print(error)
+    sys.exit()

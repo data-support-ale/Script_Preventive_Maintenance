@@ -219,7 +219,11 @@ def get_file_sftp(user,password,ipadd,filename):
       print(info)
       os.system('logger -t montag -p user.info ' + info)
       send_message(info,jid)
-      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      try:
+          write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      except UnboundLocalError as error:
+          print(error)
+          sys.exit()
       sys.exit() 
 
    except paramiko.ssh_exception.SSHException as error:
@@ -230,7 +234,11 @@ def get_file_sftp(user,password,ipadd,filename):
       print(info)
       os.system('logger -t montag -p user.info ' + info)
       send_message(info,jid)
-      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      try:
+         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      except UnboundLocalError as error:
+         print(error)
+         sys.exit()      
       sys.exit()
    sftp.close()
 
@@ -372,7 +380,11 @@ def detect_port_flapping():
               if 'DOWN' in element : #only on down log to don't make the action twice(UP/DOWN) 
                  print(current_time,last_time_first_IP,last_time_second_IP) #print for debug the script
                  print("coucou")
-                 write_api.write(bucket, org, [{"measurement": "support_switch_port_flapping.py", "tags": {"IP_Address": ipadd, "Port": portnumber}, "fields": {"count": 1}}])
+                 try:
+                     write_api.write(bucket, org, [{"measurement": "support_switch_port_flapping.py", "tags": {"IP_Address": ipadd, "Port": portnumber}, "fields": {"count": 1}}])
+                 except UnboundLocalError as error:
+                     print(error)
+                     sys.exit()
                  if ipadd == first_IP:
                      if (int(current_time)-int(last_time_first_IP))<10: #ten seconds for the demo, we simulate a flapping . For the real usecase we can down to 1 seconds
                         i_first_IP=i_first_IP+1     #we count how many link down 
@@ -397,8 +409,11 @@ def save_attachment(ipadd):
   myDate = datetime.date.today()
   path_log_attachment = "/var/log/devices/{0}_{1}_history.json".format(ipadd,myDate.isoformat())
 
-
-  content_variable = open (path_log_attachment,'r', errors='ignore')
+  try:
+      content_variable = open (path_log_attachment,'r', errors='ignore')
+  except FileNotFoundError as error:
+      print(error)
+      sys.exit()
   file_lines = content_variable.readlines()
   content_variable.close()
   if len(file_lines)>100:
@@ -875,21 +890,37 @@ def add_new_save(ipadd,port,type,choice = "never"):
 
 
   if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
+   try:
      open ('/opt/ALE_Script/decisions_save.conf','w').close()
+     subprocess.call(['chmod', '0755', '/opt/ALE_Script/decisions_save.conf'])
+   except OSError as error:
+      print(error)
+      print("Permission error when creating file /opt/ALE_Script/decisions_save.conf")
+      sys.exit()
 
   fileR = open("/opt/ALE_Script/decisions_save.conf", "r", errors='ignore')
   text = fileR.read()
   fileR.close()
 
   textInsert = "{0},{1},{2},{3}\n".format(ipadd,port,type,choice)
-
-  fileW = open("/opt/ALE_Script/decisions_save.conf", "w", errors='ignore')
-  fileW.write(textInsert + text)
-  fileW.close()
+  try:
+     fileW = open("/opt/ALE_Script/decisions_save.conf", "w", errors='ignore')
+     fileW.write(textInsert + text)
+     fileW.close()
+  except OSError as error:
+      print(error)
+      print("Permission error when creating file /opt/ALE_Script/decisions_save.conf")
+      sys.exit()
 
 def check_save(ipadd,port,type):
   if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
-     open ('/opt/ALE_Script/decisions_save.conf','w', errors='ignore').close()
+     try:
+         open ('/opt/ALE_Script/decisions_save.conf','w', errors='ignore').close()
+         subprocess.call(['chmod', '0755', '/opt/ALE_Script/decisions_save.conf'])
+     except OSError as error:
+         print(error)
+         print("Permission error when creating file /opt/ALE_Script/decisions_save.conf")
+         sys.exit()
      return "0"
 
 

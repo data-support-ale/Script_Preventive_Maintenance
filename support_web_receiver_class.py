@@ -80,10 +80,13 @@ def start_web(receiver,id_client,id_case):
              key = request.args.get('answer')
              if key == 'yes':
                  receiver.set_answer('1')
+                 print("Answer Yes received")
              elif key == 'no':
                  receiver.set_answer('0')
+                 print("Answer No received")
              elif key == 'save':
                  receiver.set_answer('2')
+                 print("Answer Yes and remember received")
              else:
                  receiver.set_answer('-1') #error: wrong argument answer
              shutdown_server()

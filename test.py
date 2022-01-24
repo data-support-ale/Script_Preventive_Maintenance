@@ -32,7 +32,11 @@ if sys.argv[1] != None:
               'Card': '0'
               }
     response = requests.get(url, headers=headers)
-    write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
     url = ("https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}").format(company)
     payload=open("/opt/ALE_Script/VNA_Workflow/images/giphy.gif", "rb")
@@ -44,7 +48,11 @@ if sys.argv[1] != None:
               'Content-Disposition' : 'attachment; filename=welcome.gif'
               }
     response = requests.request("POST", url, headers=headers, data=payload)
-    write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
 else:
     print("Please provide Company name in argument when executing this script")
