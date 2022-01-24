@@ -26,9 +26,8 @@ USER="admin-support"
 mkdir $dir >& /dev/null
 mkdir /tftpboot/upgrades >& /dev/null
 cp ./Setup.sh $dir/
-cp ./giphy.gif $dir/
 cp -r ./Analytics $dir/
-cp -r ./json $dir/
+cp -r ./VNA_Workflow $dir/
 cp ./*.py $dir/ #change in mvpip3.10
 cp ./*.csv $dir/ >& /dev/null
 chmod 755 $dir/*
