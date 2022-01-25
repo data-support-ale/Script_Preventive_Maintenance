@@ -7,7 +7,7 @@ import json
 from support_tools import enable_debugging, disable_debugging, disable_port, extract_ip_port, check_timestamp, get_credentials,extract_ip_ddos,disable_debugging_ddos,enable_qos_ddos,get_id_client,get_server_log_ip
 from time import strftime, localtime, sleep
 from support_send_notification import send_message, send_mail,send_file
-
+from database_conf import *
 
 # Script init
 script_name = sys.argv[0]
@@ -47,7 +47,8 @@ else:
     sleep(1)
     open('/var/log/devices/lastlog_auth_fail.json', 'w').close()
 
-
-from database_conf import *
-write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"user": user, "IP": ip, "protocol" : protocol, "source_ip" : source_ip}, "fields": {"count": 1}}])
-
+try:
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"user": user, "IP": ip, "protocol" : protocol, "source_ip" : source_ip}, "fields": {"count": 1}}])
+except UnboundLocalError as error:
+    print(error)
+    sys.exit()
