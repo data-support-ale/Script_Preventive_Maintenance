@@ -490,7 +490,7 @@ if \$msg contains 'ConsLog' then {
 if \$msg contains 'Recv the  wam module  notify  data user' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py auth_step1\")
+     action(type=\"omprog\" name=\"support_wlan_generic_auth_step1\" binary=\"/opt/ALE_Script/support_wlan_generic.py auth_step1\")
      stop
 }
 
@@ -501,12 +501,12 @@ if \$msg contains ':authorize' or \$msg contains 'from MAC-Auth' or \$msg contai
      }
      if \$msg contains 'Access Role'  or \$msg contains 'Access Role' then {
      action(type=\"omfile\" DynaFile=\"devicelogmacauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py mac_auth\")
+     action(type=\"omprog\" name=\"support_wlan_generic_mac_auth\" binary=\"/opt/ALE_Script/support_wlan_generic.py mac_auth\")
      stop
      }
      else if \$msg contains 'Get PolicyList' then {
      action(type=\"omfile\" DynaFile=\"devicelogpolicy\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py policy\")
+     action(type=\"omprog\" name=\"support_wlan_generic_policy\" binary=\"/opt/ALE_Script/support_wlan_generic.py policy\")
      stop
      }
 }
@@ -514,18 +514,18 @@ if \$msg contains ':authorize' or \$msg contains 'from MAC-Auth' or \$msg contai
 if \$msg contains '8021x-Auth' or \$msg contains 'RADIUS' or \$msg contains '8021x Authentication' then {
      \$RepeatedMsgReduction on
      if \$msg contains 'Retry attempts' or \$msg contains 'RADIUS Authentication server' then {
-     action(type=\"omfile\" DynaFile=\"devicelog8021Xauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" name=\"support_wlan_generic_radius\" DynaFile=\"devicelog8021Xauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      stop
      }
      else if  \$msg contains '8021x-Auth' or \$msg contains '8021x Authentication' or \$msg contains 'RADIUS packet send to' then {
      action(type=\"omfile\" DynaFile=\"devicelog8021Xauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py 8021X\")
+     action(type=\"omprog\" name=\"support_wlan_generic_radius\" binary=\"/opt/ALE_Script/support_wlan_generic.py 8021X\")
      stop
      }
 
      else if \$msg contains 'too many failed retransmit attempts' or \$msg contains 'No response' then {
      action(type=\"omfile\" DynaFile=\"devicelog8021Xauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py failover\")
+     action(type=\"omprog\" name=\"support_wlan_generic_radius\" binary=\"/opt/ALE_Script/support_wlan_generic.py failover\")
      stop
      }
 }
@@ -533,14 +533,14 @@ if \$msg contains '8021x-Auth' or \$msg contains 'RADIUS' or \$msg contains '802
 if \$msg contains 'Recv the  eag module  notify  data user' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py auth_step2\")
+     action(type=\"omprog\" name=\"support_wlan_generic_auth_step2\" binary=\"/opt/ALE_Script/support_wlan_generic.py auth_step2\")
      stop
 }
 
 if \$msg contains 'Found DHCPACK for STA' or \$msg contains 'Found dhcp ack for STA' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdhcp\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py dhcp\")
+     action(type=\"omprog\" name=\"support_wlan_generic_dhcp\" binary=\"/opt/ALE_Script/support_wlan_generic.py dhcp\")
      stop
 }
 
@@ -549,7 +549,7 @@ if \$msg contains 'Found DHCPACK for STA' or \$msg contains 'Found dhcp ack for 
 if \$msg contains 'verdict:[NF_DROP]' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogwcf\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py wcf_block\")
+     action(type=\"omprog\" name=\"support_wlan_generic_wcf\" binary=\"/opt/ALE_Script/support_wlan_generic.py wcf_block\")
      stop
 }
 
@@ -558,7 +558,7 @@ if \$msg contains 'verdict:[NF_DROP]' then {
 if \$msg contains 'Send deauth, reason 1' or \$msg contains 'deauth reason 1' or \$msg contains 'Send deauth from wam, reason 36' then {
   \$RepeatedMsgReduction on
   action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-  action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py roaming\")
+  action(type=\"omprog\" name=\"support_wlan_generic_roaming\" binary=\"/opt/ALE_Script/support_wlan_generic.py roaming\")
   stop
 }
 
@@ -566,14 +566,14 @@ if \$msg contains 'Send deauth, reason' or \$msg contains 'Send deauth from wam,
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py deauth\")
+     action(type=\"omprog\" name=\"support_wlan_generic_deauth\" binary=\"/opt/ALE_Script/support_wlan_generic.py deauth\")
      stop
 }
 
 if \$msg contains 'Received deauth' then {
   \$RepeatedMsgReduction on
   action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-  action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py leaving\")
+  action(type=\"omprog\" name=\"support_wlan_generic_leaving\" binary=\"/opt/ALE_Script/support_wlan_generic.py leaving\")
   stop
 }
 
@@ -582,14 +582,14 @@ if \$msg contains 'Received deauth' then {
 if \$msg contains 'sysreboot' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py reboot\")
+     action(type=\"omprog\" name=\"support_wlan_generic_sysreboot\" binary=\"/opt/ALE_Script/support_wlan_generic.py reboot\")
      stop
 }
 
 if \$msg contains 'enter in sysupgrade' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py upgrade\")
+     action(type=\"omprog\" name=\"support_wlan_generic_sysupgrade\" binary=\"/opt/ALE_Script/support_wlan_generic.py upgrade\")
      stop
 }
 
@@ -598,35 +598,35 @@ if \$msg contains 'enter in sysupgrade' then {
 if \$msg contains 'TARGET ASSERTED' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py target_asserted\")
+     action(type=\"omprog\" name=\"support_wlan_generic_target_asserted\" binary=\"/opt/ALE_Script/support_wlan_generic.py target_asserted\")
      stop
 }
 
 if \$msg contains 'Internal error' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py internal_error\")
+     action(type=\"omprog\" name=\"support_wlan_generic_internal_error\" binary=\"/opt/ALE_Script/support_wlan_generic.py internal_error\")
      stop
 }
 
 if \$msg contains 'Fatal exception' or \$msg contains 'Kernel panic' or \$msg contains 'Exception stack' or \$msg contains 'parse condition rule is error' or \$msg contains 'core-monitor reboot' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py exception\")
+     action(type=\"omprog\" name=\"support_wlan_generic_exception\" binary=\"/opt/ALE_Script/support_wlan_generic.py exception\")
      stop
 }
 
 if \$msg contains 'Unable to handle kernel'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py kernel_panic\")
+     action(type=\"omprog\" name=\"support_wlan_generic_kernel_panic\" binary=\"/opt/ALE_Script/support_wlan_generic.py kernel_panic\")
      stop
 }
 
 if \$msg contains 'STA limit reached' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py limit_reached\")
+     action(type=\"omprog\" name=\"support_wlan_generic_limit_reached\" binary=\"/opt/ALE_Script/support_wlan_generic.py limit_reached\")
      stop
 }
 
