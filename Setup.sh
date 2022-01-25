@@ -446,6 +446,8 @@ template (name=\"devicelogspb\" type=\"string\"
 template (name=\"devicelogbgp\" type=\"string\"
      string=\"/var/log/devices/lastlog_bgp.json\")
 
+template (name=\"devicelogddm\" type=\"string\"
+     string=\"/var/log/devices/lastlog_ddm.json\")
 
 template(name=\"json_syslog\"
   type=\"list\") {
@@ -537,6 +539,11 @@ mail.err                        /var/log/mail.err
 :msg, contains, \"DBG3\" stop
 :msg, contains, \"DBG2\" stop
 
+if \$msg contains 'ConsLog' then {
+     action(type=\"omfile\" File=\"/var/log/devices/Console_Logs.log\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     stop
+}
+
 # if a syslog message contains \"error\" string, we redirect to a specific log
 #:msg, contains, \"error\"         /var/log/syslog-error.log
 *.* ?DynamicFile;json_syslog
@@ -544,7 +551,7 @@ mail.err                        /var/log/mail.err
 ############### Rules Preventive Maintenance ##########
 #
 
-#### Rules WLAN #####
+##### WLAN Rules for Stellar AP Quality User Experience #####
 if \$msg contains 'Recv the  wam module  notify  data user' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -602,6 +609,8 @@ if \$msg contains 'Found DHCPACK for STA' or \$msg contains 'Found dhcp ack for 
      stop
 }
 
+##### WLAN Rules for Stellar AP Web Control Filtering #####
+
 if \$msg contains 'verdict:[NF_DROP]' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogwcf\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -609,19 +618,31 @@ if \$msg contains 'verdict:[NF_DROP]' then {
      stop
 }
 
-if \$msg contains 'TARGET ASSERTED' then {
+##### WLAN Rules for Stellar AP deassociation or deauthentication #####
+
+if \$msg contains 'Send deauth, reason 1' or \$msg contains 'deauth reason 1' or \$msg contains 'Send deauth from wam, reason 36' then {
+  \$RepeatedMsgReduction on
+  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+  action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py roaming\")
+  stop
+}
+
+if \$msg contains 'Send deauth, reason' or \$msg contains 'Send deauth from wam, reason' or \$msg contains 'Received disassoc' then {
      \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py target_asserted\")
+     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py deauth\")
      stop
 }
 
-if \$msg contains 'Internal error' then {
-     \$RepeatedMsgReduction on
-     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py internal_error\")
-     stop
+if \$msg contains 'Received deauth' then {
+  \$RepeatedMsgReduction on
+  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+  action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py leaving\")
+  stop
 }
+
+##### WLAN Rules for Stellar AP upgrade or reboot #####
 
 if \$msg contains 'sysreboot' then {
      \$RepeatedMsgReduction on
@@ -637,10 +658,19 @@ if \$msg contains 'enter in sysupgrade' then {
      stop
 }
 
-if \$msg contains 'sysreboot' or \$msg contains 'sysupgrade' then {
+##### WLAN Rules for handling all abnormal operations #####
+
+if \$msg contains 'TARGET ASSERTED' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py reboot\")
+     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py target_asserted\")
+     stop
+}
+
+if \$msg contains 'Internal error' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py internal_error\")
      stop
 }
 
@@ -665,26 +695,13 @@ if \$msg contains 'STA limit reached' then {
      stop
 }
 
-if \$msg contains 'Send deauth, reason 1' or \$msg contains 'deauth reason 1' or \$msg contains 'Send deauth from wam, reason 36' then {
-  \$RepeatedMsgReduction on
-  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-  action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py roaming\")
-  stop
-}
 
-if \$msg contains 'Send deauth, reason' or \$msg contains 'Send deauth from wam, reason' or \$msg contains 'Received disassoc' then {
+##### Rules WLAN if we reached the limit of Associated WLAN Clients ########
+if \$msg contains 'STA limit reached' then {
      \$RepeatedMsgReduction on
-     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py deauth\")
+     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py limit_reached\")
      stop
-}
-
-if \$msg contains 'Received deauth' then {
-  \$RepeatedMsgReduction on
-  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-  action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py leaving\")
-  stop
 }
 
 if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_sta_assoc' then {
@@ -693,6 +710,7 @@ if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_s
   stop
 }
 
+##### Rules WLAN WIPS under progress ########
 #if \$msg contains '[Lbd-Deny-Cnt] : Set Client' then {
 #  \$RepeatedMsgReduction on
 #  action(type=\"omfile\" DynaFile=\"devicelogwips\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -700,7 +718,13 @@ if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_s
 #  stop
 #}
 
-
+#### Rules Additionnal Pattern WLAN #####
+if \$msg contains '$pattern_1_AP' or \$msg contains '$pattern_2_AP' or \$msg contains '$pattern_3_AP' then {
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"deviceloggetlogap\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_AP_get_log.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     stop
+}
 
 ##### Rules MAC-SEC ########
 if \$msg contains 'intfNi Mka' or \$msg contains 'intfNi Drv' or \$msg contains 'intfNi Msec' then {
@@ -770,14 +794,6 @@ if \$msg contains 'ALV4 event: PSCAN' then {
      stop
 }
 
-#### Rules Additionnal Pattern WLAN #####
-if \$msg contains '$pattern_1_AP' or \$msg contains '$pattern_2_AP' or \$msg contains '$pattern_3_AP' then {
-     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omfile\" DynaFile=\"deviceloggetlogap\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_AP_get_log.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-     stop
-}
-
 #### Rule Duplicate IP Address - LAN ####
 if \$msg contains 'duplicate IP address' or \$msg contains 'Duplicate IP address' then{
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -803,6 +819,13 @@ if \$msg contains 'Buffer list is empty' then {
      stop
 }
 
+if \$msg contains 'slnHwlrnCbkHandler' and \$msg contains 'port' and \$msg contains 'bcmd' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogloop\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" binary=\"$dir/support_switch_port_disable.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     stop
+}
 
 #### Rule Port Violation - LAN ####
 if \$msg contains 'Violation set' or \$msg contains 'in violation'  then {
@@ -813,7 +836,7 @@ if \$msg contains 'Violation set' or \$msg contains 'in violation'  then {
      stop
 }
 
-#### Additionnal rules - LAN ####
+#### VC Unit DOWN - LAN ####
 if \$msg contains 'bootMgrVCMTopoDataEventHandler' and \$msg contains 'no longer' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -822,6 +845,7 @@ if \$msg contains 'bootMgrVCMTopoDataEventHandler' and \$msg contains 'no longer
      stop
 }
 
+#### PS Unit DOWN - LAN ####
 if \$msg contains 'Power Supply' and \$msg contains 'Removed'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -830,13 +854,42 @@ if \$msg contains 'Power Supply' and \$msg contains 'Removed'  then {
      stop
 }
 
-if \$msg contains 'slnHwlrnCbkHandler' and \$msg contains 'port' and \$msg contains 'bcmd' then {
-     \$RepeatedMsgReduction on
-     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omfile\" DynaFile=\"devicelogloop\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"$dir/support_switch_port_disable.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-     stop
+#### SPB Adjacency DOWN - LAN ####
+if \$msg contains 'ADJACENCY INFO: Lost L1 adjacency' then {
+       \$RepeatedMsgReduction on
+	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogspb\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_spb.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
 }
+
+#### OSPF Neighbor DOWN - LAN ####
+if \$msg contains 'OSPF neighbor state change' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogospf\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_ospf.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+#### BGP Neighbor DOWN - LAN ####
+if \$msg contains 'bgp' and \$msg contains 'transitioned to' then {
+	  \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogbgp\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_bgp.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+#### DDM Threshold reached - LAN ####
+if $msg contains 'cmmEsmCheckDDMThresholdViolations' then {
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogddm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" name=\"support_switch_queue_DDM\" binary=\"/opt/ALE_Script/support_switch_ddm.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+#### Additionnal rules - LAN ####
 
 if \$msg contains 'failed handling msg from' then {
 	  \$RepeatedMsgReduction on
@@ -981,14 +1034,6 @@ if \$msg contains 'ovcmm' and \$msg contains 'Invalid process status' then {
        stop
 }
 
-if \$msg contains 'ADJACENCY INFO: Lost L1 adjacency' then {
-       \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"devicelogspb\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_spb.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
 if \$msg contains 'ospf' and \$msg contains 'oversized LSA' then {
        \$RepeatedMsgReduction on
 	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -1014,46 +1059,14 @@ if \$msg contains 'RADIUS Primary Server' and \$msg contains 'DOWN' then {
        stop
 }
 
-if \$msg contains 'OSPF neighbor state change' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"devicelogospf\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_ospf.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'bgp' and \$msg contains 'transitioned to' then {
-	  \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"devicelogbgp\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_bgp.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'Fatal exception' or \$msg contains 'Kernel panic' or \$msg contains 'Exception stack' or \$msg contains 'parse condition rule is error' or \$msg contains 'core-monitor reboot' then {
-     \$RepeatedMsgReduction on
-     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py exception\")
-     stop
-}
-
-if \$msg contains 'Unable to handle kernel'  then {
-     \$RepeatedMsgReduction on
-     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py kernel_panic\")
-     stop
-}
-
-if \$msg contains 'STA limit reached' then {
-     \$RepeatedMsgReduction on
-     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py limit_reached\")
-     stop
-}
-
 ####### TROUBLESHOOTING ########
 
 :syslogtag, contains, \"montag\" /var/log/devices/script_execution.log
+:hostname, isequal, \"haveged\" stop
+:hostname, isequal, \"kernel\" stop
+if \$msg contains 'rsyslogd' then /var/log/devices/omprog.log
+if \$msg contains 'omprog' then /var/log/devices/omprog.log
+:hostname, isequal, \"root\" stop
 
 & stop " >  /etc/rsyslog.conf
 
