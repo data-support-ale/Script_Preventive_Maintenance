@@ -128,6 +128,11 @@ if jid !='':
          info = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. We are collecting logs on syslog server".format(ipadd,pattern)
          send_message(info,jid)
          send_message(msg,jid)
+         try:
+             write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip_switch, "Pattern": pattern}, "fields": {"count": 1}}])
+         except UnboundLocalError as error:
+             print(error)
+             sys.exit()
 
 ### TECH-SUPPORT ENG COMPLETE ###
 get_tech_support_sftp(host,ipadd)
