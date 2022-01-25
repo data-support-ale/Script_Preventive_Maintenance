@@ -623,19 +623,11 @@ if \$msg contains 'Unable to handle kernel'  then {
      stop
 }
 
-if \$msg contains 'STA limit reached' then {
-     \$RepeatedMsgReduction on
-     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_wlan_generic_limit_reached\" binary=\"/opt/ALE_Script/support_wlan_generic.py limit_reached\")
-     stop
-}
-
-
 ##### Rules WLAN if we reached the limit of Associated WLAN Clients ########
 if \$msg contains 'STA limit reached' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py limit_reached\")
+     action(type=\"omprog\" name=\"support_wlan_generic_limit_reached\" binary=\"/opt/ALE_Script/support_wlan_generic.py limit_reached\")
      stop
 }
 
@@ -649,7 +641,7 @@ if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_s
 #if \$msg contains '[Lbd-Deny-Cnt] : Set Client' then {
 #  \$RepeatedMsgReduction on
 #  action(type=\"omfile\" DynaFile=\"devicelogwips\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-#  action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py wips\")
+#  action(type=\"omprog\" name=\"support_wlan_generic_wips\" binary=\"/opt/ALE_Script/support_wlan_generic.py wips\")
 #  stop
 #}
 
@@ -657,7 +649,7 @@ if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_s
 if \$msg contains '$pattern_1_AP' or \$msg contains '$pattern_2_AP' or \$msg contains '$pattern_3_AP' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"deviceloggetlogap\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_AP_get_log.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_wlan_generic_others_patterns\" binary=\"/opt/ALE_Script/support_AP_get_log.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -666,12 +658,12 @@ if \$msg contains 'intfNi Mka' or \$msg contains 'intfNi Drv' or \$msg contains 
   action(type=\"omfile\" DynaFile=\"deviceloghistory\" dirCreateMode=\"0755\" FileCreateMode=\"0755\")
   if \$msg contains 'ieee802_1x_cp_connect_secure' then {
     action(type=\"omfile\" DynaFile=\"devicelogmacsec\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
- #   action(type=\"omprog\" binary=\"/opt/ALE_Script/send_email_macsec.py macsec\")
+ #   action(type=\"omprog\" name=\"support_lan_generic_macsec\" binary=\"/opt/ALE_Script/send_email_macsec.py macsec\")
     stop
   }
   if \$msg contains 'Delete MKA' then {
     action(type=\"omfile\" DynaFile=\"devicelogmacsec\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-    action(type=\"omprog\" binary=\"/opt/ALE_Script/send_email_macsec.py delete_mka\")
+    action(type=\"omprog\" name=\"support_lan_generic_macsec\" binary=\"/opt/ALE_Script/send_email_macsec.py delete_mka\")
     stop
   }
   if \$msg contains 'CP entering state' then {
@@ -679,17 +671,17 @@ if \$msg contains 'intfNi Mka' or \$msg contains 'intfNi Drv' or \$msg contains 
   }
   if \$msg contains 'CP entering state CHANGE' then {
     action(type=\"omfile\" DynaFile=\"devicelogmacsec\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-    action(type=\"omprog\" binary=\"/opt/ALE_Script/send_email_macsec.py change\")
+    action(type=\"omprog\" name=\"support_lan_generic_macsec\" binary=\"/opt/ALE_Script/send_email_macsec.py change\")
     stop
   }
   if \$msg contains 'CP entering state RETIRE' then {
     action(type=\"omfile\" DynaFile=\"devicelogmacsec\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-    action(type=\"omprog\" binary=\"/opt/ALE_Script/send_email_macsec.py retire\")
+    action(type=\"omprog\" name=\"support_lan_generic_macsec\" binary=\"/opt/ALE_Script/send_email_macsec.py retire\")
     stop
   }
   if \$msg contains 'Delete transmit SA' then {
     action(type=\"omfile\" DynaFile=\"devicelogmacsec\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-    action(type=\"omprog\" binary=\"/opt/ALE_Script/send_email_macsec.py delete_sa\")
+    action(type=\"omprog\" name=\"support_lan_generic_macsec\" binary=\"/opt/ALE_Script/send_email_macsec.py delete_sa\")
     stop
   }
 }
@@ -700,7 +692,7 @@ if \$msg contains 'PMD generated at' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpmd\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_pmd.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_pmd\" binary=\"/opt/ALE_Script/support_switch_pmd.py\")
      stop
 }
 
@@ -710,7 +702,7 @@ if \$msg contains 'pmnHALLinkStatusCallback:206' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogflapping\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
 #queue.size=\"1\" queue.discardmark=\"1\" queue.TimeoutActionCompletion=\"2000\")
-     action(type=\"omprog\" binary=\"$dir/support_switch_port_flapping.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_flapping\" binary=\"$dir/support_switch_port_flapping.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -718,14 +710,14 @@ if \$msg contains 'pmnHALLinkStatusCallback:206' then {
 if \$msg contains 'Denial of Service attack detected: <port-scan>' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogddosdebug\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_debugging_ddos.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_ddos\" binary=\"/opt/ALE_Script/support_switch_debugging_ddos.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
 if \$msg contains 'ALV4 event: PSCAN' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogddosip\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_enable_qos.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_ddos\" binary=\"/opt/ALE_Script/support_switch_enable_qos.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -733,7 +725,7 @@ if \$msg contains 'ALV4 event: PSCAN' then {
 if \$msg contains 'duplicate IP address' or \$msg contains 'Duplicate IP address' then{
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdupip\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_duplicate_ip.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_dupip\" binary=\"/opt/ALE_Script/support_switch_duplicate_ip.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -741,7 +733,7 @@ if \$msg contains 'duplicate IP address' or \$msg contains 'Duplicate IP address
 if \$msg contains 'SES AAA' and \$msg contains 'Failed' then{
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogauthfail\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_auth_fail.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_auth_failure\" binary=\"/opt/ALE_Script/support_switch_auth_fail.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -750,7 +742,7 @@ if \$msg contains 'Buffer list is empty' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelog\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"$dir/support_switch_debugging.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_loop\" binary=\"$dir/support_switch_debugging.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -758,7 +750,7 @@ if \$msg contains 'slnHwlrnCbkHandler' and \$msg contains 'port' and \$msg conta
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogloop\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"$dir/support_switch_port_disable.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_loop\" binary=\"$dir/support_switch_port_disable.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -767,7 +759,7 @@ if \$msg contains 'Violation set' or \$msg contains 'in violation'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogviolation\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_violation.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_violation\" binary=\"/opt/ALE_Script/support_switch_violation.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -776,7 +768,7 @@ if \$msg contains 'bootMgrVCMTopoDataEventHandler' and \$msg contains 'no longer
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogvcdown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"$dir/support_switch_vc_down.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_vc_cmm\" binary=\"$dir/support_switch_vc_down.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -785,7 +777,7 @@ if \$msg contains 'Power Supply' and \$msg contains 'Removed'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"$dir/support_switch_power_supply.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"$dir/support_switch_power_supply.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
@@ -794,7 +786,7 @@ if \$msg contains 'ADJACENCY INFO: Lost L1 adjacency' then {
        \$RepeatedMsgReduction on
 	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogspb\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_spb.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       action(type=\"omprog\" name=\"support_lan_generic_spb\" binary=\"/opt/ALE_Script/support_switch_spb.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
@@ -803,7 +795,7 @@ if \$msg contains 'OSPF neighbor state change' then {
        \$RepeatedMsgReduction on
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogospf\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_ospf.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       action(type=\"omprog\" name=\"support_lan_generic_ospf\" binary=\"/opt/ALE_Script/support_switch_ospf.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
@@ -812,7 +804,7 @@ if \$msg contains 'bgp' and \$msg contains 'transitioned to' then {
 	  \$RepeatedMsgReduction on
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogbgp\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_bgp.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       action(type=\"omprog\" name=\"support_lan_generic_bgp\" binary=\"/opt/ALE_Script/support_switch_bgp.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
@@ -820,7 +812,7 @@ if \$msg contains 'bgp' and \$msg contains 'transitioned to' then {
 if $msg contains 'cmmEsmCheckDDMThresholdViolations' then {
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogddm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" name=\"support_switch_queue_DDM\" binary=\"/opt/ALE_Script/support_switch_ddm.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       action(type=\"omprog\" name=\"support_lan_generic_ddm\" name=\"support_switch_queue_DDM\" binary=\"/opt/ALE_Script/support_switch_ddm.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
