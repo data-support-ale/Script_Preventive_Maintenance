@@ -34,19 +34,11 @@ chmod 755 $dir/*
 chown admin-support:admin-support $dir/*
 
 
-while [[ "$notif" != 1  && "$notif" != 2 && "$notif" != 3 ]]
-do
-
-yn=0 #variable to validate informations
-notif=3
-if [[ "$notif" == 1 || "$notif" == 2 || "$notif" == 3 ]]
-then
-
 unset company
 unset rainbow_jid
 unset mails
 unset allows_ip
-unset login_switch,
+unset login_switch
 unset pass_switch
 unset ip_server_log
 unset pattern_1
@@ -65,49 +57,36 @@ unset ap
 #===> variable gmail_user = 'data.emea@gmail.com';
 #===> variable gmail_password = 'Geronim0*'
 
-  if [[ "$notif" == 3 || "$notif" == 1 ]]
+while [ -z "$mails" ]
+do
+  echo
+  #===> variable email_address = 'toto@gmail.com'; or 'patrice.paul@al-enterprise.com';, 'palani.srinivasan@al-enterprise.com';
+  echo "Please provide the email address you want to be notified. If several emails addresses, please separate by a semicolon (;)"
+  read -p "Enter address(es) : " mails
+  if [ -z "$mails" ]
   then
-
-   #mail address that will send notifications :
-    while [ -z "$mails" ]
-    do
-      echo
-      #===> variable email_address = 'toto@gmail.com'; or 'patrice.paul@al-enterprise.com';, 'palani.srinivasan@al-enterprise.com';
-      echo "Please provide the email address you want to be notified. If several emails addresses, please separate by a semicolon (;)"
-      read -p "Enter address(es) : " mails
-      if [ -z "$mails" ]
-      then
-        echo "Email cannot be empty"
-#      elif !  [[ $mails =~ (([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5};))*(([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5}))$ ]]
-#      then
-#     echo "The emails list doesn't correspond with what was expected, retry."
-     unset mails
-      fi
-    done
-    gmail_user="data.emea@gmail.com"
-    gmail_passwd="Geronim0*"
-
+    echo "Email cannot be empty"
+#     elif !  [[ $mails =~ (([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5};))*(([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5}))$ ]]
+#     then
+#    echo "The emails list doesn't correspond with what was expected, retry."
+ unset mails
   fi
-
-#If 2 or 3 is selected
-#Please provide your Rainbow JID
-  if [[ "$notif" == 3 || "$notif" == 2 ]]
+done
+gmail_user="data.emea@gmail.com"
+gmail_passwd="Geronim0*"
+while [ -z "$rainbow_jid" ]
+do
+  echo -e "\e[32mTip:\e[39m to find your Rainbow JID, search for the Rainbow bubble \"Am I Who\" and tape \"bonjour\"."
+  read -p "Enter your Rainbow JID (ex :j_xxx@openrainbow.com) : " rainbow_jid
+  if [ -z "$rainbow_jid" ]
   then
-   echo
-    while [ -z "$rainbow_jid" ]
-    do
-      echo -e "\e[32mTip:\e[39m to find your Rainbow JID, search for the Rainbow bubble \"Am I Who\" and tape \"bonjour\"."
-      read -p "Enter your Rainbow JID (ex :j_xxx@openrainbow.com) : " rainbow_jid
-      if [ -z "$rainbow_jid" ]
-      then
-        echo "Rainbow JID cannot be empty"
-      elif ! [[ $rainbow_jid =~ ^.*@openrainbow.com$ ]]
-       then
-         echo "The Rainbow JID doesn't correspond with what was expected, retry."
-         unset rainbow_jid
-      fi
-    done
+    echo "Rainbow JID cannot be empty"
+  elif ! [[ $rainbow_jid =~ ^.*@openrainbow.com$ ]]
+   then
+     echo "The Rainbow JID doesn't correspond with what was expected, retry."
+     unset rainbow_jid
   fi
+done
 
 #===> variable company used when calling setup_called.py script
 echo "What is your Company Name?"
@@ -127,12 +106,16 @@ echo
 
 reponse_tab=()
 reponse=""
-read -p 'Enter stop for exiting: ' reponse
-while [ -z "$reponse" ] || [ "$reponse" != 'stop' ]
+while [ -z "$reponse" ] || [ "$reponse" != "stop" ]
 do
-        echo "$reponse"
+    read -p 'Enter stop for exiting: ' reponse
+    echo "$reponse"
+    if [ "$reponse" == "stop" ]
+    then
+        echo 
+    else
         reponse_tab+=("$reponse")
-        read -p 'Enter stop for exiting: ' reponse
+    fi
 done
 
 #===> variable login='admin', prefilled with value "admin", means if the user press enters we use the default value
@@ -159,56 +142,27 @@ read -p "Do you want configure you Stellar AP?(Y/N) " yn
                 read -p "Password : " pass_AP
                 read -p "Technical Support code : " tech_pass
                 echo
-                echo "What are the string patterns you want to apply in the Stellar Access Point collection rules (we support up to 3 patterns)?
+                echo "What are the string patterns you want to apply in the Stellar Access Point collection rules ?
                 ==> "Example: policy exception"
                 ==> "Example: crash"
                 ==> "Example: reboot""
                 echo
-
-                same="1"
-                while [ "$same" = "1" ]
+                reponse_tab_AP=()
+                reponse_AP=""
+                while [ -z "$reponse_AP" ] || [ "$reponse_AP" != 'stop' ]
                 do
-                  read -p "Enter your first pattern  : " pattern_1_AP
-                  if [ -z  "$pattern_1_AP" ]
-                  then 
-                    same="0"
-                  elif [[ "$pattern_1_AP" != "$pattern_1" && "$pattern_1_AP" != "$pattern_2" && "$pattern_1_AP" != "$pattern_1" ]]
-                  then
-                    same="0"
-                  else
-                    echo " AP patterns must be differents than Switches patterns"
-                  fi
+                read -p 'Enter stop for exiting: ' reponse_AP
+                echo "$reponse_AP"
+                for i in "${reponse_tab[@]}"
+                do
+                     if [ "$i" == "$reponse_AP" ]
+                     then
+                          echo "pattern already exist, try another one"
+                     else
+                          reponse_tab_AP+=("$reponse_AP")
+                     fi
                 done
-
-                 same="1"
-                 while [ "$same" = "1" ]
-                 do
-                   read -p "Enter your second pattern  : " pattern_2_AP
-                   if [ -z  "$pattern_2_AP" ]
-                   then
-                     same="0"
-                   elif [[ "$pattern_2_AP" != "$pattern_1" && "$pattern_2_AP" != "$pattern_2" && "$pattern_2_AP" != "$pattern_1" ]]
-                   then
-                     same="0"
-                   else
-                     echo " AP patterns must be differents than Switches patterns"
-                   fi
-                 done
-
-                 same="1"
-                 while [ "$same" = "1" ]
-                 do
-                   read -p "Enter your third pattern  : " pattern_3_AP
-                   if [ -z  "$pattern_3_AP" ]
-                    then
-                      same="0"
-                    elif [[ "$pattern_3_AP" != "$pattern_1" && "$pattern_3_AP" != "$pattern_2" && "$pattern_3_AP" != "$pattern_1" ]]
-                    then
-                      same="0"
-                    else
-                      echo " AP patterns must be differents than Switches patterns"
-                    fi
-                  done  ;;
+                done  ;;
 
 
           * ) echo "Please answer Y or N.";;
@@ -269,7 +223,7 @@ echo "Your switch parttens :"
 
 for rep in "${reponse_tab[@]}"
 do
-        echo "$rep"
+        echo "- $rep"
 done
 
 echo "Networks allowed : $ip_allows"
@@ -279,11 +233,11 @@ then
 echo "login of APs : $login_AP"
 echo "password of APs : $pass_AP"
 echo "support technical code of APs : $tech_pass"
-
-echo "Your three AP parttens :"
-echo "==> $pattern_1_AP"
-echo "==> $pattern_2_AP"
-echo "==> $pattern_3_AP"
+echo "Your AP parttens :"
+for rep in "${reponse_tab_AP[@]}"
+do
+        echo "- $rep"
+done
 fi
 
 while [[ $yn != "Y" && $yn != "N" && $yn != "y" && $yn != "n" ]]
@@ -294,26 +248,7 @@ do
           [Yy]* ) echo "$login_switch,$pass_switch,$mails,$rainbow_jid,$gmail_user,$gmail_passwd,$ip_server_log,$login_AP,$pass_AP,$tech_pass,$((1000 + $RANDOM % 9999))$((1000 + $RANDOM % 9999))$((10 + $RANDOM % 99)),$pattern_1,$pattern_2,$pattern_3,$company" > $dir/ALE_script.conf;;
           * ) echo "Please answer Y or N.";;
     esac
-
 done
-
-else
-   echo -e "\e[91mWrong parameter\e[39m"
-fi
-
-done
-
-default="ZzZNoneZzZNoneZzz"
-pattern_1_AP=${pattern_1_AP:-$default}
-pattern_2_AP=${pattern_2_AP:-$default}
-pattern_3_AP=${pattern_3_AP:-$default}
-
-test="if \$msg contains '$rep' then {
-      action(type=\'omfile\' DynaFile=\'deviceloghistory\' template=\'json_syslog\' DirCreateMode=\'0755\' FileCreateMode=\'0755\')
-      action(type=\'omfile\' DynaFile=\'deviceloggetlogswitch\' template=\'json_syslog\' DirCreateMode=\'0755\' FileCreateMode=\'0755\')
-      action(type=\'omprog\' binary=\'/opt/ALE_Script/support_switch_get_log.py $rep\' queue.type=\'LinkedList\' queue.size=\'1\' queue.workerThreads=\'1\')
- stop
-}"
 
 #Then script will do:
 #- installation/configuration of rsyslog.conf
@@ -1188,105 +1123,105 @@ sudo systemctl start python_exporter.service
 sudo systemctl enable  python_exporter.service
 
 
-#GOLANG
-echo
-echo -e "\e[32mGolang Installation\e[39m"
-echo
-wget  -q --inet4-only https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.14.4.linux-amd64.tar.gz >& /dev/null
-mkdir $home/go && chown admin-support:admin-support go/
-chown admin-support:admin-support /usr/local/go
-echo 'PATH=$PATH:/usr/local/go/bin
-GOPATH=$HOME/go' > ~/.profile
-source ~/.profile
+# #GOLANG
+# echo
+# echo -e "\e[32mGolang Installation\e[39m"
+# echo
+# wget  -q --inet4-only https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
+# tar -C /usr/local -xzf go1.14.4.linux-amd64.tar.gz >& /dev/null
+# mkdir $home/go && chown admin-support:admin-support go/
+# chown admin-support:admin-support /usr/local/go
+# echo 'PATH=$PATH:/usr/local/go/bin
+# GOPATH=$HOME/go' > ~/.profile
+# source ~/.profile
 
-echo
-echo -e "\e[32mGolang Installed\e[39m"
-echo
+# echo
+# echo -e "\e[32mGolang Installed\e[39m"
+# echo
 
-echo
-echo -e "\e[32mDocker Installation\e[39m"
-echo
-#DOCKER
-apt-get -qq -y install ca-certificates curl gnupg lsb-release
-curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt-get -qq -y install docker-ce docker-ce-cli containerd.io
-echo
-echo -e "\e[32mDocker Installed\e[39m"
-echo
+# echo
+# echo -e "\e[32mDocker Installation\e[39m"
+# echo
+# #DOCKER
+# apt-get -qq -y install ca-certificates curl gnupg lsb-release
+# curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+# apt-get -qq -y install docker-ce docker-ce-cli containerd.io
+# echo
+# echo -e "\e[32mDocker Installed\e[39m"
+# echo
 
-echo
-echo -e "\e[32mDocker-compose installation\e[39m"
-echo
-#DOCKER COMPOSE
-wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
-chmod +x /usr/local/bin/docker-compose
-echo
-echo -e "\e[32mDocker-Compose Installed\e[39m"
-echo
-
-
-
-#OpenSSL
-echo
-echo -e "\e[32mOpenSSL Installation\e[39m"
-echo
-apt-get -qq -y install libssl-dev
-apt-get -qq -y install libncurses5-dev
-apt-get -qq -y install libsqlite3-dev
-apt-get -qq -y install libreadline-dev
-apt-get -qq -y install libtk8.6
-apt-get -qq -y install libgdm-dev
-apt-get -qq -y install libdb4o-cil-dev
-apt-get -qq -y install libpcap-dev
-
-wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz 
-tar zxvf openssl-1.1.1g.tar.gz >& /dev/null
-cd openssl-1.1.1g
-./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2 >& /dev/null
-make -s >& /dev/null
-make -s install >& /dev/null
-echo 'export PATH=$HOME/openssl/bin:$PATH
-export LD_LIBRARY_PATH=$HOME/openssl/lib
-export LC_ALL="en_US.UTF-8"
-export LDFLAGS="-L /home/username/openssl/lib -Wl,-rpath,/home/username/openssl/lib"' > ~/.bash_profile
-source ~/.bash_profile
-
-echo
-echo -e "\e[32mOpenSSL Installed\e[39m"
-echo
-
-echo
-echo -e "\e[32mPython 3.10 installation\e[39m"
-echo
-#Python 3.10
-cd /home/admin-support/Script_Preventive_Maintenance/
-apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
-wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
-tar -xf Python-3.10.*.tgz >& /dev/null
-cd Python-3.10.*/
-./configure --with-openssl=/home/$USER/openssl >& /dev/null
-sudo make -s >& /dev/null
-sudo make -s altinstall >& /dev/null
-update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1 >& /dev/null
-update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1 >& /dev/null
-
-echo
-echo -e "\e[32mPython3.10 installed\e[39m"
-echo
+# echo
+# echo -e "\e[32mDocker-compose installation\e[39m"
+# echo
+# #DOCKER COMPOSE
+# wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
+# chmod +x /usr/local/bin/docker-compose
+# echo
+# echo -e "\e[32mDocker-Compose Installed\e[39m"
+# echo
 
 
-sudo -H pip3.10 install --quiet pysftp >& /dev/null
-sudo -H pip3.10 install --quiet influx-client >& /dev/null
-sudo -H pip3.10 install --quiet prometheus-client >& /dev/null
-sudo -H pip3.10 install --quiet flask >& /dev/null
-sudo -H pip3.10 install --quiet requests >& /dev/null
-apt-get -qq -y install tftpd-hpa >& /dev/null
-export PYTHONPATH=/usr/local/bin/python3.10
-echo
-echo -e "\e[32mPython3.10 dependences installed\e[39m"
-echo
+
+# #OpenSSL
+# echo
+# echo -e "\e[32mOpenSSL Installation\e[39m"
+# echo
+# apt-get -qq -y install libssl-dev
+# apt-get -qq -y install libncurses5-dev
+# apt-get -qq -y install libsqlite3-dev
+# apt-get -qq -y install libreadline-dev
+# apt-get -qq -y install libtk8.6
+# apt-get -qq -y install libgdm-dev
+# apt-get -qq -y install libdb4o-cil-dev
+# apt-get -qq -y install libpcap-dev
+
+# wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz 
+# tar zxvf openssl-1.1.1g.tar.gz >& /dev/null
+# cd openssl-1.1.1g
+# ./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2 >& /dev/null
+# make -s >& /dev/null
+# make -s install >& /dev/null
+# echo 'export PATH=$HOME/openssl/bin:$PATH
+# export LD_LIBRARY_PATH=$HOME/openssl/lib
+# export LC_ALL="en_US.UTF-8"
+# export LDFLAGS="-L /home/username/openssl/lib -Wl,-rpath,/home/username/openssl/lib"' > ~/.bash_profile
+# source ~/.bash_profile
+
+# echo
+# echo -e "\e[32mOpenSSL Installed\e[39m"
+# echo
+
+# echo
+# echo -e "\e[32mPython 3.10 installation\e[39m"
+# echo
+# #Python 3.10
+# cd /home/admin-support/Script_Preventive_Maintenance/
+# apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
+# wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
+# tar -xf Python-3.10.*.tgz >& /dev/null
+# cd Python-3.10.*/
+# ./configure --with-openssl=/home/$USER/openssl >& /dev/null
+# sudo make -s >& /dev/null
+# sudo make -s altinstall >& /dev/null
+# update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1 >& /dev/null
+# update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1 >& /dev/null
+
+# echo
+# echo -e "\e[32mPython3.10 installed\e[39m"
+# echo
+
+
+# sudo -H pip3.10 install --quiet pysftp >& /dev/null
+# sudo -H pip3.10 install --quiet influx-client >& /dev/null
+# sudo -H pip3.10 install --quiet prometheus-client >& /dev/null
+# sudo -H pip3.10 install --quiet flask >& /dev/null
+# sudo -H pip3.10 install --quiet requests >& /dev/null
+# apt-get -qq -y install tftpd-hpa >& /dev/null
+# export PYTHONPATH=/usr/local/bin/python3.10
+# echo
+# echo -e "\e[32mPython3.10 dependences installed\e[39m"
+# echo
 
 echo "Devices log directory /var/log/devices/ created"
 mkdir /var/log/devices/ >& /dev/null
@@ -1325,6 +1260,11 @@ echo -e "\e[32mWorking directory in /opt/ALE_Script\e[39m"
 for rep in "${reponse_tab[@]}"
 do
     sudo /opt/ALE_Script/opt_pattern.py "$rep"
+done
+
+for rep in "${reponse_tab_AP[@]}"
+do
+    sudo /opt/ALE_Script/opt_pattern_AP.py "$rep"
 done
 
 echo "Sending notification to ALE DevOPS team for setup VNA application"
