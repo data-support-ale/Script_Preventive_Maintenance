@@ -76,7 +76,26 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
         except UnboundLocalError as error:
             print(error)
             sys.exit()
-
+    #Sample log
+    #swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM The switch was restarted by the user
+    #swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM The switch was restarted by a power cycle or due to some type of failure
+    elif "The switch was restarted by" in msg:
+        try:
+            reason = re.findall(r"The switch was restarted by (.*)", msg)[0]
+            info = "The Virtual Chassis \"" + host + "\" IP: " + ipadd + " did reload by " + reason
+            print(info)
+            send_message(info,jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "VC_Unit_Down": "Reload", "Reason": reason}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except IndexError as error:
+            print(error)
+            sys.exit()
     else:
         print("no pattern match - exiting script")
         sys.exit()
