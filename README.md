@@ -93,7 +93,7 @@ os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 ip_server_log = get_server_log_ip()
 company=0
 
@@ -161,7 +161,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
 
-switch_user, switch_password, jid, gmail_user, gmail_password, mails,ip_server_log = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 filename = 'tech_support_complete.tar'
 
 last = ""

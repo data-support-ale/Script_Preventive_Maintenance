@@ -4,12 +4,10 @@ import sys
 import os
 import re
 import json
-from support_tools import enable_debugging, disable_debugging, disable_port, extract_ip_port, check_timestamp, \
-    get_credentials, extract_ip_ddos, disable_debugging_ddos, enable_qos_ddos, get_id_client, get_server_log_ip, \
-    get_jid, format_mac
+from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
-from support_send_notification import send_message, send_mail, send_file
-from support_response_handler import request_handler_mail, request_handler_rainbow, request_handler_both
+from support_send_notification import send_message, send_file
+from support_response_handler import request_handler_rainbow
 from database_conf import *
 
 # Script init
@@ -18,7 +16,7 @@ os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as log_file:
@@ -69,19 +67,9 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
     elif reason == "14":
         reason = "LLDP"
 
-print(gmail_user)
-
-if gmail_user != '' and jid != '':
+if jid != '':
     notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + ", source: " + reason + ". Do you want to clear the violation?"
-    answer = request_handler_both(ip,'0',port,'0',notif,get_jid(),get_server_log_ip(),get_id_client(),"duplicate") #new method
-
-elif gmail_user != '':
-    notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + ", source: " + reason + ". Do you want to clear the violation?"
-    answer = request_handler_mail(ip,'0',port,'0',notif,get_jid(),get_server_log_ip(),get_id_client(),"duplicate") #new method
-
-elif jid != '':
-    notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + ", source: " + reason + ". Do you want to clear the violation?"
-    answer = request_handler_rainbow(ip,'0',port,'0',notif,get_jid(),get_server_log_ip(),get_id_client(),"duplicate") #new method
+    answer = request_handler_rainbow(ip,'0',port,'0',notif,jid,ip_server,random_id(),"duplicate") #new method
 else:
     answer = '1'
 

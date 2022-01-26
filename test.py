@@ -2,11 +2,8 @@
 
 import sys
 import os
-import re
-import json
-from support_tools import enable_debugging, disable_debugging, disable_port, extract_ip_port, check_timestamp, get_credentials,extract_ip_ddos,disable_debugging_ddos,enable_qos_ddos,get_id_client,get_server_log_ip
-from time import strftime, localtime, sleep
-from support_send_notification import send_message, send_mail,send_file
+from support_tools_OmniSwitch import get_credentials
+from time import strftime, localtime
 import requests
 from database_conf import *
 
@@ -16,7 +13,7 @@ os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 ## If we put argument when calling the script we can test different Workflows (companies)
 if sys.argv[1] != None:
@@ -32,6 +29,7 @@ if sys.argv[1] != None:
               'Card': '0'
               }
     response = requests.get(url, headers=headers)
+    print(response)
     try:
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -48,6 +46,7 @@ if sys.argv[1] != None:
               'Content-Disposition' : 'attachment; filename=welcome.gif'
               }
     response = requests.request("POST", url, headers=headers, data=payload)
+    print(response)
     try:
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
     except UnboundLocalError as error:

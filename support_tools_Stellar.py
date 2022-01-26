@@ -2,16 +2,11 @@
 
 import sys
 import os
-import getopt
-import json
 import logging
 import datetime
-from time import gmtime, strftime, localtime,sleep
-from support_tools import get_credentials,get_server_log_ip,get_jid,get_mail,send_python_file_sftp,get_file_sftp
-from support_send_notification import send_message,send_file,send_mail,send_message_aijaz
+from support_send_notification import send_message
 import subprocess
 import re
-import pysftp
 import requests
 import paramiko
 import glob

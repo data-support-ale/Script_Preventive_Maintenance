@@ -6,7 +6,7 @@ import re
 import json
 import subprocess
 import datetime
-from time import gmtime, strftime, localtime,sleep
+from time import strftime, localtime,sleep
 from support_tools_OmniSwitch import get_credentials,ssh_connectivity_check
 from time import strftime, localtime, sleep
 from support_send_notification import send_message

@@ -7,13 +7,15 @@ import re
 from support_tools_OmniSwitch import get_credentials, debugging
 from time import gmtime, strftime, localtime, sleep
 from support_send_notification import  send_message
+from database_conf import *
+
 #Script init
 script_name = sys.argv[0]
 os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 #Get informations from logs.
-switch_user, switch_password, jid, gmail_usr, gmail_passwd, mails,ip_server = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_file:
@@ -39,7 +41,7 @@ if jid != '':
     notif = "A Denial of Service Attack is detected on OmniSwitch \"" + host + "\" IP: " + ip + " of type " + ddos_type
     send_message(notif, jid)
     try:
-        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "DDOS_Type": ddos_type}, "fields": {"count": 1}}])
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "DDOS_Type": ddos_type}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
         print(error)
         sys.exit()
@@ -49,7 +51,7 @@ appid = "ipv4"
 subapp = "all"
 level = "debug3"
 # Call debugging function from support_tools_OmniSwitch
-debugging(ipadd,appid_1,subapp_1,level_1)
+debugging(ip,appid,subapp,level)
 
 os.system('logger -t montag -p user.info Process terminated')
 # clear lastlog file

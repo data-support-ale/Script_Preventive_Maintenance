@@ -6,7 +6,7 @@ import os
 import logging
 import datetime
 from time import sleep
-from support_send_notification import send_message,send_file,send_mail,send_message_aijaz
+from support_send_notification import send_message,send_file
 import subprocess
 import re
 import pysftp
@@ -117,50 +117,63 @@ def get_file_sftp(ipadd,filename):
    remote_path = '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,filename)
    ssh = paramiko.SSHClient()
    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-   ssh.connect(ipadd, username=switch_user, password=switch_password, timeout=10.0)
-   sftp = ssh.open_sftp()
-   ## In case of SFTP Get timeout thread is closed and going into Exception
    try:
-      th = threading.Thread(target=sftp.get, args=('./{0}'.format(filename),remote_path))
-      th.start()
-      th.join(60)
-   except paramiko.ssh_exception.FileNotFoundError as error:
-      print(error)
-      exception = "File error or wrong path"
-      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
-      print(info)
-      os.system('logger -t montag -p user.info ' + info)
-      send_message(info,jid)
-      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-      sys.exit()
-   except paramiko.ssh_exception.IOError:
-      exception = "File error or wrong path"
-      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
-      print(info)
-      os.system('logger -t montag -p user.info ' + info)
-      send_message(info,jid)
-      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-      sys.exit() 
-   except paramiko.ssh_exception.Exception as error:
-      print(error)
+      ssh.connect(ipadd, username=switch_user, password=switch_password, timeout=10.0)
+      sftp = ssh.open_sftp()
+      ## In case of SFTP Get timeout thread is closed and going into Exception
+      try:
+         th = threading.Thread(target=sftp.get, args=('./{0}'.format(filename),remote_path))
+         th.start()
+         th.join(60)
+      except paramiko.ssh_exception.FileNotFoundError as error:
+         print(error)
+         exception = "File error or wrong path"
+         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+         print(info)
+         os.system('logger -t montag -p user.info ' + info)
+         send_message(info,jid)
+         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+         sftp.close()
+         sys.exit()
+      except paramiko.ssh_exception.IOError:
+         exception = "File error or wrong path"
+         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+         print(info)
+         os.system('logger -t montag -p user.info ' + info)
+         send_message(info,jid)
+         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+         sftp.close()
+         sys.exit() 
+      except paramiko.ssh_exception.Exception as error:
+         print(error)
+         exception = "SFTP Get Timeout"
+         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+         print(info)
+         os.system('logger -t montag -p user.info ' + info)
+         send_message(info,jid)
+         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+         sftp.close()
+         sys.exit() 
+      except paramiko.ssh_exception.SSHException as error:
+         print(error)
+         exception = error.readlines()
+         exception = str(exception)
+         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
+         print(info)
+         os.system('logger -t montag -p user.info ' + info)
+         send_message(info,jid)
+         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+         sftp.close()
+         sys.exit()
+   except paramiko.ssh_exception.AuthenticationException:
       exception = "SFTP Get Timeout"
       info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
       print(info)
       os.system('logger -t montag -p user.info ' + info)
       send_message(info,jid)
       write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-      sys.exit() 
-   except paramiko.ssh_exception.SSHException as error:
-      print(error)
-      exception = error.readlines()
-      exception = str(exception)
-      info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
-      print(info)
-      os.system('logger -t montag -p user.info ' + info)
-      send_message(info,jid)
-      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-      sys.exit()
-   sftp.close()
+      ssh.close()
+      sys.exit()   
    ssh.close()
    return remote_path
 
@@ -209,29 +222,22 @@ def debugging(ipadd,appid,subapp,level):
     cmd = ("swlog appid {0} subapp {1} level {2}").format(appid,subapp,level)
     ssh_connectivity_check(ipadd,cmd)
 
-### Function to collect PMD file by SFTP when Core Dump is noticed
-def get_pmd_sftp(host,ipadd,filename_pmd):
-  """ 
-  This function takes entries arguments the Path of Core Dump file.
-  This function returns file path containing the pmd file and the notification subject, body used when calling VNA API
-
-  :param str filename_pmd:                Path of Core Dump file (e.g. /flash/pmd/pmd-agCmm-11.24.2021-06.33.20)
-  :param str host:                        Switch Hostname
-  :param str ipadd:                       Switch IP address
-  :return:                                filename_path,subject,action,result,category
-  """
-  date = datetime.date.today()
-  pmd_file = filename_pmd.replace("/", "_")
-  with pysftp.Connection(host=ipadd, username=switch_user, password=switch_password) as sftp:
-      sftp.get('{0}'.format(filename_pmd), '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,pmd_file))         # get a remote file
-  filename_path = '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,pmd_file)
-  subject = ("Preventive Maintenance Application - Core dump noticed on switch: {0}").format(ipadd)
-  action = ("The PMD file {0} is collected from OmniSwitch (Hostname: {1})").format(filename_path,host)
-  result= "Find enclosed to this notification the pmd file"
-  category = "core_dump"
-  return filename_path,subject,action,result,category
-
+def enable_port(user,password,ipadd,portnumber):
+    """ 
+    This function enables the port where there is a loop  on the switch put in arguments.
+    :param str user:                Switch user login
+    :param str password:            Switch user password
+    :param str ipadd:               Switch IP Address
+    :param str portnumber:          The Switch port where there is a loop. shape : x/y/z with x = chassis n° ; y = slot n° ; z = port n°
+    :return:                        None
+    """
+    cmd = "interfaces port {0} admin-state enable".format(portnumber)
+    #ssh session to start python script remotely
+    os.system('logger -t montag -p port enabling')
+    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(password, user, ipadd, cmd))
+    os.system('logger -t montag -p user.info Following port is administratively enabled: ' + portnumber)
 ### Function to collect tech_support_complete.tar file by SFTP
+
 def get_tech_support_sftp(host,ipadd):
   """ 
   This function takes entries arguments the OmniSwitch IP Address
@@ -1176,6 +1182,173 @@ def authentication_failure(user,source_ip,protocol,service_status,aaa_status,hos
   result= ("As per configuration, this service protocol is {0} and aaa authentication is {1}").format(service_status,aaa_status)
   category = "authentication"
   return filename_path,subject,action,result,category
+
+def check_save(ipadd,port,type):
+  if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
+     try:
+         open ('/opt/ALE_Script/decisions_save.conf','w', errors='ignore').close()
+         subprocess.call(['chmod', '0755', '/opt/ALE_Script/decisions_save.conf'])
+     except OSError as error:
+         print(error)
+         print("Permission error when creating file /opt/ALE_Script/decisions_save.conf")
+         sys.exit()
+     return "0"
+
+def add_new_save(ipadd,port,type,choice = "never"):
+  """ 
+  This function saves the new instruction to be recorded given by the user on Rainbow.
+  :param str ipadd:              Switch IP Address
+  :param str portnumber:        Switch port number
+  :param str type:              What use case is it? can take : loop, flapping
+  :return:                        None
+  """
+
+
+  if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
+   try:
+     open ('/opt/ALE_Script/decisions_save.conf','w').close()
+     subprocess.call(['chmod', '0755', '/opt/ALE_Script/decisions_save.conf'])
+   except OSError as error:
+      print(error)
+      print("Permission error when creating file /opt/ALE_Script/decisions_save.conf")
+      sys.exit()
+
+  fileR = open("/opt/ALE_Script/decisions_save.conf", "r", errors='ignore')
+  text = fileR.read()
+  fileR.close()
+
+  textInsert = "{0},{1},{2},{3}\n".format(ipadd,port,type,choice)
+  try:
+     fileW = open("/opt/ALE_Script/decisions_save.conf", "w", errors='ignore')
+     fileW.write(textInsert + text)
+     fileW.close()
+  except OSError as error:
+      print(error)
+      print("Permission error when creating file /opt/ALE_Script/decisions_save.conf")
+      sys.exit()
+
+def detect_port_loop():
+        """ 
+        This function detectes if there is a loop in the network ( more than 10 log in 2 seconds)
+
+        :param:                         None
+        :return int :                  If the int is equal to 1 we have detected a loop, if not the int equals 0
+        """
+
+        content_variable = open ('/var/log/devices/lastlog_loop.json','r')
+        file_lines = content_variable.readlines()
+        content_variable.close()
+        if len(file_lines) > 150:
+           #clear lastlog file
+           open('/var/log/devices/lastlog_loop.json','w', errors='ignore').close()
+
+        if len(file_lines) >= 10:
+           #check if the time of the last and the tenth last are less than seconds
+
+
+           #first _ line
+           first_line = file_lines[0].split(',')
+           first_time = first_line[0]
+
+           #last_line
+           last_line = file_lines[9].split(',')
+           last_time = last_line[0] 
+
+           #extract the timestamp (first_time and last_time)
+           first_time_split = first_time[-len(first_time)+26:-7].split(':')
+           last_time_split = last_time[-len(last_time)+26:-7].split(':')
+
+           #time in hour into decimal of the first time : #else there is en error due to second  changes 60 to 0
+           hour = first_time_split[0]
+           #"%02d" %  force writing on 2 digits
+           minute_deci = "%02d" % int(float(first_time_split[1])*100/60)
+           second_deci = "%02d" % int(float(first_time_split[2])*100/60)
+           first_time = "{0}{1}{2}".format(hour,minute_deci,second_deci)
+
+           #time in hour into decimal of the last time : #else there is en error due to second  changes 60 to 0
+           hour = last_time_split[0]
+           #"%02d" %  force writing on 2 digits
+           minute_deci = "%02d" % int(float(last_time_split[1])*100/60)
+           second_deci = "%02d" % int(float(last_time_split[2])*100/60)
+           last_time = "{0}{1}{2}".format(hour,minute_deci,second_deci)
+
+
+
+
+           if(int(last_time)-int(first_time)) < 1: #diff less than 2 seconds ( we can down to 1)
+              return 1
+           else:
+              #clear lastlog file
+              open('/var/log/devices/lastlog_loop.json','w', errors='ignore').close()
+              return 0
+        else:
+           return 0
+
+def check_timestamp():
+        """ 
+        This function provides the time between the last log and the current log .
+
+        :param :                        None
+        :return int diff_time:          This is the time gap between the last log and the current log.
+        """
+        #read time of the current log processed
+
+        content_variable = open('/var/log/devices/lastlog_loop.json','r', errors='ignore') 
+        file_lines = content_variable.readlines()
+        content_variable.close()
+        last_line = file_lines[0]
+        f=last_line.split(',')
+
+        timestamp_current = f[0]
+        current_time = timestamp_current[-len(timestamp_current)+26:-7].replace(':' , '')
+
+        if not os.path.exists('/var/log/devices/logtemp.json'):
+          open('/var/log/devices/logtemp.json','w', errors='ignore').close()
+
+        #read time of the last log  processed
+        f_lastlog = open('/var/log/devices/logtemp.json','r', errors='ignore')
+        first_line =  f_lastlog.readlines()
+
+        #if logtemps is empty or more than 1 line in the file ( avoid error), clear the file
+        if len(first_line)!=1 :
+         f_lastlog = open('/var/log/devices/logtemp.json','w', errors='ignore')
+         f_lastlog.write(last_line)
+         f_lastlog.close()
+
+        f_lastlog_split = first_line[0].split(',')
+        timestamp_last = f_lastlog_split[0]
+        last_time = timestamp_last[-len(timestamp_last)+26:-7].replace(':' , '')
+        diff_time = int(current_time) - int(last_time)
+
+        return diff_time
+
+def replace_logtemp():
+
+        content_variable = open ('/var/log/devices/lastlog_loop.json','r')
+        file_lines = content_variable.readlines()
+        content_variable.close()
+        last_line = file_lines[0]
+
+           #copy log in temp
+        f_lastlog = open('/var/log/devices/logtemp.json','w', errors='ignore')
+        f_lastlog.write(last_line)
+        f_lastlog.close()
+
+def disable_port(user,password,ipadd,portnumber):
+    """ 
+    This function disables the port where there is a loop  on the switch put in arguments.
+
+    :param str user:                Switch user login
+    :param str password:            Switch user password
+    :param str ipadd:               Switch IP Address
+    :param str portnumber:          The Switch port where there is a loop. shape : x/y/z with x = chassis n° ; y = slot n° ; z = port n°
+    :return:                        None
+    """
+    cmd = "interfaces port {0} admin-state disable".format(portnumber)
+    #ssh session to start python script remotely
+    os.system('logger -t montag -p port disabling')
+    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(password, user, ipadd, cmd))
+    os.system('logger -t montag -p user.info Following port is administratively disabled: ' + portnumber)
 
 def send_file(filename_path,subject,action,result):
   """ 

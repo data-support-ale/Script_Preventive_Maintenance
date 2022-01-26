@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from msilib.schema import File
 import sys
 import os
 import re
@@ -17,7 +16,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from ALE_script.conf (mails, mails_raw, company name)
 
-switch_user,switch_password,mails_raw,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 # Notification sent to ALE admin for notifying ALE Admin on a dedicated Rainbow bubble that a setup init is called
 subject = (

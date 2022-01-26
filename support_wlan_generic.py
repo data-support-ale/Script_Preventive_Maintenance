@@ -10,7 +10,7 @@ from time import strftime, localtime
 #import requests
 #import datetime
 import re
-from support_tools import get_credentials
+from support_tools_OmniSwitch import get_credentials
 from support_send_notification import send_message,send_file,send_alert
 #from support_OV_get_wlan import OvHandler
 from database_conf import *
@@ -27,7 +27,7 @@ system_name = os.uname()[1].replace(" ", "_")
 timestamp = 300
 timestamp = (timestamp/60)*100
 
-switch_user, switch_password, jid, gmail_user, gmail_password, mails,ip_server_log = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 def deassociation(ipadd,device_mac,timestamp,reason,reason_number):
   message = "WLAN Deassociation detected reason : {0} from Stellar AP {1}, client MAC Address {2}".format(reason,ipadd,device_mac)

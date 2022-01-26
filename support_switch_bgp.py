@@ -34,11 +34,14 @@ with open("/var/log/devices/lastlog_bgp.json", "r", errors='ignore') as log_file
         ip = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        bgp_peer,bgp_as,final_state = re.findall(r"peer INFO: \[peer\((.*?)\),(.*?)\] transitioned to (.*?) state.", msg)[0]
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_bgp.json empty")
         exit()
-
-    bgp_peer,bgp_as,final_state = re.findall(r"peer INFO: \[peer\((.*?)\),(.*?)\] transitioned to (.*?) state.", msg)[0]
+    except IndexError:
+        print("Index error in regex")
+        exit()
+    
 
 if jid != '':
     notif = "BGP Peering state change on OmniSwitch \"" + host + "\" IP: " + ip + " BGP Peer IP Address/AS " + bgp_peer + "/" + bgp_as + " to " + final_state

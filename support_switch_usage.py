@@ -4,7 +4,7 @@ import prometheus_client
 import sys
 import os
 import csv
-from support_tools import get_credentials
+from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
 import subprocess
 import re
@@ -58,7 +58,7 @@ SYSTEM_ROUTING_TOTAL = prometheus_client.Gauge(
     "Routing_Table_Total_Entries", 'Metrics scraped with python', ['name', 'ip'])
 path = "/opt/ALE_Script/"
 
-switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 
 class IPThread(threading.Thread):
@@ -121,7 +121,6 @@ class IPThread(threading.Thread):
                 _, stdout, _ = self.ssh.exec_command(switch_cmd)
                 output = stdout.read().decode('utf-8')
             except Exception:
-                name = re.findall("Name:         (\d*?),", output)
                 return 1
             name = re.findall(r"([A-Za-z0-9-]*),", output)[0]
 
