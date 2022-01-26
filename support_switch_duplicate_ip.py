@@ -6,7 +6,6 @@ import re
 import json
 import paramiko
 import threading
-from support_tools import get_id_client,get_server_log_ip, get_jid
 from support_tools_OmniSwitch import ssh_connectivity_check, file_setup_qos, format_mac,get_credentials
 from time import strftime, localtime
 from support_send_notification import send_message, send_mail,send_file
@@ -19,7 +18,7 @@ os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user,switch_password,jid,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 # Sample log
 # {"@timestamp":"2022-01-05T12:14:46+01:00","type":"syslog_json","relayip":"10.130.7.247","hostname":"os6860","message":"<13>Jan  5 12:14:46 OS6860 ConsLog [slot 1\/1] Wed Jan  5 12:14:46  ipni arp WARN duplicate IP address 10.130.7.247 from port 1\/1\/9 eth addr 38f3ab:592a7e","end_msg":""}
@@ -92,7 +91,7 @@ def enable_qos_ddos(user,password,ipadd,ipadd_ddos):
 
 if jid != '':
     notif = "IP address duplication (" + ip_dup + ") on port " + port + " of switch " + ip + "(" + nom + "). Do you want to blacklist mac : " + mac + " ?"
-    answer = request_handler_rainbow(ip,'0',port,'0',notif,jid,ip_server_log,switch_user,"duplicate") #new method
+    answer = request_handler_rainbow(ip,'0',port,'0',notif,jid,ip_server,switch_user,"duplicate") #new method
 else:
     answer = '1'
 

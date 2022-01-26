@@ -1,4 +1,4 @@
-#!/usr/bin/python.5
+#!/usr/bin/python
 import requests, json
 import os
 import datetime

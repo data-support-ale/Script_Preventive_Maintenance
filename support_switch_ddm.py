@@ -18,7 +18,7 @@ os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user,switch_password,jid,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 # Log sample
 #OS6860E_VC_Core swlogd intfCmm Mgr WARN: cmmEsmCheckDDMThresholdViolations: SFP/XFP Rx Power=-26.8 dBm on slot=1 port=9, crossed DDM threshold low alarm

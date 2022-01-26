@@ -6,9 +6,9 @@ import getopt
 import json
 import logging
 import datetime
-from time import gmtime, strftime, localtime,sleep
-from support_tools import get_credentials,get_server_log_ip,get_jid,extract_ip_port,get_mail,send_python_file_sftp,get_file_sftp
-from support_send_notification import send_message,send_file,send_mail
+from time import strftime, localtime
+from support_tools_OmniSwitch import get_credentials
+from support_send_notification import send_message,send_file
 import subprocess
 from database_conf import *
 

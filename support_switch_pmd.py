@@ -31,7 +31,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 uname = os.system('uname -a')
 os.system('logger -t montag -p user.info Executing script ' + script_name)
 
-switch_user,switch_password,jid,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 
 # Function called when Core Dump is observed

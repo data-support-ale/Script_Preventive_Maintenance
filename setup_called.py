@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from msilib.schema import File
 import sys
 import os
 import re
@@ -15,7 +16,8 @@ os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from ALE_script.conf (mails, mails_raw, company name)
-switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server, company, mails_raw = get_credentials()
+
+switch_user,switch_password,mails_raw,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 # Notification sent to ALE admin for notifying ALE Admin on a dedicated Rainbow bubble that a setup init is called
 subject = (
@@ -44,17 +46,20 @@ try:
         company = company
         name = "TECH_SUPPORT_NOTIF_" + company
 
+        with open("/opt/ALE_Script/ALE_script.conf", "a+", errors='ignore') as ALE_conf:
+            ALE_conf.write(","+ str(room))
+
     # All generic fields (Rainbow bubble, emails, workflow name) are replaced based on ALE_script.conf file and Room_ID received from api/flows/NBDNotif_New_Bubble
-        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic.json", "r", errors='ignore') as fichier:
-            json_result = str(fichier.read())
+        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic.json", "r", errors='ignore') as file_json:
+            json_result = str(file_json.read())
             json_result = re.sub(r"\$room", room, json_result)
             json_result = re.sub(r"\$email", mail, json_result)
             json_result = re.sub(r"\$company", company, json_result)
             json_result = re.sub(r"\$name", name, json_result)
-        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic_result.json", "w", errors='ignore') as fichier:
-            fichier.write(json_result)
-        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic_result.json", "r", errors='ignore') as fichier:
-            data = str(fichier.read())
+        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic_result.json", "w", errors='ignore') as file_json:
+            file_json.write(json_result)
+        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic_result.json", "r", errors='ignore') as file_json:
+            data = str(file_json.read())
 
     # REST-API method GET for Login to VNA
         url = "https://tpe-vna.al-mydemo.com/management/api/users/me"

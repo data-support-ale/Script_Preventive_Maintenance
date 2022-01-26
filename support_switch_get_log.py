@@ -3,21 +3,19 @@
 import sys
 import os
 import json
-import logging
 import datetime
-from time import gmtime, strftime, localtime,sleep
-from support_tools_OmniSwitch import get_credentials,get_file_sftp,get_tech_support_sftp,ssh_connectivity_check
-from support_send_notification import send_message,send_file,send_mail,send_message_aijaz
+from time import strftime, localtime
+from support_tools_OmniSwitch import get_credentials,get_tech_support_sftp,ssh_connectivity_check
+from support_send_notification import send_message
 import subprocess
 import re
 from database_conf import *
-import threading
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
 
-switch_user,switch_password,jid,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 filename = 'tech_support_complete.tar'
 
 last = ""
@@ -135,7 +133,7 @@ if jid !='':
              sys.exit()
 
 ### TECH-SUPPORT ENG COMPLETE ###
-#get_tech_support_sftp(host,ipadd)
+get_tech_support_sftp(host,ipadd)
 
 print("Starting collecting additionnal logs")
 

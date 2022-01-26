@@ -32,27 +32,9 @@ def get_credentials():
      :return str mails:              List of email addresses of recipients
      """
 
-     content_variable = open ('/opt/ALE_Script/ALE_script.conf','r') #'/var/log/devices/192.168.80.27_2021-03-26.json'
-     file_lines = content_variable.readlines()
-     content_variable.close()
-     credentials_line = file_lines[0]
-     credentials_line_split = credentials_line.split(',')
-     switch_user = credentials_line_split[0]
-     switch_password = credentials_line_split[1]
-     if credentials_line_split[3] != "":
-        jid= credentials_line_split[3]
-     elif credentials_line_split[3] == "":
-        jid=''
-
-     gmail_usr = credentials_line_split[4]
-     gmail_passwd = credentials_line_split[5]
-     mails = credentials_line_split[2].split(';')
-     mails_raw = credentials_line_split[2]
-     mails = [ element  for element  in mails]
-     #mails= ", ".join(mails)
-     ip_server_log = credentials_line_split[6]
-     company = credentials_line_split[12].replace("\n","")
-     return switch_user,switch_password,jid,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw
+     with open("/opt/ALE_Script/ALE_script.conf", "r", errors='ignore') as content_variable:
+      login_switch,pass_switch,mails,rainbow_jid,ip_server_log,login_AP,pass_AP,tech_pass,random_id,company = re.findall(r"(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*)", str(content_variable.read()))[0]
+      return login_switch,pass_switch,mails,rainbow_jid,ip_server_log,login_AP,pass_AP,tech_pass,random_id,company
 
 ### Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(ipadd,cmd):
@@ -213,7 +195,7 @@ def file_setup_qos(addr):
     content_variable.close()
 
 ### Function debug
-def debugging(appid_1,subapp_1,level_1):
+def debugging(ipadd,appid,subapp,level):
     """ 
     This function takes entries arguments the appid, subapp and level to apply on switch for enabling or disabling debug logs
 
@@ -224,8 +206,8 @@ def debugging(appid_1,subapp_1,level_1):
     :return:                          None
     """
 
-    cmd = ("swlog appid {0} subapp {1} level {2}").format(appid_1,subapp_1,level_1)
-    ssh_device(cmd)
+    cmd = ("swlog appid {0} subapp {1} level {2}").format(appid,subapp,level)
+    ssh_connectivity_check(ipadd,cmd)
 
 ### Function to collect PMD file by SFTP when Core Dump is noticed
 def get_pmd_sftp(host,ipadd,filename_pmd):
@@ -1223,10 +1205,11 @@ def send_file(filename_path,subject,action,result):
   else:
      os.system('logger -t montag -p user.info REST API Call Failure') 
 
-switch_user,switch_password,jid,gmail_usr,gmail_passwd,mails,ip_server_log,company,mails_raw = get_credentials()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 if __name__ == "__main__":
 
+   login_switch,pass_switch,mails,rainbow_jid,ip_server_log,login_AP,pass_AP,tech_pass,random_id,company =get_credentials()
    jid = "570e12872d768e9b52a8b975@openrainbow.com"
    switch_password="switch"
    switch_user="admin"

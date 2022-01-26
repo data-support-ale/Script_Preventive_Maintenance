@@ -8,7 +8,7 @@ import subprocess
 import requests
 from time import gmtime, strftime, localtime, sleep
 import smtplib
-from support_tools import save_attachment
+#from support_tools import save_attachment
 import mimetypes
 import re
 from email import encoders

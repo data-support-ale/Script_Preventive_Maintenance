@@ -255,7 +255,7 @@ do
   read -p   "Do you want to confirm? (Y/N)" yn
     case $yn in
           [Nn]* ) notif=0 ;;
-          [Yy]* ) echo "$login_switch,$pass_switch,$mails,$rainbow_jid,$gmail_user,$gmail_passwd,$ip_server_log,$login_AP,$pass_AP,$tech_pass,$((1000 + $RANDOM % 9999))$((1000 + $RANDOM % 9999))$((10 + $RANDOM % 99)),$pattern_1,$pattern_2,$pattern_3,$company" > $dir/ALE_script.conf;;
+          [Yy]* ) echo "$login_switch,$pass_switch,$mails,$rainbow_jid,$ip_server_log,$login_AP,$pass_AP,$tech_pass,$((1000 + $RANDOM % 9999))$((1000 + $RANDOM % 9999))$((10 + $RANDOM % 99)),$company" > $dir/ALE_script.conf;;
           * ) echo "Please answer Y or N.";;
     esac
 done
@@ -775,6 +775,22 @@ if \$msg contains 'bootMgrVCMTopoDataEventHandler' and \$msg contains 'no longer
      stop
 }
 
+if \$msg contains 'cmmEsmHandleNIDown' and \$msg contains 'chassis' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogvcdown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_vc_cmm\" binary=\"$dir/support_switch_vc_down.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     stop
+}
+
+if \$msg contains 'Sending VC Takeover to NIs and applications' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogvcdown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_vc_cmm\" binary=\"$dir/support_switch_vc_down.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     stop
+}
+
 #### PS Unit DOWN - LAN ####
 if \$msg contains 'Power Supply' and \$msg contains 'Removed'  then {
      \$RepeatedMsgReduction on
@@ -853,13 +869,6 @@ if \$msg contains 'EVENT: CUSTLOG CMM The switch was restarted by the user' then
        stop
 }
 
-if \$msg contains 'Sending VC Takeover to NIs and applications' then {
-       \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"Sending VC Takeover to NIs and applications\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
 
 if \$msg contains 'operational state changed to UNPOWERED' then {
        \$RepeatedMsgReduction on

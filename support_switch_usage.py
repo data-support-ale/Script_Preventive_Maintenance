@@ -359,21 +359,19 @@ class IPThread(threading.Thread):
 
 if __name__ == '__main__':
     prometheus_client.start_http_server(9999)
-
-    ips_address = list()
-    with open(path + 'Devices.csv') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=';')
-        line = 0
-        for row in csv_reader:
-            if line == 0:
-                line = 1
-                continue
-            ips_address.append(str(row[1]))
-
     
     while True:
         threads = []
         count = 0
+        ips_address = list()
+        with open(path + 'Devices.csv') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=';')
+            line = 0
+            for row in csv_reader:
+                if line == 0:
+                    line = 1
+                    continue
+                ips_address.append(str(row[1]))
         # Start all Threads
         for ipaddr in ips_address:
             try:

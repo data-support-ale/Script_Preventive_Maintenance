@@ -4,9 +4,9 @@ import sys
 import os
 import re
 import json
-from support_tools import enable_debugging, disable_debugging, disable_port, extract_ip_port, check_timestamp, get_credentials,extract_ip_ddos,disable_debugging_ddos,enable_qos_ddos,get_id_client,get_server_log_ip
+from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
-from support_send_notification import send_message, send_mail,send_file
+from support_send_notification import send_message
 from database_conf import *
 
 # Script init
@@ -15,8 +15,7 @@ os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, jid, gmail_user, gmail_password, mails, ip_server = get_credentials()
-ip_server_log = get_server_log_ip()
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_authfail.json", "r", errors='ignore') as log_file:

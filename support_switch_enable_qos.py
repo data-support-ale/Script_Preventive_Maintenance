@@ -7,7 +7,7 @@ import json
 import logging
 import subprocess
 import pysftp
-from support_tools import enable_debugging, disable_debugging, disable_port, extract_ip_port, check_timestamp, get_credentials,extract_ip_ddos,disable_debugging_ddos,enable_qos_ddos,get_id_client,get_server_log_ip
+from support_tools_OmniSwitch import get_credentials
 from time import gmtime, strftime, localtime, sleep
 from support_send_notification import send_message, send_mail,send_file
 from support_response_handler import request_handler_mail,request_handler_rainbow,request_handler_both

@@ -2,11 +2,9 @@
 
 import sys
 import os
-import getopt
 import json
-import logging
-import subprocess
-from support_tools import enable_debugging, disable_debugging, disable_port, extract_ip_port, check_timestamp, get_credentials,enable_debugging_ddos
+import re
+from support_tools_OmniSwitch import get_credentials, debugging
 from time import gmtime, strftime, localtime, sleep
 from support_send_notification import  send_message
 #Script init
@@ -16,14 +14,46 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 #Get informations from logs.
 switch_user, switch_password, jid, gmail_usr, gmail_passwd, mails,ip_server = get_credentials()
-ip_switch, portnumber = extract_ip_port("debug_ddos")
 
-enable_debugging_ddos(switch_user,switch_password,ip_switch)
+last = ""
+with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_file:
+    for line in log_file:
+        last = line
+
+with open("/var/log/devices/lastlog_ddos.json","w", errors='ignore') as log_file:
+    log_file.write(last)
+
+with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_file:
+    try:
+        log_json = json.load(log_file)
+        ip = log_json["relayip"]
+        host = log_json["hostname"]
+        msg = log_json["message"]
+    except json.decoder.JSONDecodeError:
+        print("File /var/log/devices/lastlog_ddos.json empty")
+        exit()
+
+    ddos_type = re.findall(r"Denial of Service attack detected: <(.*?)>", msg)[0]
+
+if jid != '':
+    notif = "A Denial of Service Attack is detected on OmniSwitch \"" + host + "\" IP: " + ip + " of type " + ddos_type
+    send_message(notif, jid)
+    try:
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "DDOS_Type": ddos_type}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+
+# Enable debugging logs for getting IP Attacker's IP Address "swlog appid ipv4 subapp all level debug3"
+appid = "ipv4"
+subapp = "all"
+level = "debug3"
+# Call debugging function from support_tools_OmniSwitch
+debugging(ipadd,appid_1,subapp_1,level_1)
+
 os.system('logger -t montag -p user.info Process terminated')
 # clear lastlog file
 open('/var/log/devices/lastlog_ddos.json','w').close()
-# clear lastlog file
-#open('/var/log/devices/lastlog_ddos_ip.json','w').close
 
 sys.exit(0)
 
