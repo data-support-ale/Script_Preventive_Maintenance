@@ -21,14 +21,24 @@ fi
 
 
 dir="/opt/ALE_Script"
-USER="admin-support"
+sudo useradd -U admin-support >& /dev/null
+sudo groupadd -g 1500 admin-support >& /dev/null
+sudo usermod -a -G admin-support admin-support >& /dev/null
 
 mkdir $dir >& /dev/null
 mkdir /tftpboot/upgrades >& /dev/null
 cp ./Setup.sh $dir/
-cp -r ./Analytics $dir/
+#Analytics
+archi=`dpkg --prinlst-architecture >& /dev/null` 
+if [[ $archi == *"arm"* ]]
+then
+     cp -r ./Analytics/arm/* $dir/Analytics/
+else
+     cp -r ./Analytics/amd64/* $dir/Analytics/
+fi
 cp -r ./VNA_Workflow $dir/
-cp ./*.py $dir/ #change in mvpip3.10
+
+cp ./*.py $dir/
 cp ./*.csv $dir/ >& /dev/null
 chmod 755 $dir/*
 chown admin-support:admin-support $dir/*
@@ -653,14 +663,6 @@ if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_s
 #  stop
 #}
 
-#### Rules Additionnal Pattern WLAN #####
-if \$msg contains '$pattern_1_AP' or \$msg contains '$pattern_2_AP' or \$msg contains '$pattern_3_AP' then {
-     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omfile\" DynaFile=\"deviceloggetlogap\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" binary=\"/opt/ALE_Script/support_AP_get_log.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-     stop
-}
-
 ##### Rules MAC-SEC ########
 if \$msg contains 'intfNi Mka' or \$msg contains 'intfNi Drv' or \$msg contains 'intfNi Msec' then {
   action(type=\"omfile\" DynaFile=\"deviceloghistory\" dirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -1122,106 +1124,129 @@ sudo systemctl daemon-reload
 sudo systemctl start python_exporter.service
 sudo systemctl enable  python_exporter.service
 
+#GOLANG
+echo
+echo -e "\e[32mGolang Installation\e[39m"
+echo
+wget  -q --inet4-only https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.14.4.linux-amd64.tar.gz >& /dev/null
+mkdir $home/go && chown admin-support:admin-support go/
+chown admin-support:admin-support /usr/local/go
+echo 'PATH=$PATH:/usr/local/go/bin
+GOPATH=$HOME/go' > ~/.profile
+source ~/.profile
 
-# #GOLANG
-# echo
-# echo -e "\e[32mGolang Installation\e[39m"
-# echo
-# wget  -q --inet4-only https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
-# tar -C /usr/local -xzf go1.14.4.linux-amd64.tar.gz >& /dev/null
-# mkdir $home/go && chown admin-support:admin-support go/
-# chown admin-support:admin-support /usr/local/go
-# echo 'PATH=$PATH:/usr/local/go/bin
-# GOPATH=$HOME/go' > ~/.profile
-# source ~/.profile
+echo
+echo -e "\e[32mGolang Installed\e[39m"
+echo
+#RSYSLOG EXPORTER
+echo
+if [[ $archi == *"arm"* ]]
+then
+     echo -e "\e[32mRsyslog Exporter Installation\e[39m"
+     sudo echo "[Unit]
+     Description=Rsyslog exporter
 
-# echo
-# echo -e "\e[32mGolang Installed\e[39m"
-# echo
+     [Service]
+     ExecStart= ~/go/bin/rsyslog_exporter
+     Restart=on-failure
+     User=admin-support
+     Group=admin-support
 
-# echo
-# echo -e "\e[32mDocker Installation\e[39m"
-# echo
-# #DOCKER
-# apt-get -qq -y install ca-certificates curl gnupg lsb-release
-# curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-# apt-get -qq -y install docker-ce docker-ce-cli containerd.io
-# echo
-# echo -e "\e[32mDocker Installed\e[39m"
-# echo
+     [Install]
+     WantedBy=multi-user.target" > /etc/systemd/system/rsyslog_exporter.service
+     sudo systemctl daemon-reload
+     sudo systemctl start rsyslog_exporter.service
+     sudo systemctl enable  rsyslog_exporter.service
+     echo
+     go get -u github.com/chijiajian/rsyslog_exporter
+     echo
+     echo -e "\e[32mRsyslog Exporter Installed\e[39m"
+fi
+echo
+echo
+echo -e "\e[32mDocker Installation\e[39m"
+echo
+#DOCKER
+apt-get -qq -y install ca-certificates curl gnupg lsb-release
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get -qq -y install docker-ce docker-ce-cli containerd.io
+echo
+echo -e "\e[32mDocker Installed\e[39m"
+echo
 
-# echo
-# echo -e "\e[32mDocker-compose installation\e[39m"
-# echo
-# #DOCKER COMPOSE
-# wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
-# chmod +x /usr/local/bin/docker-compose
-# echo
-# echo -e "\e[32mDocker-Compose Installed\e[39m"
-# echo
-
-
-
-# #OpenSSL
-# echo
-# echo -e "\e[32mOpenSSL Installation\e[39m"
-# echo
-# apt-get -qq -y install libssl-dev
-# apt-get -qq -y install libncurses5-dev
-# apt-get -qq -y install libsqlite3-dev
-# apt-get -qq -y install libreadline-dev
-# apt-get -qq -y install libtk8.6
-# apt-get -qq -y install libgdm-dev
-# apt-get -qq -y install libdb4o-cil-dev
-# apt-get -qq -y install libpcap-dev
-
-# wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz 
-# tar zxvf openssl-1.1.1g.tar.gz >& /dev/null
-# cd openssl-1.1.1g
-# ./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2 >& /dev/null
-# make -s >& /dev/null
-# make -s install >& /dev/null
-# echo 'export PATH=$HOME/openssl/bin:$PATH
-# export LD_LIBRARY_PATH=$HOME/openssl/lib
-# export LC_ALL="en_US.UTF-8"
-# export LDFLAGS="-L /home/username/openssl/lib -Wl,-rpath,/home/username/openssl/lib"' > ~/.bash_profile
-# source ~/.bash_profile
-
-# echo
-# echo -e "\e[32mOpenSSL Installed\e[39m"
-# echo
-
-# echo
-# echo -e "\e[32mPython 3.10 installation\e[39m"
-# echo
-# #Python 3.10
-# cd /home/admin-support/Script_Preventive_Maintenance/
-# apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
-# wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
-# tar -xf Python-3.10.*.tgz >& /dev/null
-# cd Python-3.10.*/
-# ./configure --with-openssl=/home/$USER/openssl >& /dev/null
-# sudo make -s >& /dev/null
-# sudo make -s altinstall >& /dev/null
-# update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1 >& /dev/null
-# update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1 >& /dev/null
-
-# echo
-# echo -e "\e[32mPython3.10 installed\e[39m"
-# echo
+echo
+echo -e "\e[32mDocker-compose installation\e[39m"
+echo
+#DOCKER COMPOSE
+wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
+chmod +x /usr/local/bin/docker-compose
+echo
+echo -e "\e[32mDocker-Compose Installed\e[39m"
+echo
 
 
-# sudo -H pip3.10 install --quiet pysftp >& /dev/null
-# sudo -H pip3.10 install --quiet influx-client >& /dev/null
-# sudo -H pip3.10 install --quiet prometheus-client >& /dev/null
-# sudo -H pip3.10 install --quiet flask >& /dev/null
-# sudo -H pip3.10 install --quiet requests >& /dev/null
-# apt-get -qq -y install tftpd-hpa >& /dev/null
-# export PYTHONPATH=/usr/local/bin/python3.10
-# echo
-# echo -e "\e[32mPython3.10 dependences installed\e[39m"
-# echo
+
+#OpenSSL
+echo
+echo -e "\e[32mOpenSSL Installation\e[39m"
+echo
+apt-get -qq -y install libssl-dev
+apt-get -qq -y install libncurses5-dev
+apt-get -qq -y install libsqlite3-dev
+apt-get -qq -y install libreadline-dev
+apt-get -qq -y install libtk8.6
+apt-get -qq -y install libgdm-dev
+apt-get -qq -y install libdb4o-cil-dev
+apt-get -qq -y install libpcap-dev
+
+wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz 
+tar zxvf openssl-1.1.1g.tar.gz >& /dev/null
+cd openssl-1.1.1g
+./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2 >& /dev/null
+make -s >& /dev/null
+make -s install >& /dev/null
+echo 'export PATH=$HOME/openssl/bin:$PATH
+export LD_LIBRARY_PATH=$HOME/openssl/lib
+export LC_ALL="en_US.UTF-8"
+export LDFLAGS="-L /home/username/openssl/lib -Wl,-rpath,/home/username/openssl/lib"' > ~/.bash_profile
+source ~/.bash_profile
+
+echo
+echo -e "\e[32mOpenSSL Installed\e[39m"
+echo
+
+echo
+echo -e "\e[32mPython 3.10 installation\e[39m"
+echo
+#Python 3.10
+cd /home/admin-support/Script_Preventive_Maintenance/
+apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
+wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
+tar -xf Python-3.10.*.tgz >& /dev/null
+cd Python-3.10.*/
+./configure --with-openssl=/home/$USER/openssl >& /dev/null
+sudo make -s >& /dev/null
+sudo make -s altinstall >& /dev/null
+update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1 >& /dev/null
+update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1 >& /dev/null
+
+echo
+echo -e "\e[32mPython3.10 installed\e[39m"
+echo
+
+
+sudo -H pip3.10 install --quiet pysftp >& /dev/null
+sudo -H pip3.10 install --quiet influx-client >& /dev/null
+sudo -H pip3.10 install --quiet prometheus-client >& /dev/null
+sudo -H pip3.10 install --quiet flask >& /dev/null
+sudo -H pip3.10 install --quiet requests >& /dev/null
+apt-get -qq -y install tftpd-hpa >& /dev/null
+export PYTHONPATH=/usr/local/bin/python3.10
+echo
+echo -e "\e[32mPython3.10 dependences installed\e[39m"
+echo
 
 echo "Devices log directory /var/log/devices/ created"
 mkdir /var/log/devices/ >& /dev/null
@@ -1268,8 +1293,16 @@ do
 done
 
 echo "Sending notification to ALE DevOPS team for setup VNA application"
-sudo python /opt/ALE_Script/setup_called.py "$company"
-echo "Setup complete"
+while IFS="," read -r rec_column1 rec_column2 rec_column3 rec_column4 rec_remaining
+do
+  if [ "$rec_column4" != "" ]
+  then
+      echo -e "\e[31mVNA already setup"
+  else
+      sudo python /opt/ALE_Script/setup_called.py "$company"
+      echo "Setup complete"
+  fi
+done < /opt/ALE_Script/ALE_script.conf
 
 echo "Launching Docker-compose"
 cd /opt/ALE_Script/Analytics

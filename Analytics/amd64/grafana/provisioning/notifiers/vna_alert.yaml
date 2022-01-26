@@ -1,0 +1,19 @@
+notifiers:
+  - name: VNA
+    type: webhook
+    uid: notifier1
+    org_id: 1
+    is_default: true
+    send_reminder: true
+    frequency: 1h
+    disable_resolve_message: false
+    # See `Supported Settings` section for settings supported for each
+    # Secure settings that will be encrypted in the database (supported since Grafana v7.2). See `Supported Settings` section for secure settings supported for each notifier.
+    settings:
+      url: https://tpe-vna.al-mydemo.com/api/flows/grafana_alert
+    secure_settings:
+      url: https://tpe-vna.al-mydemo.com/api/flows/grafana_alert
+      httpMethod: post
+      username:
+      password: no
+

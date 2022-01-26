@@ -1,0 +1,28 @@
+# config file version
+apiVersion: 1
+
+roles:
+    - name: "reports:view"
+      description: "Role to grant viewing rights for reports"
+      version: 1
+      ordId: 1
+      permissions:
+            - action: "orgs:read"
+              scope: "orgs:*"
+            - action: "settings:read"
+              scope: "settings:*"
+            - action: "datasources:read"
+              scope: "datasources:*"
+       builtInRoles:
+             - name: "Viewer"
+             - name: "Editor"
+
+removeDefaultAssignments:
+  - builtInRole: "Grafana Admin"
+    fixedRole: "fixed:users:admin:edit"
+  - builtInRole: "Admin"
+    fixedRole: "fixed:users:org:edit"
+
+addDefaultAssignments:
+   - builtInRole: "Viewer"
+     fixedRole: "fixed:reporting:admin:read"

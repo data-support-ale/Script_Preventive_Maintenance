@@ -101,20 +101,26 @@ try:
             'Cookie': 'JSESSIONID=80E64766B76B28CBFF0B44B3876ADA01'
         }
         response = requests.request("PUT", url, headers=headers, data=payload)
-        if "200" in response:
+        if response.status_code == 200:
               os.system('logger -t montag -p user.info 200 OK')
-              print("VNA Workflow deployment in progress")
+              print("VNA Workflow registering in progress")
+        elif response.status_code == 400:
+              os.system('logger -t montag -p user.info 400 OK')
+              print("VNA Workflow already register")
         else:
               os.system('logger -t montag -p user.info REST API Call Failure')
-              print("VNA Workflow depoyment failed")
+              print("VNA Workflow registering failed")
 
     # REST-API method PUT /api/tenants/<tenant_id>/flows/<id>/deploy is called for enabling the VNA Workflow
         url = "https://tpe-vna.al-mydemo.com/management/api/tenants/{}/flows/{}/deploy".format(
             tenant_id, id)
         response = requests.request("PUT", url, headers=headers, data=payload)
-        if "200" in response:
+        if response.status_code == 200:
               os.system('logger -t montag -p user.info 200 OK')
               print("VNA Workflow deployed and enabled")
+        elif response.status_code == 400:
+              os.system('logger -t montag -p user.info 400 OK')
+              print("VNA Workflow already deployed")
         else:
               os.system('logger -t montag -p user.info REST API Call Failure')
               print("VNA Workflow depoyment failed")
@@ -130,9 +136,12 @@ try:
                   }
 
         response = requests.request("POST", url, headers=headers, data=payload)
-        if "200" in response:
+        if response.status_code == 200:
               os.system('logger -t montag -p user.info 200 OK')
               print("Rainbow bubble created")
+        elif response.status_code == 400:
+              os.system('logger -t montag -p user.info 400 OK')
+              print("Rainbow bubble aldready created")
         else:
               os.system('logger -t montag -p user.info REST API Call Failure')
               print("Rainbow bubble creation failed")
