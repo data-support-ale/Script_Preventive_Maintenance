@@ -129,13 +129,13 @@ if jid !='':
          send_message(info,jid)
          send_message(msg,jid)
          try:
-             write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip_switch, "Pattern": pattern}, "fields": {"count": 1}}])
+             write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Pattern": pattern}, "fields": {"count": 1}}])
          except UnboundLocalError as error:
              print(error)
              sys.exit()
 
 ### TECH-SUPPORT ENG COMPLETE ###
-get_tech_support_sftp(host,ipadd)
+#get_tech_support_sftp(host,ipadd)
 
 print("Starting collecting additionnal logs")
 
@@ -176,7 +176,7 @@ for switch_cmd in l_switch_cmd:
         send_message(info,jid)
         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         sys.exit()
-   except subprocess.FileNotFoundError as exception:
+   except FileNotFoundError as exception:
        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
        print(info)
        os.system('logger -t montag -p user.info ' + info)
@@ -198,6 +198,7 @@ filename = '/opt/ALE_Script/{0}.txt'.format(filename)
 print(filename)
 
 if jid !='':
-         send_file(info,jid,ipadd,filename)
+#         send_file(info,jid,ipadd,filename)
+          print("file attached in Rainbow bubble")
 
 open('/var/log/devices/get_log_switch.json','w').close()
