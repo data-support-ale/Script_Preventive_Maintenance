@@ -1,21 +1,8 @@
 #!/usr/bin/env python
 import sys
-import os
-import getopt
-import json
-import logging
-import subprocess
 import requests
-from time import gmtime, strftime, localtime, sleep
-import smtplib
-#from support_tools import save_attachment
-import mimetypes
+from time import sleep
 import re
-from email import encoders
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-from support_web_receiver_class import Receiver,start_web
 from database_conf import *
 
 def send_message(info,jid):
@@ -75,7 +62,7 @@ def send_message_aijaz(subject,info,jid):
         print(error)
         sys.exit()
 
-def send_message_request(info,jid,receiver):
+def send_message_request(info,jid):
     """ 
     Send the message, with a URL requests  to a Rainbowbot. This bot will send this message and request to the jid in parameters
 
@@ -86,35 +73,33 @@ def send_message_request(info,jid,receiver):
     :param str id_case:             Unique ID creates during the response_handler , to identifie the URL request to the good case.
     :return:                        None
     """
-
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
-    headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",'Card': '1', 'jid1': '{0}'.format(jid), 'toto': '{0}.'.format(info)}
-    response = requests.get(url, headers=headers)
-    print(response)
+    try:
+        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
+        headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",'Card': '1', 'jid1': '{0}'.format(jid), 'toto': '{0}.'.format(info)}
+        response = requests.get(url, headers=headers)
+        print(response)
+        value = response.text
+    except requests.exceptions.ConnectionError:
+        value = "1"
+        return value
+    except requests.exceptions.Timeout:
+        print("Request Timeout when calling URL: " + url)
+        value = "1"
+        return value   
+    except requests.exceptions.TooManyRedirects:
+        print("Too Many Redirects when calling URL: " + url)
+        value = "1"
+        return value     
+    except requests.exceptions.RequestException:
+        print("Request exception when calling URL: " + url)
+        value = "1"
+        return value   
     try:
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
         print(error)
         sys.exit()
-    print(response.text)
-    receiver.set_answer(response.text)
-    sleep(1)
-    url = "http://127.0.0.1:5200/?id=rainbow"
-    try:
-        response = requests.get(url)
-        print(response)
-    except requests.exceptions.ConnectionError:
-        print("Max retries exceeded when calling URL: " + url)
-        sys.exit()
-    except requests.exceptions.Timeout:
-        print("Request Timeout when calling URL: " + url)
-        sys.exit()    
-    except requests.exceptions.TooManyRedirects:
-        print("Too Many Redirects when calling URL: " + url)
-        sys.exit()    
-    except requests.exceptions.RequestException:
-        print("Request exception when calling URL: " + url)
-        sys.exit()      
+    return value
 
 def send_file(info,jid,ipadd,filename_path =''):
     """ 

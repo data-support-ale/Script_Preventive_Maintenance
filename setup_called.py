@@ -30,25 +30,25 @@ files = {'file': open('/opt/ALE_Script/ALE_script.conf', 'r')}
 response = requests.post(url, files=files, headers=headers)
 # mails_raw format: email_1;email_2;email_3
 try:
-    if mails_raw != "":
-        print(mails_raw)
+    if mails != "":
+        print(mails)
         url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_New_Bubble"
         headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-                'mails': '{0}'.format(mails_raw), 'company': '{0}'.format(company)}
+                'mails': '{0}'.format(mails), 'company': '{0}'.format(company)}
         response = requests.get(url, headers=headers)
         response = str(response.content)
         response = response.replace("b", "", 1)
         response = response.replace("\'", "", 2)
         print(response)
         room = response
-        mail = re.sub(r";", '"}, {"email": "', mails_raw)
+        mail = re.sub(r";", '"}, {"email": "', mails)
         company = company
         name = "TECH_SUPPORT_NOTIF_" + company
 
         with open("/opt/ALE_Script/ALE_script.conf", "r", errors='ignore') as ALE_conf:
             data_conf = ALE_conf.read()
         with open("/opt/ALE_Script/ALE_script.conf", "w+", errors='ignore') as ALE_conf:
-            ALE_conf.write((str(data_conf)+str(room).strip()).strip())
+            ALE_conf.write((str(data_conf)+str(room).strip()).replace("\n", ""))
 
     # All generic fields (Rainbow bubble, emails, workflow name) are replaced based on ALE_script.conf file and Room_ID received from api/flows/NBDNotif_New_Bubble
         with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic.json", "r", errors='ignore') as file_json:

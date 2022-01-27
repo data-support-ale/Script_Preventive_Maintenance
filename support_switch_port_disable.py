@@ -6,8 +6,7 @@ import json
 from support_tools_OmniSwitch import get_credentials, detect_port_loop, replace_logtemp, disable_port, debugging, check_timestamp
 from time import strftime, localtime, sleep
 import re #Regex
-from support_send_notification import send_message,send_file
-from support_response_handler import request_handler_rainbow
+from support_send_notification import send_message,send_file, send_message_request
 
 #Script init
 script_name = sys.argv[0]
@@ -45,7 +44,7 @@ if check_timestamp()>15: # if the last log has been recieved less than 10 second
       subject = "A loop was detected on your OmniSwitch!"
       if jid !='':
          info = "A loop has been detected on your network from the port {0} on device {1}. (if you click on Yes, the following action will be done: Port Admin Down)".format(port, ipadd)
-         answer = request_handler_rainbow(ipadd,'0',port,'0',info,jid,ip_server,random_id,"loop") #new method
+         answer = send_message_request(info,jid)
 
       else :
          answer = '1'

@@ -1419,8 +1419,6 @@ def send_file(filename_path,subject,action,result):
   else:
      os.system('logger -t montag -p user.info REST API Call Failure') 
 
-switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
-
 if __name__ == "__main__":
 
    login_switch,pass_switch,mails,rainbow_jid,ip_server_log,login_AP,pass_AP,tech_pass,random_id,company =get_credentials()

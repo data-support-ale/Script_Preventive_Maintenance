@@ -7,8 +7,7 @@ import re
 import pysftp
 from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, file_setup_qos
 from time import gmtime, strftime, localtime, sleep
-from support_send_notification import send_message,send_file
-from support_response_handler import request_handler_rainbow
+from support_send_notification import send_message,send_file, send_message_request
 from database_conf import *
 import paramiko
 import threading
@@ -106,7 +105,7 @@ with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_fil
 
     if jid !='':
        info = "A port scan has been detected on your network by the IP Address {0}  on device {1}. (if you click on Yes, the following actions will be done: Policy action block)".format(ip_switch_ddos, ip_switch)
-       answer = request_handler_rainbow(ip_switch_ddos,'0',"0",'0',info,jid,ip_server,random_id,"ddos") #new method 
+       answer = send_message_request(info,jid)
     else :
        answer = '1'
     if answer == '1':

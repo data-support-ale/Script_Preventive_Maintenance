@@ -6,8 +6,7 @@ import re
 import json
 from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
-from support_send_notification import send_message, send_file
-from support_response_handler import request_handler_rainbow
+from support_send_notification import send_message, send_file, send_message_request
 from database_conf import *
 
 # Script init
@@ -68,8 +67,8 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
         reason = "LLDP"
 
 if jid != '':
-    notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + ", source: " + reason + ". Do you want to clear the violation?"
-    answer = request_handler_rainbow(ip,'0',port,'0',notif,jid,ip_server,random_id,"duplicate") #new method
+    notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + ", source: " + reason + ". Do you want to clear the violation? " + ip_server 
+    answer = send_message_request(notif,jid)
 else:
     answer = '1'
 
