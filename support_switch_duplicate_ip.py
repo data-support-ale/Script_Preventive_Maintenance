@@ -103,6 +103,7 @@ if answer == '1':
         send_file(info, jid, ip)
         info = "A IP duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(mac, ip)
         send_message(info, jid)
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "IP_dup": ip_dup, "mac" : mac}, "fields": {"count": 1}}])
 
-from database_conf import *
-write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "IP_dup": ip_dup, "mac" : mac}, "fields": {"count": 1}}])
+
+
