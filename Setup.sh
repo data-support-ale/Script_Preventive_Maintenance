@@ -816,6 +816,14 @@ if \$msg contains 'Power supply' and \$msg contains 'inoperable'  then {
      stop
 }
 
+if \$msg contains 'operational state changed to UNPOWERED' then {
+       \$RepeatedMsgReduction on
+	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" name=\"support_switch_queue_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+       stop
+}
+
 #### SPB Adjacency DOWN - LAN ####
 if \$msg contains 'ADJACENCY INFO: Lost L1 adjacency' then {
        \$RepeatedMsgReduction on
@@ -877,14 +885,6 @@ if \$msg contains 'Storm Threshold violation' then {
        stop
 }
 
-
-if \$msg contains 'operational state changed to UNPOWERED' then {
-       \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py aijaz2\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
 
 if \$msg contains 'CMM chassisTrapsAlert - CMM Down' then {
 	  \$RepeatedMsgReduction on
