@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from asyncio.subprocess import PIPE
+from copy import error
 import sys
 import os
 import logging
@@ -132,7 +133,7 @@ def get_file_sftp(ipadd,filename):
          print(info)
          os.system('logger -t montag -p user.info ' + info)
          send_message(info,jid)
-         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
          sftp.close()
          sys.exit()
       except paramiko.ssh_exception.IOError:
@@ -141,7 +142,7 @@ def get_file_sftp(ipadd,filename):
          print(info)
          os.system('logger -t montag -p user.info ' + info)
          send_message(info,jid)
-         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
          sftp.close()
          sys.exit() 
       except paramiko.ssh_exception.Exception as error:
@@ -151,7 +152,7 @@ def get_file_sftp(ipadd,filename):
          print(info)
          os.system('logger -t montag -p user.info ' + info)
          send_message(info,jid)
-         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
          sftp.close()
          sys.exit() 
       except paramiko.ssh_exception.SSHException as error:
@@ -162,7 +163,7 @@ def get_file_sftp(ipadd,filename):
          print(info)
          os.system('logger -t montag -p user.info ' + info)
          send_message(info,jid)
-         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+         write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
          sftp.close()
          sys.exit()
    except paramiko.ssh_exception.AuthenticationException:
@@ -184,8 +185,18 @@ def get_pmd_file_sftp(ipadd,filename):
    date = datetime.date.today()
    pmd_file = filename.replace("/", "_")
    remote_path = '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,filename)
-   with pysftp.Connection(host=ipadd, username=switch_user, password=switch_password) as sftp:
-      sftp.get('{0}'.format(filename), '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,pmd_file))         # get a remote file
+   try:
+      with pysftp.Connection(host=ipadd, username=switch_user, password=switch_password) as sftp:
+         sftp.get('{0}'.format(filename), '/tftpboot/{0}_{1}_{2}'.format(date,ipadd,pmd_file))         # get a remote file
+   except FileNotFoundError as exception:
+      print(exception)
+      info = ("The download of PMD file {0} on OmniSwitch {1} failed - {2}").format(filename,ipadd,exception)
+      print(info)
+      os.system('logger -t montag -p user.info ' + info)
+      send_message(info,jid)
+      write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+      sftp.close()
+      sys.exit()
    sftp.close()
    return remote_path
 
