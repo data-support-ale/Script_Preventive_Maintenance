@@ -69,7 +69,7 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
 
 if jid != '':
     notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + ", source: " + reason + ". Do you want to clear the violation?"
-    answer = request_handler_rainbow(ip,'0',port,'0',notif,jid,ip_server,random_id(),"duplicate") #new method
+    answer = request_handler_rainbow(ip,'0',port,'0',notif,jid,ip_server,random_id,"duplicate") #new method
 else:
     answer = '1'
 
