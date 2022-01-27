@@ -100,5 +100,5 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
         print("no pattern match - exiting script")
         sys.exit()
 
-open('/var/log/devices/lastlog_vc_down.json','w').close()
+#open('/var/log/devices/lastlog_vc_down.json','w').close()
 

@@ -6,7 +6,7 @@ import getopt
 import json
 import logging
 import subprocess
-from support_tools_OmniSwitch import get_credentials, disable_port, enable_port
+from support_tools_OmniSwitch import debugging, get_credentials, disable_port, enable_port
 from support_response_handler import request_handler_rainbow
 from time import gmtime, strftime, localtime, sleep
 import re #Regex
@@ -159,8 +159,15 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
            info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}, the port {2}  is administratively updated  on device {3}".format(port_switch_1,ip_switch_1,port_switch_2,ip_switch_2)
            send_message(info,jid)
 
-         disable_debugging(switch_user,switch_password,ip_switch_1)
-         disable_debugging(switch_user,switch_password,ip_switch_2)
+         #disable_debugging
+         ipadd=ip_switch_1
+         appid="bcmd"
+         subapp="all"
+         level="info"
+         debugging(ipadd,appid,subapp,level)
+         #disable_debugging
+         ipadd=ip_switch_2
+         debugging(ipadd,appid,subapp,level)
          sleep(2)
         # clear lastlog file
          open('/var/log/devices/lastlog_flapping.json','w').close()
@@ -190,7 +197,12 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
              info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}." .format(port_switch_1,ip_switch_1)
              send_message(info,jid)
 
-          disable_debugging(switch_user,switch_password,ip_switch_1)
+          #disable_debugging
+          ipadd=ip_switch_1
+          appid="bcmd"
+          subapp="all"
+          level="info"
+          debugging(ipadd,appid,subapp,level)
           sleep(2)
          # clear lastlog file
           open('/var/log/devices/lastlog_flapping.json','w').close()
@@ -220,8 +232,12 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
              info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}" .format(port_switch_2,ip_switch_2)
              send_message(info,jid)
  
-
-          disable_debugging(switch_user,switch_password,ip_switch_2)
+          #disable_debugging
+          ipadd=ip_switch_2
+          appid="bcmd"
+          subapp="all"
+          level="info"
+          debugging(ipadd,appid,subapp,level)
           sleep(2)
           # clear lastlog file
           open('/var/log/devices/lastlog_flapping.json','w').close()

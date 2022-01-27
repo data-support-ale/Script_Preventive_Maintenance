@@ -35,7 +35,7 @@ with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_fi
     try:
         log_json = json.load(log_file)
         ip = log_json["relayip"]
-        nom = log_json["hostname"]
+        host = log_json["hostname"]
         msg = log_json["message"]
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_dupip.json empty")
@@ -90,7 +90,7 @@ def enable_qos_ddos(user,password,ipadd,ipadd_ddos):
    ssh_connectivity_check(ipadd,cmd)  
 
 if jid != '':
-    notif = "IP address duplication (" + ip_dup + ") on port " + port + " of switch " + ip + "(" + nom + "). Do you want to blacklist mac : " + mac + " ?"
+    notif = "IP address duplication (" + ip_dup + ") on port " + port + " of switch " + ip + "(" + host + "). Do you want to blacklist mac : " + mac + " ?"
     answer = request_handler_rainbow(ip,'0',port,'0',notif,jid,ip_server,random_id,"duplicate") #new method
 else:
     answer = '1'
