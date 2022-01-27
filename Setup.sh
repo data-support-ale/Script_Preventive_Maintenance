@@ -808,8 +808,24 @@ if \$msg contains 'Power Supply' and \$msg contains 'Removed'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"$dir/support_switch_power_supply.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"$dir/support_switch_power_supply.py\")
      stop
+}
+
+if \$msg contains 'Power supply' and \$msg contains 'inoperable'  then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_switch_queue_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     stop
+}
+
+if \$msg contains 'operational state changed to UNPOWERED' then {
+       \$RepeatedMsgReduction on
+	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" name=\"support_switch_queue_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+       stop
 }
 
 #### SPB Adjacency DOWN - LAN ####
@@ -840,7 +856,7 @@ if \$msg contains 'bgp' and \$msg contains 'transitioned to' then {
 }
 
 #### DDM Threshold reached - LAN ####
-if $msg contains 'cmmEsmCheckDDMThresholdViolations' then {
+if \$msg contains 'cmmEsmCheckDDMThresholdViolations' then {
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogddm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" name=\"support_lan_generic_ddm\" name=\"support_switch_queue_DDM\" binary=\"/opt/ALE_Script/support_switch_ddm.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
@@ -873,38 +889,6 @@ if \$msg contains 'Storm Threshold violation' then {
        stop
 }
 
-
-if \$msg contains 'operational state changed to UNPOWERED' then {
-       \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py aijaz2\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'Power supply is inoperable' then {
-       \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"Power supply is inoperable\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'Power Supply 1 Removed' then {
-       \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"Power Supply 1 Removed\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'The switch was restarted by a power cycle' then {
-       \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"The switch was restarted by a power cycle\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
 
 if \$msg contains 'CMM chassisTrapsAlert - CMM Down' then {
 	  \$RepeatedMsgReduction on
