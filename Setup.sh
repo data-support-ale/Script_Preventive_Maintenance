@@ -1330,6 +1330,8 @@ sudo systemctl enable  python_exporter.service
 echo "Devices log directory /var/log/devices/ created"
 mkdir /var/log/devices/ >& /dev/null
 touch /var/log/devices/logtemp.json
+chmod 755 /var/log/devices/
+chown admin-support:admin-support /var/log/devices/
 sleep 2
 echo "# /etc/default/tftpd-hpa
 
