@@ -486,7 +486,6 @@ mail.err                        /var/log/mail.err
 :msg, contains, \"FIPS\" stop
 :msg, contains, \"integrity test passed\" stop
 :msg, contains, \"DBG3\" stop
-:msg, contains, \"DBG2\" stop
 
 if \$msg contains 'ConsLog' then {
      action(type=\"omfile\" File=\"/var/log/devices/Console_Logs.log\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
