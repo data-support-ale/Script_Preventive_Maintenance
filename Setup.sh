@@ -259,7 +259,7 @@ do
   read -p   "Do you want to confirm? (Y/N)" yn
     case $yn in
           [Nn]* ) notif=0 ;;
-          [Yy]* ) echo "$login_switch,$pass_switch,$mails,$rainbow_jid,$ip_server_log,$login_AP,$pass_AP,$tech_pass,$((1000 + $RANDOM % 9999))$((1000 + $RANDOM % 9999))$((10 + $RANDOM % 99)),$company" > $dir/ALE_script.conf;;
+          [Yy]* ) echo "$login_switch,$pass_switch,$mails,$rainbow_jid,$ip_server_log,$login_AP,$pass_AP,$tech_pass,$((1000 + $RANDOM % 9999))$((1000 + $RANDOM % 9999))$((10 + $RANDOM % 99)),$company," > $dir/ALE_script.conf;;
           * ) echo "Please answer Y or N.";;
     esac
 done
