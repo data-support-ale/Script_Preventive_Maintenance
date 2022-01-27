@@ -34,7 +34,7 @@ def get_credentials(attribute=None):
      """
 
      with open("/opt/ALE_Script/ALE_script.conf", "r", errors='ignore') as content_variable:
-      login_switch,pass_switch,mails,rainbow_jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company,romm_id = re.findall(r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
+      login_switch,pass_switch,mails,rainbow_jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company,room_id = re.findall(r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
       if attribute == None:
          return login_switch,pass_switch,mails,rainbow_jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company
       elif attribute == "login_switch":
@@ -57,8 +57,8 @@ def get_credentials(attribute=None):
          return random_id
       elif attribute == "company":
          return company
-      elif attribute == "romm_id":
-         return romm_id
+      elif attribute == "room_id":
+         return room_id
 
 ### Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(ipadd,cmd):
