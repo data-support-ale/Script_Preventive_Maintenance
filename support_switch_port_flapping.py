@@ -240,4 +240,4 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
           debugging(ipadd,appid,subapp,level)
           sleep(2)
           # clear lastlog file
-          open('/var/log/devices/lastlog_flapping.json','w').close()
+#          open('/var/log/devices/lastlog_flapping.json','w').close()
