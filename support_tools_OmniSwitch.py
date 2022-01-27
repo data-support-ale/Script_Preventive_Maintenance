@@ -19,7 +19,7 @@ from database_conf import *
 ##This script contains all functions interacting with OmniSwitches
 
 ## Function for extracting environment information from ALE_script.conf file
-def get_credentials():
+def get_credentials(attribute=None):
      """ 
      This function collects all the information about the switch's credentials in the log. 
      It collects also the information usefull for  notification sender in the file ALE_script.conf.
@@ -34,8 +34,31 @@ def get_credentials():
      """
 
      with open("/opt/ALE_Script/ALE_script.conf", "r", errors='ignore') as content_variable:
-      login_switch,pass_switch,mails,rainbow_jid,ip_server_log,login_AP,pass_AP,tech_pass,random_id,company = re.findall(r"(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*)", str(content_variable.read()))[0]
-      return login_switch,pass_switch,mails,rainbow_jid,ip_server_log,login_AP,pass_AP,tech_pass,random_id,company
+      login_switch,pass_switch,mails,rainbow_jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company,romm_id = re.findall(r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
+      if attribute == None:
+         return login_switch,pass_switch,mails,rainbow_jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company
+      elif attribute == "login_switch":
+         return login_switch
+      elif attribute == "pass_switch":
+         return pass_switch
+      elif attribute == "mails":
+         return mails
+      elif attribute == "rainbow_jid":
+         return rainbow_jid
+      elif attribute == "ip_server":
+         return ip_server
+      elif attribute == "login_AP":
+         return login_AP
+      elif attribute == "pass_AP":
+         return pass_AP
+      elif attribute == "tech_pass":
+         return tech_pass
+      elif attribute == "random_id":
+         return random_id
+      elif attribute == "company":
+         return company
+      elif attribute == "romm_id":
+         return romm_id
 
 ### Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(ipadd,cmd):

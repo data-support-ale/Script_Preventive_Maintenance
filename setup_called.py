@@ -14,7 +14,7 @@ script_name = sys.argv[0]
 os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
-# Get informations from ALE_script.conf (mails, mails_raw, company name)
+# Get informations from ALE_script.conf (mails, mails, company name)
 
 switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
@@ -30,18 +30,18 @@ files = {'file': open('/opt/ALE_Script/ALE_script.conf', 'r')}
 response = requests.post(url, files=files, headers=headers)
 # mails_raw format: email_1;email_2;email_3
 try:
-    if mails_raw != "":
-        print(mails_raw)
+    if mails != "":
+        print(mails)
         url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_New_Bubble"
         headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-                'mails': '{0}'.format(mails_raw), 'company': '{0}'.format(company)}
+                'mails': '{0}'.format(mails), 'company': '{0}'.format(company)}
         response = requests.get(url, headers=headers)
         response = str(response.content)
         response = response.replace("b", "", 1)
         response = response.replace("\'", "", 2)
         print(response)
         room = response
-        mail = re.sub(r";", '"}, {"email": "', mails_raw)
+        mail = re.sub(r";", '"}, {"email": "', mails)
         company = company
         name = "TECH_SUPPORT_NOTIF_" + company
 
