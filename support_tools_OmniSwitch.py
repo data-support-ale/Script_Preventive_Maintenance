@@ -34,7 +34,7 @@ def get_credentials(attribute=None):
      """
 
      with open("/opt/ALE_Script/ALE_script.conf", "r", errors='ignore') as content_variable:
-      login_switch,pass_switch,mails,rainbow_jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company,room_id = re.findall(r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
+      login_switch,pass_switch,mails,rainbow_jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company,room_id, _ = re.findall(r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
       if attribute == None:
          return login_switch,pass_switch,mails,rainbow_jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company
       elif attribute == "login_switch":
