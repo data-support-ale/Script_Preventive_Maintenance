@@ -51,173 +51,263 @@ unset allows_ip
 unset login_switch
 unset pass_switch
 unset ip_server_log
-unset pattern_1
-unset pattern_2
-unset pattern_3
 unset login_AP
 unset pass_AP
 unset tech_pass
-unset pattern_1_AP
-unset pattern_2_AP
-unset pattern_3_AP
-unset gmail_user
-unset gmail_passwd
 unset ap
 #If 1 or 3 is selected
 #===> variable gmail_user = 'data.emea@gmail.com';
 #===> variable gmail_password = 'Geronim0*'
 
-while [ -z "$mails" ]
-do
-  echo
-  #===> variable email_address = 'toto@gmail.com'; or 'patrice.paul@al-enterprise.com';, 'palani.srinivasan@al-enterprise.com';
-  echo "Please provide the email address you want to be notified. If several emails addresses, please separate by a semicolon (;)"
-  read -p "Enter address(es) : " mails
-  if [ -z "$mails" ]
-  then
-    echo "Email cannot be empty"
-#     elif !  [[ $mails =~ (([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5};))*(([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5}))$ ]]
-#     then
-#    echo "The emails list doesn't correspond with what was expected, retry."
- unset mails
-  fi
-done
-gmail_user="data.emea@gmail.com"
-gmail_passwd="Geronim0*"
-rainbow_jid=""
-while [ -z "$rainbow_jid" ]
-do
-  echo -e "\e[32mTip:\e[39m to find your Rainbow JID, search for the Rainbow bubble \"Am I Who\" and tape \"bonjour\"."
-  read -p "Enter your Rainbow JID (ex :j_xxx@openrainbow.com) : " rainbow_jid
-  if [ -z "$rainbow_jid" ]
-  then
-    echo "Rainbow JID cannot be empty"
-  elif ! [[ $rainbow_jid =~ ^.*@openrainbow.com$ ]]
-   then
-     echo "The Rainbow JID doesn't correspond with what was expected, retry."
-     unset rainbow_jid
-  fi
-done
 
-#===> variable company used when calling setup_called.py script
-echo "What is your Company Name?"
-read -p "Company Name : " company
-if [ -z "$company" ]
-      then
-        echo "Company Name cannot be empty"
-        read -p "Company Name : " company
+
+configuration () {
+     while [ -z "$mails" ]
+     do
+     echo
+     #===> variable email_address = 'toto@gmail.com'; or 'patrice.paul@al-enterprise.com';, 'palani.srinivasan@al-enterprise.com';
+     echo "Please provide the email address you want to be notified. If several emails addresses, please separate by a semicolon (;)"
+     read -p "Enter address(es) : " mails
+     if [ -z "$mails" ]
+     then
+     echo "Email cannot be empty"
+     #     elif !  [[ $mails =~ (([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5};))*(([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5}))$ ]]
+     #     then
+     #    echo "The emails list doesn't correspond with what was expected, retry."
+     unset mails
+     fi
+     done
+     gmail_user="data.emea@gmail.com"
+     gmail_passwd="Geronim0*"
+     rainbow_jid=""
+     while [ -z "$rainbow_jid" ]
+     do
+     echo -e "\e[32mTip:\e[39m to find your Rainbow JID, search for the Rainbow bubble \"Am I Who\" and tape \"bonjour\"."
+     read -p "Enter your Rainbow JID (ex :j_xxx@openrainbow.com) : " rainbow_jid
+     if [ -z "$rainbow_jid" ]
+     then
+     echo "Rainbow JID cannot be empty"
+     elif ! [[ $rainbow_jid =~ ^.*@openrainbow.com$ ]]
+     then
+          echo "The Rainbow JID doesn't correspond with what was expected, retry."
+          unset rainbow_jid
+     fi
+     done
+
+     #===> variable company used when calling setup_called.py script
+     echo "What is your Company Name?"
+     read -p "Company Name : " company
+     if [ -z "$company" ]
+          then
+          echo "Company Name cannot be empty"
+          read -p "Company Name : " company
+     fi
+
+     echo
+     echo "What are the string patterns you want to apply in the switch collection rules?
+     ==> "Example: policy exception"
+     ==> "Example: crash"
+     ==> "Example: reboot""
+     echo
+
+     reponse_tab=()
+     reponse=""
+     while [ -z "$reponse" ] || [ "$reponse" != "stop" ]
+     do
+     read -p 'Enter stop for exiting: ' reponse
+     echo "$reponse"
+     if [ "$reponse" == "stop" ]
+     then
+          echo 
+     else
+          reponse_tab+=("$reponse")
+     fi
+     done
+
+     #===> variable login='admin', prefilled with value "admin", means if the user press enters we use the default value
+     echo
+     echo "What are the switches credentials?"
+     default="admin"
+     read -p "Login [default="$default"] : " login_switch 
+     login_switch=${login_switch:-$default}
+
+     #===> variable password='switch', prefilled with value "admin", means if the user press enters we use the default value
+
+     default="switch"
+     read -p "Password [default="$default"] : " pass_switch
+     pass_switch=${pass_switch:-$default}
+
+     while [[ $yn != "Y" && $yn != "N" && $yn != "y" && $yn != "n" ]]
+     do
+     read -p "Do you want configure you Stellar AP?(Y/N) " yn
+     case $yn in
+               [Nn]* ) ap="0" ;;
+               [Yy]* ) ap="1"
+                    echo "What are the Stellar AP credentials?"
+                    read -p "Login : " login_AP
+                    read -p "Password : " pass_AP
+                    read -p "Technical Support code : " tech_pass
+                    echo
+                    echo "What are the string patterns you want to apply in the Stellar Access Point collection rules ?
+                    ==> "Example: policy exception"
+                    ==> "Example: crash"
+                    ==> "Example: reboot""
+                    echo
+                    reponse_tab_AP=()
+                    reponse_AP=""
+                    while [ -z "$reponse_AP" ] || [ "$reponse_AP" != 'stop' ]
+                    do
+                    read -p 'Enter stop for exiting: ' reponse_AP
+                    echo "$reponse_AP"
+                    for i in "${reponse_tab[@]}"
+                    do
+                         if [ "$i" == "$reponse_AP" ]
+                         then
+                              echo "pattern already exist, try another one"
+                         elif [ "$i" == "stop" ]
+                         then
+                              echo
+                         else
+                              reponse_tab_AP+=("$reponse_AP")
+                         fi
+                    done
+                    done  ;;
+
+
+               * ) echo "Please answer Y or N.";;
+     esac
+
+     done
+     unset yn
+
+
+     # Please provide the Server log ip address on which you want receive logs.
+
+     while [ -z "$ip_server_log" ]
+     do
+     read -p "# Please provide the Server log ip address on which you want receive logs. :  " ip_server_log
+     if [ -z "$ip_server_log" ]
+     then
+          echo "Cannot be empty"
+     elif ! [[ $ip_server_log =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
+     then
+          echo "The IP Address doesn't correspond with what was expected, retry."
+          unset ip_server_log
+
+     fi
+     done
+
+     # Please provide the Networks allow to send logs with the format subnet/netmask
+     echo
+     while [ -z "$ip_allows" ]
+     do
+     echo  "Please provide the network subnets you want to allow to send logs with the format subnet/netmask if you have more than 1 separate with a comma (,). " 
+     read -p "(ex : 10.0.0.0/16, 192.168.1.1/24, 172.16.20.0/16) :  " ip_allows
+     if [ -z "$ip_allows" ]
+     then
+          echo "Cannot be empty"
+
+     elif ! [[ $ip_allows =~ (([0-9]{1,3}\.){3}[0-9]{1,3}\/[0-9]{1,2}, ?)*(([0-9]{1,3}\.){3}[0-9]{1,3}\/[0-9]{1,2})$ ]]
+     then
+          echo "The IP Address list doesn't correspond with what was expected, retry."
+          unset ip_allows
+     fi
+     done
+}
+
+
+
+if [ -f /opt/ALE_Script/ALE_script.conf ]; then
+     yz=""
+     while [[ $yz != "Y" && $yz != "N" && $yz != "y" && $yz != "n" ]]
+     do
+          read -p "Configuration file has been found, do you want to keep the same configuration (user, password, emails...) (Y/N) :" yz
+          case $yz in
+                    [Nn]* ) configuration ;;
+                    [Yy]* )
+                         echo
+                         while [ -z "$ip_allows" ]
+                         do
+                         echo  "Please provide the network subnets you want to allow to send logs with the format subnet/netmask if you have more than 1 separate with a comma (,). " 
+                         read -p "(ex : 10.0.0.0/16, 192.168.1.1/24, 172.16.20.0/16) :  " ip_allows
+                         if [ -z "$ip_allows" ]
+                         then
+                              echo "Cannot be empty"
+
+                         elif ! [[ $ip_allows =~ (([0-9]{1,3}\.){3}[0-9]{1,3}\/[0-9]{1,2}, ?)*(([0-9]{1,3}\.){3}[0-9]{1,3}\/[0-9]{1,2})$ ]]
+                         then
+                              echo "The IP Address list doesn't correspond with what was expected, retry."
+                              unset ip_allows
+                         fi
+                         done
+                         echo "What are the string patterns you want to apply in the switch collection rules?
+                         ==> "Example: policy exception"
+                         ==> "Example: crash"
+                         ==> "Example: reboot""
+                         echo
+
+                         reponse_tab=()
+                         reponse=""
+                         while [ -z "$reponse" ] || [ "$reponse" != "stop" ]
+                         do
+                         read -p 'Enter stop for exiting: ' reponse
+                         echo "$reponse"
+                         if [ "$reponse" == "stop" ]
+                         then
+                              echo 
+                         else
+                              reponse_tab+=("$reponse")
+                         fi
+                         done
+                         echo
+                         echo "What are the string patterns you want to apply in the Stellar Access Point collection rules ?
+                         ==> "Example: policy exception"
+                         ==> "Example: crash"
+                         ==> "Example: reboot""
+                         echo
+                         reponse_tab_AP=()
+                         reponse_AP=""
+                         while [ -z "$reponse_AP" ] || [ "$reponse_AP" != 'stop' ]
+                         do
+                         read -p 'Enter stop for exiting: ' reponse_AP
+                         echo "$reponse_AP"
+                         for i in "${reponse_tab[@]}"
+                         do
+                              if [ "$i" == "$reponse_AP" ]
+                              then
+                                   echo "pattern already exist, try another one"
+                              elif [ "$i" == "stop" ]
+                              then
+                                   echo
+                              else
+                                   reponse_tab_AP+=("$reponse_AP")
+                              fi
+                         done
+                         done
+                         while IFS="," read -r rec_column1 rec_column2 rec_column3 rec_column4 rec_column5 rec_column6 rec_column7 rec_column8 rec_column9 rec_column10 rec_column11 rec_remaining
+                         do
+                              login_switch=$rec_column1
+                              pass_switch=$rec_column2
+                              mails=$rec_column3
+                              rainbow_jid=$rec_column4
+                              ip_server_log=$rec_column5
+                              login_AP=$rec_column6
+                              pass_AP=$rec_column7
+                              tech_pass=$rec_column8
+                              # random id 
+                              company=$rec_column10
+                         done < /opt/ALE_Script/ALE_script.conf
+                         if [ "$login_AP" != "" ]
+                         then
+                              ap=1
+                         fi
+                         ;;
+                    * ) echo "Please answer Y or N.";;
+          esac
+     done
+else
+     configuration
 fi
-
-echo
-echo "What are the string patterns you want to apply in the switch collection rules (we support up to 3 patterns)?
-==> "Example: policy exception"
-==> "Example: crash"
-==> "Example: reboot""
-echo
-
-reponse_tab=()
-reponse=""
-while [ -z "$reponse" ] || [ "$reponse" != "stop" ]
-do
-    read -p 'Enter stop for exiting: ' reponse
-    echo "$reponse"
-    if [ "$reponse" == "stop" ]
-    then
-        echo 
-    else
-        reponse_tab+=("$reponse")
-    fi
-done
-
-#===> variable login='admin', prefilled with value "admin", means if the user press enters we use the default value
-echo
-echo "What are the switches credentials?"
-default="admin"
-read -p "Login [default="$default"] : " login_switch 
-login_switch=${login_switch:-$default}
-
-#===> variable password='switch', prefilled with value "admin", means if the user press enters we use the default value
-
-default="switch"
-read -p "Password [default="$default"] : " pass_switch
-pass_switch=${pass_switch:-$default}
-
-while [[ $yn != "Y" && $yn != "N" && $yn != "y" && $yn != "n" ]]
-do
-read -p "Do you want configure you Stellar AP?(Y/N) " yn
-    case $yn in
-          [Nn]* ) ap="0" ;;
-          [Yy]* ) ap="1"
-                echo "What are the Stellar AP credentials?"
-                read -p "Login : " login_AP
-                read -p "Password : " pass_AP
-                read -p "Technical Support code : " tech_pass
-                echo
-                echo "What are the string patterns you want to apply in the Stellar Access Point collection rules ?
-                ==> "Example: policy exception"
-                ==> "Example: crash"
-                ==> "Example: reboot""
-                echo
-                reponse_tab_AP=()
-                reponse_AP=""
-                while [ -z "$reponse_AP" ] || [ "$reponse_AP" != 'stop' ]
-                do
-                read -p 'Enter stop for exiting: ' reponse_AP
-                echo "$reponse_AP"
-                for i in "${reponse_tab[@]}"
-                do
-                     if [ "$i" == "$reponse_AP" ]
-                     then
-                          echo "pattern already exist, try another one"
-                     elif [ "$i" == "stop" ]
-                     then
-                          echo
-                     else
-                          reponse_tab_AP+=("$reponse_AP")
-                     fi
-                done
-                done  ;;
-
-
-          * ) echo "Please answer Y or N.";;
-    esac
-
-done
-unset yn
-
-
-# Please provide the Server log ip address on which you want receive logs.
-
-while [ -z "$ip_server_log" ]
-do
-   read -p "# Please provide the Server log ip address on which you want receive logs. :  " ip_server_log
-   if [ -z "$ip_server_log" ]
-   then
-      echo "Cannot be empty"
-   elif ! [[ $ip_server_log =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
-   then
-        echo "The IP Address doesn't correspond with what was expected, retry."
-        unset ip_server_log
-
-   fi
-done
-
-# Please provide the Networks allow to send logs with the format subnet/netmask
-echo
-while [ -z "$ip_allows" ]
-do
-   echo  "Please provide the network subnets you want to allow to send logs with the format subnet/netmask if you have more than 1 separate with a comma (,). " 
-   read -p "(ex : 10.0.0.0/16, 192.168.1.1/24, 172.16.20.0/16) :  " ip_allows
-   if [ -z "$ip_allows" ]
-   then
-     echo "Cannot be empty"
-
-  elif ! [[ $ip_allows =~ (([0-9]{1,3}\.){3}[0-9]{1,3}\/[0-9]{1,2}, ?)*(([0-9]{1,3}\.){3}[0-9]{1,3}\/[0-9]{1,2})$ ]]
-   then
-        echo "The IP Address list doesn't correspond with what was expected, retry."
-        unset ip_allows
-    fi
- done
 
 echo
 echo -e "\e[32mSummary of your informations:\e[39m"
@@ -256,9 +346,9 @@ fi
 
 while [[ $yn != "Y" && $yn != "N" && $yn != "y" && $yn != "n" ]]
 do
-  read -p   "Do you want to confirm? (Y/N)" yn
+  read -p   "Do you want to confirm? (Y/N) :" yn
     case $yn in
-          [Nn]* ) notif=0 ;;
+          [Nn]* ) exit 1 ;;
           [Yy]* ) echo "$login_switch,$pass_switch,$mails,$rainbow_jid,$ip_server_log,$login_AP,$pass_AP,$tech_pass,$((1000 + $RANDOM % 9999))$((1000 + $RANDOM % 9999))$((10 + $RANDOM % 99)),$company," > $dir/ALE_script.conf;;
           * ) echo "Please answer Y or N.";;
     esac

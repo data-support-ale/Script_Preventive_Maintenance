@@ -230,7 +230,6 @@ class IPThread(threading.Thread):
             try:
                 matchs_mac_learning_total_entries = (matchs_mac_learning_bridging_entries + matchs_mac_learning_servicing_entries + matchs_mac_learning_filtering_entries)          
                 matchs_mac_filtering_ratio_entries = (matchs_mac_learning_filtering_entries / matchs_mac_learning_total_entries) * 100
-                print(matchs_mac_filtering_ratio_entries)
                 SYSTEM_MAC_FILTERING_RATIO.labels(name=name, ip=self.ip).set(matchs_mac_filtering_ratio_entries)
             except KeyError:
                 pass
@@ -267,7 +266,6 @@ class IPThread(threading.Thread):
 
             try:
                 matchs_unp_user_total_entries = count['Bridge']
-                print(matchs_unp_user_total_entries)
                 SYSTEM_UNP_USER_TOTAL.labels(name=name, ip=self.ip).set(matchs_unp_user_total_entries)
             except KeyError:
                 pass
@@ -293,7 +291,6 @@ class IPThread(threading.Thread):
             matchs_routing_table_total_entries = 0
             try:
                 matchs_routing_table_total_entries = re.findall(r" Total (\d*) routes", output)
-                print(matchs_routing_table_total_entries)
                 for routing_table_total_entries in matchs_routing_table_total_entries:
                     SYSTEM_ROUTING_TOTAL.labels(name=name, ip=self.ip).set(
                                          routing_table_total_entries)
@@ -374,6 +371,7 @@ if __name__ == '__main__':
         # Start all Threads
         for ipaddr in ips_address:
             try:
+                print("TEST " + ipaddr)
                 output = subprocess.check_output(
                     ["ping", "-{}".format('n' if platform.system().lower() == "windows" else 'c'), "1", "{}".format(ipaddr)], stderr=subprocess.DEVNULL, timeout=40
                 )

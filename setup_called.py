@@ -45,8 +45,10 @@ try:
         company = company
         name = "TECH_SUPPORT_NOTIF_" + company
 
-        with open("/opt/ALE_Script/ALE_script.conf", "a+", errors='ignore') as ALE_conf:
-            ALE_conf.write(str(room))
+        with open("/opt/ALE_Script/ALE_script.conf", "r", errors='ignore') as ALE_conf:
+            data_conf = ALE_conf.read()
+        with open("/opt/ALE_Script/ALE_script.conf", "w+", errors='ignore') as ALE_conf:
+            ALE_conf.write((str(data_conf)+str(room).strip()).strip())
 
     # All generic fields (Rainbow bubble, emails, workflow name) are replaced based on ALE_script.conf file and Room_ID received from api/flows/NBDNotif_New_Bubble
         with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic.json", "r", errors='ignore') as file_json:
