@@ -17,29 +17,41 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 #Get informations from logs.
 switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
-# Log sample OS6860E swlogd bcmd rpcs DBG2: slnHwlrnCbkHandler:648 port 19 mod 0 auth 0 group 0
-last = ""
-with open("/var/log/devices/lastlog_loop.json", "r", errors='ignore') as log_file:
-    for line in log_file:
-        last = line
+content_variable = open ('/var/log/devices/lastlog_loop.json','r')
+file_lines = content_variable.readlines()
+content_variable.close()
+if len(file_lines)!=0:
+    last_line = file_lines[0]
+    f=last_line.split(',')
+    #For each element, look if relayip is present. If yes,  separate the text and the ip address
+    for element in f:
+        if "relayip" in element:
+            element_split = element.split(':')
+            ipadd_quot = element_split[1]
+            #delete quotations
+            ipadd = ipadd_quot[-len(ipadd_quot)+1:-1]
+            print(ipadd)
+            port= 0
+          #For each element, look if port is present. If yes,  we take the next element which is the port number
+        if "port" in element:
+            element_split = element.split()
+            print(element_split)
+            for i in range(len(element_split)):
+               if element_split[i]=="port":
+                  port = element_split[i+1]
+                  slot = element_split[i+3]
+                  if slot == "0":
+                      slot = "1"
+                  elif slot == "4":
+                      slot == "2"
+                  else:
+                      slot == "3"
+            #looking for chassis ID number:
+                  port = "{0}/1/{1}".format(slot,port)   #modify the format of the port number to suit the switch interface
 
-with open("/var/log/devices/lastlog_loop.json","w", errors='ignore') as log_file:
-    log_file.write(last)
 
-with open("/var/log/devices/lastlog_loop.json", "r", errors='ignore') as log_file:
-    try:
-        log_json = json.load(log_file)
-        ipadd = log_json["relayip"]
-        host = log_json["hostname"]
-        msg = log_json["message"]
-    except json.decoder.JSONDecodeError:
-        print("File /var/log/devices/lastlog_loop.json empty")
-        exit()
-
-    port,slot = re.findall(r"port (.*?) mod (.*?) auth", msg)[0]
-
-if check_timestamp()>15: # if the last log has been recieved less than 10 seconds ago :
-   if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds apart:
+#if check_timestamp()>15: # if the last log has been received less than 10 seconds ago :
+if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds apart:
       print("call function disable port")
       replace_logtemp()
       subject = "A loop was detected on your OmniSwitch!"
@@ -78,6 +90,6 @@ else:
        print("logs are too close")
        os.system('logger -t montag -p user.info Logs are too close')
        # clear lastlog file
-       open('/var/log/devices/lastlog_loop.json','w').close()
+#       open('/var/log/devices/lastlog_loop.json','w').close()
 
 
