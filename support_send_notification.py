@@ -90,6 +90,7 @@ def send_message_request(info,jid,receiver):
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",'Card': '1', 'jid1': '{0}'.format(jid), 'toto': '{0}.'.format(info)}
     response = requests.get(url, headers=headers)
+    print(response)
     try:
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:

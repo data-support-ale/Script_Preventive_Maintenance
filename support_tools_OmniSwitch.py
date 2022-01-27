@@ -1219,14 +1219,21 @@ def authentication_failure(user,source_ip,protocol,service_status,aaa_status,hos
 
 def check_save(ipadd,port,type):
   if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
-     try:
-         open ('/opt/ALE_Script/decisions_save.conf','w', errors='ignore').close()
-         subprocess.call(['chmod', '0755', '/opt/ALE_Script/decisions_save.conf'])
-     except OSError as error:
-         print(error)
-         print("Permission error when creating file /opt/ALE_Script/decisions_save.conf")
-         sys.exit()
+     open ('/opt/ALE_Script/decisions_save.conf','w', errors='ignore').close()
      return "0"
+
+  content = open("/opt/ALE_Script/decisions_save.conf", "r", errors='ignore')
+  file_lines = content.readlines()
+  content.close()
+
+  for line in file_lines:
+    print(line)
+    if  "{0},{1},{2},always".format(ipadd,port,type) in line:
+       return "1"
+    if "{0},{1},{2},never".format(ipadd,port,type) in line:
+       return "-1"
+
+  return '0'
 
 def add_new_save(ipadd,port,type,choice = "never"):
   """ 
