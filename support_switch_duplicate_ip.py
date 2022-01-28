@@ -96,6 +96,7 @@ save_resp = check_save(ip,port,"duplicate")
 if save_resp == "0":
     notif = "IP address duplication (" + ip_dup + ") on port " + port + " of switch " + ip + "(" + host + "). Do you want to blacklist mac : " + mac + " ?"
     answer = send_message_request(notif,jid)
+    print(answer)
     if answer == "2":
         add_new_save(ip,port,"duplicate",choice = "always")
         answer = '1'

@@ -2,7 +2,7 @@
 from cProfile import run
 import sys
 import requests
-from time import sleep, strftime, localtime,
+from time import sleep, strftime, localtime
 import re
 from database_conf import *
 
@@ -87,6 +87,15 @@ def send_message_request(info,jid):
         print("Response  Text from VNA")
         value = response.text
         print(value)
+        response = str(response)
+        info = "No answer received from VNA/Rainbow application - Answer Yes set by default"
+        send_message(info, jid)
+        response = re.findall(r"<Response \[(.*?)\]>", response)
+        if "200" in response:
+            os.system('logger -t montag -p user.info 200 OK')
+        else:
+            os.system('logger -t montag -p user.info REST API Timeout')
+            value = "1"
     except requests.exceptions.ConnectionError:
         value = "1"
     except requests.exceptions.Timeout:
