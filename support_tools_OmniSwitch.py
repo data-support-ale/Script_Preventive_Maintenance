@@ -1245,7 +1245,6 @@ def add_new_save(ipadd,port,type,choice = "never"):
   :return:                        None
   """
 
-
   if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
    try:
      open ('/opt/ALE_Script/decisions_save.conf','w').close()

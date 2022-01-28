@@ -139,8 +139,10 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
               answer = '1'
            elif answer == "0":
               add_new_save(ip_switch_1,port_switch_1,"flapping",choice = "never")
+        elif save_resp == "-1":
+           sys.exit()
         else:
-          answer = '1'
+           answer = '1'
 
         if answer == '1':
          disable_port(switch_user,switch_password,ip_switch_1,port_switch_1)
@@ -191,8 +193,10 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
              answer = '1'
           elif answer == "0":
              add_new_save(ip_switch_1,port_switch_1,"flapping",choice = "never")
+       elif save_resp == "-1":
+          sys.exit()
        else:
-         answer = '1'
+          answer = '1'
 
        if answer == '1':
           disable_port(switch_user,switch_password,ip_switch_1,port_switch_1)
@@ -237,8 +241,10 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
              answer = '1'
           elif answer == "0":
              add_new_save(ip_switch_2,port_switch_2,"flapping",choice = "never")
+       elif save_resp == "-1":
+          sys.exit()
        else:
-         answer = '1'
+          answer = '1'
 
        if answer == '1':
           disable_port(switch_user,switch_password,ip_switch_2,port_switch_2)

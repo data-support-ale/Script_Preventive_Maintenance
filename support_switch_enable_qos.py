@@ -116,6 +116,8 @@ with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_fil
             answer = '1'
         elif answer == "0":
             add_new_save(ip_switch,"0°","scan",choice = "never")
+    elif save_resp == "-1":
+        sys.exit()
     else:
         answer = '1'
 

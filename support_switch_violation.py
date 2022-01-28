@@ -81,6 +81,8 @@ if save_resp == "0":
         answer = '1'
     elif answer == "0":
         add_new_save(ip,port,"violation",choice = "never")
+elif save_resp == "-1":
+    sys.exit()
 else:
     answer = '1'
 

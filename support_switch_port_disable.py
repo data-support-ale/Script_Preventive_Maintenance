@@ -68,6 +68,8 @@ if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds ap
               answer = '1'
           elif answer == "0":
               add_new_save(ipadd,port,"port_disable",choice = "never")
+      elif save_resp == "-1":
+          sys.exit()
       else:
           answer = '1'
 
