@@ -118,5 +118,5 @@ if __name__ == "__main__":
    ipadd="10.130.7.76"
    cmd="/usr/sbin/showsysinfo"
    host="10.130.7.76"
-   pass_root = ssh_connectivity_check(ipadd,cmd)
+   pass_root = ssh_connectivity_check(ap_user,ap_password,ipadd,cmd)
    get_snapshot_tftp(pass_root,ipadd)

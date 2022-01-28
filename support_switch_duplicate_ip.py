@@ -86,7 +86,7 @@ def enable_qos_ddos(user,password,ipadd,ipadd_ddos):
       sys.exit()
 
    cmd = "configuration apply ./working/configqos "
-   ssh_connectivity_check(ipadd,cmd)  
+   ssh_connectivity_check(switch_user,switch_password,ipadd,cmd)  
 
 #always 1 
 #never -1

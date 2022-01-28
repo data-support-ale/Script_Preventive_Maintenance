@@ -75,7 +75,7 @@ print(ipadd)
 for switch_cmd in l_switch_cmd:
    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
    try:
-       output = ssh_connectivity_check(ipadd,switch_cmd)
+       output = ssh_connectivity_check(switch_user,switch_password,ipadd,switch_cmd)
        output=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, timeout=40, shell=True)
        if output != None:
           output=output.decode('UTF-8').strip()

@@ -3,7 +3,7 @@
 import sys
 import os
 import json
-from support_tools_OmniSwitch import get_credentials, detect_port_loop, replace_logtemp, disable_port, debugging, add_new_save, check_save
+from support_tools_OmniSwitch import get_credentials, detect_port_loop, replace_logtemp, ssh_connectivity_check, debugging, add_new_save, check_save
 from time import strftime, localtime, sleep
 import re #Regex
 from support_send_notification import send_message,send_file, send_message_request
@@ -49,8 +49,8 @@ if len(file_lines)!=0:
                   port = "{0}/1/{1}".format(slot,port)   #modify the format of the port number to suit the switch interface
 
 
-#if check_timestamp()>15: # if the last log has been received less than 10 seconds ago :
-if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds apart:
+if check_timestamp()>15: # if the last log has been received less than 10 seconds ago :
+    if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds apart:
       print("call function disable port")
       replace_logtemp()
       subject = "A loop was detected on your OmniSwitch!"
@@ -74,7 +74,9 @@ if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds ap
           answer = '1'
 
       if answer == '1':
-            disable_port(switch_user,switch_password,ipadd,port)
+            cmd = "interfaces port {0} admin-state disable".format(port)
+            ssh_connectivity_check(switch_user,switch_password,ipadd,cmd)
+            #disable_port(switch_user,switch_password,ipadd,port)
             os.system('logger -t montag -p user.info Process terminated')
             if jid !='':
               info = "Log of device : {0}".format(ipadd)
@@ -101,7 +103,7 @@ if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds ap
 else:
        print("logs are too close")
        os.system('logger -t montag -p user.info Logs are too close')
-       # clear lastlog file
-#       open('/var/log/devices/lastlog_loop.json','w').close()
+       #clear lastlog file
+       open('/var/log/devices/lastlog_loop.json','w').close()
 
 

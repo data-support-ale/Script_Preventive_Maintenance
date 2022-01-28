@@ -2,17 +2,8 @@
 import requests, json
 import os
 import datetime
-import sys
 import re
-import configparser
-import mimetypes
-import smtplib
-from email import encoders
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
 from time import gmtime, strftime, localtime, sleep, time
-import paramiko
 
 User="jtrebaol"
 Pass="OmniVista2500*"
