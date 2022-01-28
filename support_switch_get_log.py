@@ -133,7 +133,7 @@ if jid !='':
              sys.exit()
 
 ### TECH-SUPPORT ENG COMPLETE ###
-get_tech_support_sftp(host,ipadd)
+get_tech_support_sftp(switch_user,switch_password,host,ipadd)
 
 print("Starting collecting additionnal logs")
 

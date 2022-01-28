@@ -44,6 +44,8 @@ if len(file_lines)!=0:
                   dig = list(int(port) for port in str(port))
                   if n > 2:
                       print("wrong port ID")
+                      #clear lastlog file
+                      open('/var/log/devices/lastlog_loop.json','w').close()
                       sys.exit()
                   slot = element_split[i+3]
                   if slot == "0":
@@ -99,7 +101,7 @@ if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds ap
             level = "info"
             # Call debugging function from support_tools_OmniSwitch 
             print("call function enable debugging")
-            debugging(ipadd,appid,subapp,level)
+            debugging(switch_user,switch_password,ipadd,appid,subapp,level)
             #clear lastlog file
             sleep(1)
             open('/var/log/devices/lastlog_loop.json','w').close()

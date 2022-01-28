@@ -37,7 +37,7 @@ subapp = "3"
 level = "debug2"
 # Call debugging function from support_tools_OmniSwitch 
 print("call function enable debugging")
-debugging(ipadd,appid,subapp,level)
+debugging(switch_user,switch_password,ipadd,appid,subapp,level)
 os.system('logger -t montag -p user.info Process terminated')
 
 # clear lastlog file

@@ -93,12 +93,12 @@ ipadd,host = extract_ipadd()
 pmd_issue(ipadd,jid)
 
 ### TECH-SUPPORT ENG COMPLETE ###
-get_tech_support_sftp(host,ipadd)
+get_tech_support_sftp(switch_user,switch_password,host,ipadd)
 
 ### get PMD FILE ###
 print("Starting collecting PMD file")
 filename_pmd,msg = extract_pmd_path()
-filename_path = get_pmd_file_sftp(ipadd,filename_pmd)
+filename_path = get_pmd_file_sftp(switch_user,switch_password,ipadd,filename_pmd)
 
 if jid !='':
          info = "Tech-support eng complete and PMD files are collected and stored in /tftpboot/ on syslog server"

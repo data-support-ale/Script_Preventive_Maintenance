@@ -51,7 +51,7 @@ appid = "ipv4"
 subapp = "all"
 level = "debug3"
 # Call debugging function from support_tools_OmniSwitch
-debugging(ip,appid,subapp,level)
+debugging(switch_user,switch_password,ip,appid,subapp,level)
 
 os.system('logger -t montag -p user.info Process terminated')
 # clear lastlog file

@@ -61,6 +61,8 @@ def get_credentials(attribute=None):
       elif attribute == "room_id":
          return room_id
 
+switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
+
 ### Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(switch_user,switch_password,ipadd,cmd):
   """ 
@@ -143,7 +145,7 @@ def ssh_connectivity_check(switch_user,switch_password,ipadd,cmd):
       p.close()
       return output
 
-def get_file_sftp(ipadd,filename):
+def get_file_sftp(switch_user,switch_password,ipadd,filename):
    print(filename)
    print(ipadd)
    date = datetime.date.today()
@@ -211,7 +213,7 @@ def get_file_sftp(ipadd,filename):
    return remote_path
 
 
-def get_pmd_file_sftp(ipadd,filename):
+def get_pmd_file_sftp(switch_user,switch_password,ipadd,filename):
    print(filename)
    print(ipadd)
    date = datetime.date.today()
@@ -251,7 +253,7 @@ def file_setup_qos(addr):
     content_variable.close()
 
 ### Function debug
-def debugging(ipadd,appid,subapp,level):
+def debugging(switch_user,switch_password,ipadd,appid,subapp,level):
     """ 
     This function takes entries arguments the appid, subapp and level to apply on switch for enabling or disabling debug logs
 
@@ -281,7 +283,7 @@ def enable_port(user,password,ipadd,portnumber):
     os.system('logger -t montag -p user.info Following port is administratively enabled: ' + portnumber)
 ### Function to collect tech_support_complete.tar file by SFTP
 
-def get_tech_support_sftp(host,ipadd):
+def get_tech_support_sftp(switch_user,switch_password,host,ipadd):
   """ 
   This function takes entries arguments the OmniSwitch IP Address
   This function returns file path containing the tech_support_complete file and the notification subject, body used when calling VNA API
@@ -364,7 +366,7 @@ def get_tech_support_sftp(host,ipadd):
 
   f_filename = "tech_support_complete.tar"
   #### SFTP GET tech support #####
-  filename_path = get_file_sftp(ipadd,f_filename)
+  filename_path = get_file_sftp(switch_user,switch_password,ipadd,f_filename)
 
   subject = ("Preventive Maintenance Application - Show Tech-Support Complete command executed on switch: {0}").format(ipadd)
   action = ("The Show Tech-Support Complete file {0} is collected from OmniSwitch (Hostname: {1})").format(filename_path,host)
@@ -373,7 +375,7 @@ def get_tech_support_sftp(host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to TCAM failure
-def collect_command_output_tcam(host,ipadd):
+def collect_command_output_tcam(switch_user,switch_password,host,ipadd):
   """ 
   This function takes entries arguments the OmniSwitch IP Address where TCAM (QOS) failure is noticed.
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
@@ -436,7 +438,7 @@ def collect_command_output_tcam(host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to Cloud-Agent (OV Cirrus) failure
-def collect_command_output_ovc(decision,host,ipadd):
+def collect_command_output_ovc(switch_user,switch_password,decision,host,ipadd):
   """ 
   This function takes entries arguments the OmniSwitch IP Address where cloud-agent is enabled
   This function checks the decision received from Admin:
@@ -506,7 +508,7 @@ def collect_command_output_ovc(decision,host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to MQTT failure
-def collect_command_output_mqtt(ovip,host,ipadd):
+def collect_command_output_mqtt(switch_user,switch_password,ovip,host,ipadd):
   """ 
   This function takes entries arguments the OmniVista IP Address used for Device Profiling  
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
@@ -567,7 +569,7 @@ def collect_command_output_mqtt(ovip,host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to Unexpected traffic (storm) detected
-def collect_command_output_storm(port,source,decision,host,ipadd):
+def collect_command_output_storm(switch_user,switch_password,port,source,decision,host,ipadd):
   """ 
   This function takes entries arguments the Interface/Port where storm occurs and the type of traffic. 
   This function checks the decision received from Admin:
@@ -643,7 +645,7 @@ def collect_command_output_storm(port,source,decision,host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to Port Violation
-def collect_command_output_violation(port,source,decision,host,ipadd):
+def collect_command_output_violation(switch_user,switch_password,port,source,decision,host,ipadd):
   """ 
   This function takes entries arguments the Interface/Port where violation occurs. 
   This function checks the decision received from Admin:
@@ -717,7 +719,7 @@ def collect_command_output_violation(port,source,decision,host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to SPB issue
-def collect_command_output_spb(host,ipadd):
+def collect_command_output_spb(switch_user,switch_password,host,ipadd):
   """ 
   This function takes entries arguments the OmniSwitch IP Address
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
@@ -777,7 +779,7 @@ def collect_command_output_spb(host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to Power Supply
-def collect_command_output_ps(psid,host,ipadd):
+def collect_command_output_ps(switch_user,switch_password,psid,host,ipadd):
   """ 
   This function takes entries arguments the Power Supply ID. This function is called when an issue is observed on Power Supply hardware
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
@@ -838,7 +840,7 @@ def collect_command_output_ps(psid,host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to Virtual Chassis
-def collect_command_output_vc(vcid,host,ipadd):
+def collect_command_output_vc(switch_user,switch_password,vcid,host,ipadd):
   """ 
   This function takes entries arguments the Virtual Chassis ID and the Switch System Name. This function is called when an issue is observed on Virtual Chassis category
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
@@ -901,7 +903,7 @@ def collect_command_output_vc(vcid,host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to Linkagg
-def collect_command_output_linkagg(agg,host,ipadd):
+def collect_command_output_linkagg(switch_user,switch_password,agg,host,ipadd):
   """ 
   This function takes entries arguments the Link Aggregation ID. This function is called when an issue is observed on Linkagg category
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
@@ -964,7 +966,7 @@ def collect_command_output_linkagg(agg,host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect several command outputs related to PoE
-def collect_command_output_poe(host,ipadd):
+def collect_command_output_poe(switch_user,switch_password,host,ipadd):
   """ 
   This function takes IP Address and Hostname as argument. This function is called when an issue is observed on Lanpower category
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
@@ -1082,7 +1084,7 @@ def collect_command_output_poe(host,ipadd):
   return filename_path,subject,action,result,category
 
 ### Function to collect OmniSwitch IP Service/AAA Authentication status based on protocol received as argument
-def collect_command_output_aaa(protocol,ipadd):
+def collect_command_output_aaa(switch_user,switch_password,protocol,ipadd):
   """ 
   This function takes IP Address and protocol as argument. This function is called when an authentication failure is noticed for specified protocol
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
@@ -1162,7 +1164,7 @@ def collect_command_output_aaa(protocol,ipadd):
   print(aaa_status)
   return service_status,aaa_status
 
-def authentication_failure(user,source_ip,protocol,service_status,aaa_status,host,ipadd):
+def authentication_failure(switch_user,switch_password,user,source_ip,protocol,service_status,aaa_status,host,ipadd):
   """ 
   This function takes entries arguments the Protocol service status, Protocol aaa authentication status as well as User login, destination protocol, source IP Address. This function is called when an authentication failure is noticed
   This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
@@ -1436,30 +1438,30 @@ if __name__ == "__main__":
    ipadd="10.130.7.247"
    cmd="show system"
    host="LAN-6860N-2"
-   #ssh_connectivity_check(switch_user,switch_password,ipadd,cmd)
-   #filename_path,subject,action,result,category = collect_command_output_poe(host,ipadd)
-   #send_file(filename_path,subject,action,result)
+   ssh_connectivity_check(switch_user,switch_password,ipadd,cmd)
+   filename_path,subject,action,result,category = collect_command_output_poe(switch_user,switch_password,host,ipadd)
+   send_file(filename_path,subject,action,result)
    agg = "6"
-   #filename_path,subject,action,result,category = collect_command_output_linkagg(agg,host,ipadd)
-   #send_file(filename_path,subject,action,result)
+   filename_path,subject,action,result,category = collect_command_output_linkagg(switch_user,switch_password,agg,host,ipadd)
+   send_file(filename_path,subject,action,result)
    vcid="2"
-   #filename_path,subject,action,result,category = collect_command_output_vc(vcid,host,ipadd)
-   #send_file(filename_path,subject,action,result)
+   filename_path,subject,action,result,category = collect_command_output_vc(switch_user,switch_password,vcid,host,ipadd)
+   send_file(filename_path,subject,action,result)
    psid = "2"
-   #filename_path,subject,action,result,category = collect_command_output_ps(psid,host,ipadd)
-   #send_file(filename_path,subject,action,result)
+   filename_path,subject,action,result,category = collect_command_output_ps(switch_user,switch_password,psid,host,ipadd)
+   send_file(filename_path,subject,action,result)
    source="Access Guardian"
    port="1/1/1"
    decision="0"
-   #filename_path,subject,action,result,category = collect_command_output_violation(port,source,decision,host,ipadd)
-   #send_file(filename_path,subject,action,result)
-   #filename_path,subject,action,result,category = collect_command_output_storm(port,source,decision,host,ipadd)
-   #send_file(filename_path,subject,action,result)
+   filename_path,subject,action,result,category = collect_command_output_violation(switch_user,switch_password,port,source,decision,host,ipadd)
+   send_file(filename_path,subject,action,result)
+   filename_path,subject,action,result,category = collect_command_output_storm(switch_user,switch_password,port,source,decision,host,ipadd)
+   send_file(filename_path,subject,action,result)
    protocol="HTTPS"
    user="toto"
    source_ip="10.130.7.17"
-   service_status,aaa_status = collect_command_output_aaa(protocol,ipadd)
-   filename_path,subject,action,result,category = authentication_failure(user,source_ip,protocol,service_status,aaa_status,host,ipadd)
+   service_status,aaa_status = collect_command_output_aaa(switch_user,switch_password,protocol,ipadd)
+   filename_path,subject,action,result,category = authentication_failure(switch_user,switch_password,user,source_ip,protocol,service_status,aaa_status,host,ipadd)
    send_file(filename_path,subject,action,result)
 
 else:

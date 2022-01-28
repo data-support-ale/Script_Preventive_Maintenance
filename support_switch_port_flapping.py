@@ -171,10 +171,10 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
          appid="bcmd"
          subapp="all"
          level="info"
-         debugging(ipadd,appid,subapp,level)
+         debugging(switch_user,switch_password,ipadd,appid,subapp,level)
          #disable_debugging
          ipadd=ip_switch_2
-         debugging(ipadd,appid,subapp,level)
+         debugging(switch_user,switch_password,ipadd,appid,subapp,level)
          sleep(2)
         # clear lastlog file
          open('/var/log/devices/lastlog_flapping.json','w').close()
@@ -219,7 +219,7 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
           appid="bcmd"
           subapp="all"
           level="info"
-          debugging(ipadd,appid,subapp,level)
+          debugging(switch_user,switch_password,ipadd,appid,subapp,level)
           sleep(2)
          # clear lastlog file
           open('/var/log/devices/lastlog_flapping.json','w').close()
@@ -266,7 +266,7 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
           appid="bcmd"
           subapp="all"
           level="info"
-          debugging(ipadd,appid,subapp,level)
+          debugging(switch_user,switch_password,ipadd,appid,subapp,level)
           sleep(2)
           # clear lastlog file
 #          open('/var/log/devices/lastlog_flapping.json','w').close()
