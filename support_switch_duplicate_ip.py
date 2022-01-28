@@ -6,7 +6,7 @@ import re
 import json
 import paramiko
 import threading
-from support_tools_OmniSwitch import ssh_connectivity_check, file_setup_qos, format_mac,get_credentials
+from support_tools_OmniSwitch import ssh_connectivity_check, file_setup_qos, format_mac,get_credentials, add_new_save, check_save
 from time import strftime, localtime
 from support_send_notification import send_message, send_file, send_message_request
 from database_conf import *
@@ -88,9 +88,19 @@ def enable_qos_ddos(user,password,ipadd,ipadd_ddos):
    cmd = "configuration apply ./working/configqos "
    ssh_connectivity_check(ipadd,cmd)  
 
-if jid != '':
+#always 1 
+#never -1
+#? 0
+save_resp = check_save(ip,port,"duplicate")
+
+if not save_resp:
     notif = "IP address duplication (" + ip_dup + ") on port " + port + " of switch " + ip + "(" + host + "). Do you want to blacklist mac : " + mac + " ?"
-    send_message_request(notif,jid)
+    answer = send_message_request(notif,jid)
+    if answer == "2":
+        add_new_save(ip,port,"duplicate",choice = "always")
+        answer = '1'
+    elif answer == "0":
+        add_new_save(ip,port,"duplicate",choice = "never")
 else:
     answer = '1'
 

@@ -2,7 +2,7 @@
 
 import sys
 import os
-from support_tools_OmniSwitch import debugging, get_credentials, disable_port, enable_port
+from support_tools_OmniSwitch import debugging, get_credentials, disable_port, enable_port, add_new_save, check_save
 from time import strftime, localtime, sleep
 import re #Regex
 from support_send_notification import send_message,send_file, send_message_request
@@ -113,7 +113,7 @@ def detect_port_flapping():
         if i_first_IP>5 or i_second_IP>5:
            return first_IP,second_IP,first_port,second_port
         else:
-           return "dddc","cdcdcd","cdcdcd","cdcdcd"
+           return "0","0","1/1/0","1/1/0"
      else:
         # clear lastlog file
         open('/var/log/devices/lastlog_flapping.json','w', errors='ignore').close()
@@ -125,13 +125,24 @@ print(ip_switch_1,ip_switch_2,port_switch_1,port_switch_2)
 if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2): #If the portnumber is different than 0,  (not a buffer list is empty log).
 
     if ip_switch_1!="0" and ip_switch_2!="0": # if we get logs from 2 switches
-       #request by mail or Rainbow
-        if jid !='':
-          info = "A port flapping has been detected on your network on  the port {0} on device {1} and the port {2}  on device {3}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(port_switch_1,ip_switch_1,port_switch_2,ip_switch_2)
-          answer = send_message_request(info,jid)
+        #request by mail or Rainbow
+        #always 1 
+        #never -1
+        #? 0
+        save_resp = check_save(ip_switch_1,port_switch_1,"flapping")
+  
+        if not save_resp:
+           info = "A port flapping has been detected on your network on  the port {0} on device {1} and the port {2}  on device {3}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(port_switch_1,ip_switch_1,port_switch_2,ip_switch_2)
+           answer = send_message_request(info,jid)
+           if answer == "2":
+              add_new_save(ip_switch_1,port_switch_1,"flapping",choice = "always")
+              answer = '1'
+           elif answer == "0":
+              add_new_save(ip_switch_1,port_switch_1,"flapping",choice = "never")
+        else:
           answer = '1'
-        if answer == '1':
 
+        if answer == '1':
          disable_port(switch_user,switch_password,ip_switch_1,port_switch_1)
          os.system('logger -t montag -p user.info Port {1} of device {0} disable'.format(ip_switch_1,port_switch_1))
          disable_port(switch_user,switch_password,ip_switch_2,port_switch_2)
@@ -167,15 +178,23 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
          open('/var/log/devices/lastlog_flapping.json','w').close()
 
     if ip_switch_1!="0" and ip_switch_2=="0":
-
-       #request by mail or Rainbow
-       if jid !='':
-          info = "A port flapping has been detected on your network on the port {0} from  device {1}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)" .format(port_switch_1,ip_switch_1) 
+       #always 1 
+       #never -1
+       #? 0
+       save_resp = check_save(ip_switch_1,port_switch_1,"flapping")
+ 
+       if not save_resp:
+          info = "A port flapping has been detected on your network on  the port {0} on device {1} and the port {2}  on device {3}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(port_switch_1,ip_switch_1,port_switch_2,ip_switch_2)
           answer = send_message_request(info,jid)
-       else :
-          answer = '1' #if there is no rainbow nor mail
-       if answer == '1':
+          if answer == "2":
+             add_new_save(ip_switch_1,port_switch_1,"flapping",choice = "always")
+             answer = '1'
+          elif answer == "0":
+             add_new_save(ip_switch_1,port_switch_1,"flapping",choice = "never")
+       else:
+         answer = '1'
 
+       if answer == '1':
           disable_port(switch_user,switch_password,ip_switch_1,port_switch_1)
           os.system('logger -t montag -p user.info Port {1} of device {0} disable'.format(ip_switch_1,port_switch_1))
 
@@ -205,13 +224,23 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
 
 
     if ip_switch_1=="0" and ip_switch_2!="0":
-       if jid !='':
-          info = "A port flapping has been detected on your network on the port {0} from  device {1}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)" .format(port_switch_2,ip_switch_2)
+       #always 1 
+       #never -1
+       #? 0
+       save_resp = check_save(ip_switch_2,port_switch_2,"flapping")
+ 
+       if not save_resp:
+          info = "A port flapping has been detected on your network on  the port {0} on device {1} and the port {2}  on device {3}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(port_switch_1,ip_switch_1,port_switch_2,ip_switch_2)
           answer = send_message_request(info,jid)
-       else :
-          answer = '1' #if there is no rainbow nor mail
-       if answer == '1':
+          if answer == "2":
+             add_new_save(ip_switch_2,port_switch_2,"flapping",choice = "always")
+             answer = '1'
+          elif answer == "0":
+             add_new_save(ip_switch_2,port_switch_2,"flapping",choice = "never")
+       else:
+         answer = '1'
 
+       if answer == '1':
           disable_port(switch_user,switch_password,ip_switch_2,port_switch_2)
           os.system('logger -t montag -p user.info Port {1} of device {0} disable'.format(ip_switch_2,port_switch_2))
 

@@ -5,7 +5,7 @@ import os
 import json
 import re
 import pysftp
-from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, file_setup_qos
+from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, file_setup_qos, add_new_save, check_save
 from time import gmtime, strftime, localtime, sleep
 from support_send_notification import send_message,send_file, send_message_request
 from database_conf import *
@@ -103,11 +103,22 @@ with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_fil
 
     subject = "A port scan has been detected on your network "
 
-    if jid !='':
-       info = "A port scan has been detected on your network by the IP Address {0}  on device {1}. (if you click on Yes, the following actions will be done: Policy action block)".format(ip_switch_ddos, ip_switch)
-       answer = send_message_request(info,jid)
-    else :
-       answer = '1'
+    #always 1 
+    #never -1
+    #? 0
+    save_resp = check_save(ip_switch,"0","scan")
+
+    if not save_resp:
+        notif = "A port scan has been detected on your network by the IP Address {0}  on device {1}. (if you click on Yes, the following actions will be done: Policy action block)".format(ip_switch_ddos, ip_switch)
+        answer = send_message_request(notif,jid)
+        if answer == "2":
+            add_new_save(ip_switch,"0","scan",choice = "always")
+            answer = '1'
+        elif answer == "0":
+            add_new_save(ip_switch,"0°","scan",choice = "never")
+    else:
+        answer = '1'
+
     if answer == '1':
           enable_qos_ddos(switch_user,switch_password,ip_switch,ip_switch_ddos)
           os.system('logger -t montag -p user.info Process terminated')

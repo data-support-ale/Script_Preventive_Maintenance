@@ -81,19 +81,16 @@ def send_message_request(info,jid):
         value = response.text
     except requests.exceptions.ConnectionError:
         value = "1"
-        return value
     except requests.exceptions.Timeout:
         print("Request Timeout when calling URL: " + url)
-        value = "1"
-        return value   
+        value = "1"  
     except requests.exceptions.TooManyRedirects:
         print("Too Many Redirects when calling URL: " + url)
-        value = "1"
-        return value     
+        value = "1"     
     except requests.exceptions.RequestException:
         print("Request exception when calling URL: " + url)
         value = "1"
-        return value   
+
     try:
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {"HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:

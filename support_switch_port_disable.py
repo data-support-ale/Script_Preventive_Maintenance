@@ -3,7 +3,7 @@
 import sys
 import os
 import json
-from support_tools_OmniSwitch import get_credentials, detect_port_loop, replace_logtemp, disable_port, debugging, check_timestamp
+from support_tools_OmniSwitch import get_credentials, detect_port_loop, replace_logtemp, disable_port, debugging, add_new_save, check_save
 from time import strftime, localtime, sleep
 import re #Regex
 from support_send_notification import send_message,send_file, send_message_request
@@ -54,12 +54,23 @@ if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds ap
       print("call function disable port")
       replace_logtemp()
       subject = "A loop was detected on your OmniSwitch!"
-      if jid !='':
-         info = "A loop has been detected on your network from the port {0} on device {1}. (if you click on Yes, the following action will be done: Port Admin Down)".format(port, ipadd)
-         answer = send_message_request(info,jid)
 
-      else :
-         answer = '1'
+      #always 1 
+      #never -1
+      #? 0
+      save_resp = check_save(ipadd,port,"port_disable")
+
+      if not save_resp:
+          info = "A loop has been detected on your network from the port {0} on device {1}. (if you click on Yes, the following action will be done: Port Admin Down)".format(port, ipadd)
+          answer = send_message_request(info,jid)
+          if answer == "2":
+              add_new_save(ipadd,port,"port_disable",choice = "always")
+              answer = '1'
+          elif answer == "0":
+              add_new_save(ipadd,port,"port_disable",choice = "never")
+      else:
+          answer = '1'
+
       if answer == '1':
             disable_port(switch_user,switch_password,ipadd,port)
             os.system('logger -t montag -p user.info Process terminated')

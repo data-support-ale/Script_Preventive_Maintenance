@@ -1122,7 +1122,7 @@ def collect_command_output_aaa(protocol,ipadd):
   cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password,switch_user,ipadd,switch_cmd)
   try:
      aaa_status=subprocess.check_output(cmd,stderr=subprocess.DEVNULL, timeout=40, shell=True)
-     aaa_status=aaa.decode('UTF-8').strip()
+     aaa_status=aaa_status.decode('UTF-8').strip()
      print(aaa_status)
      if "aaa authentication" in aaa_status:
         aaa_status="enabled"
@@ -1265,7 +1265,7 @@ def add_new_save(ipadd,port,type,choice = "never"):
      fileW.close()
   except OSError as error:
       print(error)
-      print("Permission error when creating file /opt/ALE_Script/decisions_save.conf")
+      print("Permission error when creating file /opt/ALE_Script/decisions_save.conf") 
       sys.exit()
 
 def detect_port_loop():

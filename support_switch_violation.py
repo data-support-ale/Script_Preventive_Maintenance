@@ -8,6 +8,7 @@ from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
 from support_send_notification import send_message, send_file, send_message_request
 from database_conf import *
+from support_tools_OmniSwitch import add_new_save, check_save
 
 # Script init
 script_name = sys.argv[0]
@@ -66,9 +67,20 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
     elif reason == "14":
         reason = "LLDP"
 
-if jid != '':
+
+#always 1 
+#never -1
+#? 0
+save_resp = check_save(ip,port,"violation")
+
+if not save_resp:
     notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + ", source: " + reason + ". Do you want to clear the violation? " + ip_server 
     answer = send_message_request(notif,jid)
+    if answer == "2":
+        add_new_save(ip,port,"violation",choice = "always")
+        answer = '1'
+    elif answer == "0":
+        add_new_save(ip,port,"violation",choice = "never")
 else:
     answer = '1'
 
