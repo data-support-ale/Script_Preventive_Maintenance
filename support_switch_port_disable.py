@@ -3,7 +3,7 @@
 import sys
 import os
 import json
-from support_tools_OmniSwitch import get_credentials, detect_port_loop, replace_logtemp, ssh_connectivity_check, debugging, add_new_save, check_save
+from support_tools_OmniSwitch import get_credentials, detect_port_loop, replace_logtemp, ssh_connectivity_check, debugging, add_new_save, check_save, check_timestamp
 from time import strftime, localtime, sleep
 import re #Regex
 from support_send_notification import send_message,send_file, send_message_request
@@ -38,6 +38,13 @@ if len(file_lines)!=0:
             for i in range(len(element_split)):
                if element_split[i]=="port":
                   port = element_split[i+1]
+                  n = len(str(port))
+                  print(n)
+                  dig = []
+                  dig = list(int(port) for port in str(port))
+                  if n > 2:
+                      print("wrong port ID")
+                      sys.exit()
                   slot = element_split[i+3]
                   if slot == "0":
                       slot = "1"
@@ -49,8 +56,9 @@ if len(file_lines)!=0:
                   port = "{0}/1/{1}".format(slot,port)   #modify the format of the port number to suit the switch interface
 
 
-if check_timestamp()>15: # if the last log has been received less than 10 seconds ago :
-    if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds apart:
+
+#if check_timestamp()>15: # if the last log has been received less than 10 seconds ago :
+if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds apart:
       print("call function disable port")
       replace_logtemp()
       subject = "A loop was detected on your OmniSwitch!"
@@ -61,7 +69,7 @@ if check_timestamp()>15: # if the last log has been received less than 10 second
       save_resp = check_save(ipadd,port,"port_disable")
 
       if save_resp == "0":
-          info = "A loop has been detected on your network from the port {0} on device {1}. (if you click on Yes, the following action will be done: Port Admin Down)".format(port, ipadd)
+          info = "A loop has been detected on your network from the port {0} on device {1}. (if you click on Yes, the following action will be done: Port Admin Down - Server: {2})".format(port, ipadd, ip_server)
           answer = send_message_request(info,jid)
           if answer == "2":
               add_new_save(ipadd,port,"port_disable",choice = "always")
@@ -75,12 +83,13 @@ if check_timestamp()>15: # if the last log has been received less than 10 second
 
       if answer == '1':
             cmd = "interfaces port {0} admin-state disable".format(port)
+            os.system('logger -t montag -p user.info Calling ssh_connectivity_check script')
             ssh_connectivity_check(switch_user,switch_password,ipadd,cmd)
             #disable_port(switch_user,switch_password,ipadd,port)
-            os.system('logger -t montag -p user.info Process terminated')
+            os.system('logger -t montag -p user.info Port disabled')
             if jid !='':
               info = "Log of device : {0}".format(ipadd)
-              send_file(info,jid,ipadd)
+              #send_file(info,jid,ipadd)
               info = "A loop has been detected on your network and the port {0} is administratively disabled on device {1}".format(port, ipadd)
               send_message(info,jid)
 
