@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+from cProfile import run
 import sys
 import requests
-from time import sleep
+from time import sleep, strftime, localtime,
 import re
 from database_conf import *
+
+runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 def send_message(info,jid):
     """ 
@@ -76,9 +79,14 @@ def send_message_request(info,jid):
     try:
         url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
         headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",'Card': '1', 'jid1': '{0}'.format(jid), 'toto': '{0}.'.format(info)}
-        response = requests.get(url, headers=headers, timeout=300)
+        print(runtime)
+        response = requests.get(url, headers=headers, timeout=600)
+        print("Response from VNA")
+        print(runtime)
         print(response)
+        print("Response  Text from VNA")
         value = response.text
+        print(value)
     except requests.exceptions.ConnectionError:
         value = "1"
     except requests.exceptions.Timeout:
