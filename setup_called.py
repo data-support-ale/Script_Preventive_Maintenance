@@ -48,7 +48,7 @@ try:
         with open("/opt/ALE_Script/ALE_script.conf", "r", errors='ignore') as ALE_conf:
             data_conf = ALE_conf.read()
         with open("/opt/ALE_Script/ALE_script.conf", "w+", errors='ignore') as ALE_conf:
-            ALE_conf.write((str(data_conf)+str(room).strip()).replace("\n", ""))
+            ALE_conf.write((str(data_conf)+str(room).strip()+",").replace("\n", "").replace(" ", ""))
 
     # All generic fields (Rainbow bubble, emails, workflow name) are replaced based on ALE_script.conf file and Room_ID received from api/flows/NBDNotif_New_Bubble
         with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic.json", "r", errors='ignore') as file_json:
