@@ -108,7 +108,7 @@ with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_fil
     #? 0
     save_resp = check_save(ip_switch,"0","scan")
 
-    if not save_resp:
+    if save_resp == "0":
         notif = "A port scan has been detected on your network by the IP Address {0}  on device {1}. (if you click on Yes, the following actions will be done: Policy action block)".format(ip_switch_ddos, ip_switch)
         answer = send_message_request(notif,jid)
         if answer == "2":

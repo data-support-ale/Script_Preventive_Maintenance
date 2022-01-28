@@ -73,7 +73,7 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
 #? 0
 save_resp = check_save(ip,port,"violation")
 
-if not save_resp:
+if save_resp == "0":
     notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + ", source: " + reason + ". Do you want to clear the violation? " + ip_server 
     answer = send_message_request(notif,jid)
     if answer == "2":

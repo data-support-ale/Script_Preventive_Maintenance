@@ -1421,6 +1421,7 @@ def send_file(filename_path,subject,action,result):
      os.system('logger -t montag -p user.info REST API Call Failure') 
 
 if __name__ == "__main__":
+   check_save("192.168.80.81","1/1/24","port_disable")
    login_switch,pass_switch,mails,rainbow_jid,ip_server_log,login_AP,pass_AP,tech_pass,random_id,company =get_credentials()
    jid = "570e12872d768e9b52a8b975@openrainbow.com"
    switch_password="switch"

@@ -131,7 +131,7 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
         #? 0
         save_resp = check_save(ip_switch_1,port_switch_1,"flapping")
   
-        if not save_resp:
+        if save_resp == "0":
            info = "A port flapping has been detected on your network on  the port {0} on device {1} and the port {2}  on device {3}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(port_switch_1,ip_switch_1,port_switch_2,ip_switch_2)
            answer = send_message_request(info,jid)
            if answer == "2":
@@ -183,7 +183,7 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
        #? 0
        save_resp = check_save(ip_switch_1,port_switch_1,"flapping")
  
-       if not save_resp:
+       if save_resp == "0":
           info = "A port flapping has been detected on your network on  the port {0} on device {1} and the port {2}  on device {3}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(port_switch_1,ip_switch_1,port_switch_2,ip_switch_2)
           answer = send_message_request(info,jid)
           if answer == "2":
@@ -229,7 +229,7 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
        #? 0
        save_resp = check_save(ip_switch_2,port_switch_2,"flapping")
  
-       if not save_resp:
+       if save_resp == "0":
           info = "A port flapping has been detected on your network on  the port {0} on device {1} and the port {2}  on device {3}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(port_switch_1,ip_switch_1,port_switch_2,ip_switch_2)
           answer = send_message_request(info,jid)
           if answer == "2":

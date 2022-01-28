@@ -60,7 +60,7 @@ if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds ap
       #? 0
       save_resp = check_save(ipadd,port,"port_disable")
 
-      if not save_resp:
+      if save_resp == "0":
           info = "A loop has been detected on your network from the port {0} on device {1}. (if you click on Yes, the following action will be done: Port Admin Down)".format(port, ipadd)
           answer = send_message_request(info,jid)
           if answer == "2":

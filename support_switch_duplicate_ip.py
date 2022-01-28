@@ -93,7 +93,7 @@ def enable_qos_ddos(user,password,ipadd,ipadd_ddos):
 #? 0
 save_resp = check_save(ip,port,"duplicate")
 
-if not save_resp:
+if save_resp == "0":
     notif = "IP address duplication (" + ip_dup + ") on port " + port + " of switch " + ip + "(" + host + "). Do you want to blacklist mac : " + mac + " ?"
     answer = send_message_request(notif,jid)
     if answer == "2":
