@@ -19,30 +19,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 # Get informations from logs.
 switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
 
-# Sample log
-# {"@timestamp":"2022-01-05T12:14:46+01:00","type":"syslog_json","relayip":"10.130.7.247","hostname":"os6860","message":"<13>Jan  5 12:14:46 OS6860 ConsLog [slot 1\/1] Wed Jan  5 12:14:46  ipni arp WARN duplicate IP address 10.130.7.247 from port 1\/1\/9 eth addr 38f3ab:592a7e","end_msg":""}
 
-last = ""
-with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_file:
-    for line in log_file:
-        last = line
-
-with open("/var/log/devices/lastlog_dupip.json", "w", errors='ignore') as log_file:
-    log_file.write(last)
-
-with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_file:
-    try:
-        log_json = json.load(log_file)
-        ip = log_json["relayip"]
-        host = log_json["hostname"]
-        msg = log_json["message"]
-    except json.decoder.JSONDecodeError:
-        print("File /var/log/devices/lastlog_dupip.json empty")
-        exit()
-
-
-    ip_dup, port, mac = re.findall(r"duplicate IP address (.*?) from port (.*?) eth addr (.*)", msg)[0]
-    mac = format_mac(mac)
 
 def enable_qos_ddos(user,password,ipadd,ipadd_ddos):
 
@@ -85,8 +62,36 @@ def enable_qos_ddos(user,password,ipadd,ipadd_ddos):
       write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
       sys.exit()
 
+
    cmd = "configuration apply ./working/configqos "
    ssh_connectivity_check(switch_user,switch_password,ipadd,cmd)  
+
+
+
+# Sample log
+# {"@timestamp":"2022-01-05T12:14:46+01:00","type":"syslog_json","relayip":"10.130.7.247","hostname":"os6860","message":"<13>Jan  5 12:14:46 OS6860 ConsLog [slot 1\/1] Wed Jan  5 12:14:46  ipni arp WARN duplicate IP address 10.130.7.247 from port 1\/1\/9 eth addr 38f3ab:592a7e","end_msg":""}
+
+last = ""
+with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_file:
+    for line in log_file:
+        last = line
+
+with open("/var/log/devices/lastlog_dupip.json", "w", errors='ignore') as log_file:
+    log_file.write(last)
+
+with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_file:
+    try:
+        log_json = json.load(log_file)
+        ip = log_json["relayip"]
+        host = log_json["hostname"]
+        msg = log_json["message"]
+    except json.decoder.JSONDecodeError:
+        print("File /var/log/devices/lastlog_dupip.json empty")
+        exit()
+
+
+    ip_dup, port, mac = re.findall(r"duplicate IP address (.*?) from port (.*?) eth addr (.*)", msg)[0]
+    mac = format_mac(mac)
 
 #always 1 
 #never -1

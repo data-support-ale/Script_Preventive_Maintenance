@@ -7,6 +7,7 @@ from support_tools_OmniSwitch import get_credentials, detect_port_loop, replace_
 from time import strftime, localtime, sleep
 import re #Regex
 from support_send_notification import send_message,send_file, send_message_request
+from database_conf import *
 
 #Script init
 script_name = sys.argv[0]
@@ -64,6 +65,12 @@ if  detect_port_loop(): # if there is more than 10 log with less of 2 seconds ap
       print("call function disable port")
       replace_logtemp()
       subject = "A loop was detected on your OmniSwitch!"
+
+      try:
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port" : port}, "fields": {"count": 1}}])
+      except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
       #always 1 
       #never -1

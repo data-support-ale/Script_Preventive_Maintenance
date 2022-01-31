@@ -84,17 +84,17 @@ def send_message_request(info,jid):
         print("Response from VNA")
         print(runtime)
         print(response)
-        print("Response  Text from VNA")
-        value = response.text
-        print(value)
-        response = str(response)
-        info = "No answer received from VNA/Rainbow application - Answer Yes set by default"
-        send_message(info, jid)
-        response = re.findall(r"<Response \[(.*?)\]>", response)
-        if "200" in response:
+
+        code = re.findall(r"<Response \[(.*?)\]>", str(response))
+        if "200" in code:
             os.system('logger -t montag -p user.info 200 OK')
+            print("Response  Text from VNA")
+            value = response.text
+            print(value)
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
+            info = "No answer received from VNA/Rainbow application - Answer Yes set by default"
+            send_message(info, jid)
             value = "1"
     except requests.exceptions.ConnectionError:
         value = "1"
