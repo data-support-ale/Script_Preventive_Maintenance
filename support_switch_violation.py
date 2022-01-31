@@ -79,7 +79,6 @@ if save_resp == "0":
     print(answer)
     if answer == "2":
         add_new_save(ip,port,"violation",choice = "always")
-        answer = '1'
     elif answer == "0":
         add_new_save(ip,port,"violation",choice = "never")
 elif save_resp == "-1":
@@ -95,6 +94,15 @@ if answer == '1':
     if jid != '':
         info = "Log of device : {0}".format(ip)
         send_file(info, jid, ip)
+        info = "A port violation has been cleared up on device {}".format(ip)
+        send_message(info, jid)
+
+elif answer == '2':
+    os.system('logger -t montag -p user.info Process terminated')
+    # CLEAR VIOLATION
+    cmd = "clear violation port " + port
+    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip,cmd))
+    if jid != '':
         info = "A port violation has been cleared up on device {}".format(ip)
         send_message(info, jid)
 
