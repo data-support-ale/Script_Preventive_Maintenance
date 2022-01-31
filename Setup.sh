@@ -499,24 +499,13 @@ template(name=\"json_syslog\"
     constant(value=\"{\")
     constant(value=\"\\"\"@timestamp\\"\":\\"\""\")       property(name=\"timereported\" dateFormat=\"rfc3339\")
       constant(value=\"\\\",\\"\""type\\\":\\"\""syslog_json\")
-#      constant(value=\"\\\",\\"\"""tag\\\":\\"\""\"")           property(name=\"syslogtag\" format=\"json\")
-#      constant(value=\"\\\",\\"\"""relayhost\\\":\\"\""\"")     property(name=\"fromhost\")
       constant(value=\"\\\",\\"\"""relayip\\\":\\"\""\"")       property(name=\"fromhost-ip\")
-#     constant(value=\"\\\",\\"\"""logsource\\\":\\"\""\"")     property(name=\"source\")
       constant(value=\"\\\",\\"\"""hostname\\\":\\"\""\"")      property(name=\"hostname\" caseconversion=\"lower\")
-#      constant(value=\"\\\",\\"\"""program\\\":\\"\""\"")      property(name=\"programname\")
-#      constant(value=\"\\\",\\"\"""priority\\\":\\"\""\"")      property(name=\"pri\")
-#      constant(value=\"\\\",\\"\"""severity\\\":\\"\""\"")      property(name=\"syslogseverity\")
-#      constant(value=\"\\\",\\"\"""facility\\\":\\"\""\"")      property(name=\"syslogfacility\")
-#      constant(value=\"\\\",\\"\"""severity_label\\\":\\"\""\"")   property(name=\"syslogseverity-text\")
-#      constant(value=\"\\\",\\"\"""facility_label\\\":\\"\""\"")   property(name=\"syslogfacility-text\")
       constant(value=\"\\\",\\"\"""message\\\":\\"\""\"")       property(name=\"rawmsg\" format=\"json\")
       constant(value=\"\\\",\\"\"""end_msg\\\":\\"\""\"") 
     constant(value=\"\\"\"}\\\n\"")
 }
-# provides TCP syslog reception
-#module(load=\"imtcp\")
-#input(type=\"imtcp\" port=\"514\")
+
 ###########################
 #### GLOBAL DIRECTIVES ####
 ###########################
@@ -592,7 +581,7 @@ if \$msg contains 'ConsLog' then {
 #:msg, contains, \"error\"         /var/log/syslog-error.log
 *.* ?DynamicFile;json_syslog
 
-############### Rules Preventive Maintenance ##########
+############### Preventive Maintenance Rules ##############
 #
 
 ##### WLAN Rules for Stellar AP Quality User Experience #####
@@ -746,7 +735,7 @@ if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_s
   stop
 }
 
-##### Rules WLAN WIPS under progress ########
+##### WLAN Rules for WIPS ########
 #if \$msg contains '[Lbd-Deny-Cnt] : Set Client' then {
 #  \$RepeatedMsgReduction on
 #  action(type=\"omfile\" DynaFile=\"devicelogwips\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -755,7 +744,7 @@ if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_s
 #}
 
 
-##### Rules MAC-SEC ########
+##### LAN -  MAC-SEC Rules ########
 if \$msg contains 'intfNi Mka' or \$msg contains 'intfNi Drv' or \$msg contains 'intfNi Msec' then {
   action(type=\"omfile\" DynaFile=\"deviceloghistory\" dirCreateMode=\"0755\" FileCreateMode=\"0755\")
   if \$msg contains 'ieee802_1x_cp_connect_secure' then {
@@ -788,7 +777,7 @@ if \$msg contains 'intfNi Mka' or \$msg contains 'intfNi Drv' or \$msg contains 
   }
 }
 
-#### Rules Core DUMP - LAN #########
+#### LAN - Core DUMP rule #########
 
 if \$msg contains 'PMD generated at' then {
      \$RepeatedMsgReduction on
@@ -798,7 +787,7 @@ if \$msg contains 'PMD generated at' then {
      stop
 }
 
-#### Rules Port Flapping - LAN ######
+#### LAN - Rules Port Flapping ######
 if \$msg contains 'pmnHALLinkStatusCallback:206' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -808,7 +797,7 @@ if \$msg contains 'pmnHALLinkStatusCallback:206' then {
      stop
 }
 
-#### Rules DDOS - LAN #####
+#### LAN - Rules DDOS #####
 if \$msg contains 'Denial of Service attack detected: <port-scan>' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogddosdebug\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -1095,6 +1084,8 @@ if \$msg contains 'omprog' then /var/log/devices/omprog.log
 
 systemctl restart rsyslog
 
+echo -e "\e[32Rsyslog configuration complete\e[39m"
+
 echo
 echo -e "\e[32mConfiguration of logrotate\e[39m"
 
@@ -1188,8 +1179,10 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
 }
 " > /etc/logrotate.d/rsyslog
 
+echo -e "\e[32Logrotate configuration complete\e[39m"
+
 echo
-echo -e "\e[32mInstallation and configuration of services\e[39m"
+echo -e "\e[32mInstallation and configuration of service for OmniSwitches monitoring\e[39m"
 echo
 apt-get -qq -y  update >& /dev/null
 apt-get -qq -y install sshpass >& /dev/null
@@ -1209,142 +1202,115 @@ sudo systemctl daemon-reload
 sudo systemctl start python_exporter.service
 sudo systemctl enable  python_exporter.service
 
-# #GOLANG
-# echo
-# echo -e "\e[32mGolang Installation\e[39m"
-# echo
-# wget  -q --inet4-only https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
-# tar -C /usr/local -xzf go1.14.4.linux-amd64.tar.gz >& /dev/null
-# mkdir $home/go && chown admin-support:admin-support go/
-# chown admin-support:admin-support /usr/local/go
-# echo 'PATH=$PATH:/usr/local/go/bin
-# GOPATH=$HOME/go' > ~/.profile
-# source ~/.profile
+echo -e "\e[32mPython exporter service started\e[39m"
 
-# echo
-# echo -e "\e[32mGolang Installed\e[39m"
-# echo
-# #RSYSLOG EXPORTER
-# echo
-# if [[ $archi == *"arm"* ]]
-# then
-#      echo -e "\e[32mRsyslog Exporter Installation\e[39m"
-#      sudo echo "[Unit]
-#      Description=Rsyslog exporter
+echo
+echo
+echo -e "\e[32mInstallation of Analytics components\e[39m"
+echo
 
-#      [Service]
-#      ExecStart= ~/go/bin/rsyslog_exporter
-#      Restart=on-failure
-#      User=admin-support
-#      Group=admin-support
+echo
+echo
+echo -e "\e[32mDocker Installation\e[39m"
+echo
+#DOCKER
+apt-get -qq -y install ca-certificates curl gnupg lsb-release
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get -qq -y install docker-ce docker-ce-cli containerd.io
+echo
+echo -e "\e[32mDocker installation complete\e[39m"
+echo
 
-#      [Install]
-#      WantedBy=multi-user.target" > /etc/systemd/system/rsyslog_exporter.service
-#      sudo systemctl daemon-reload
-#      sudo systemctl start rsyslog_exporter.service
-#      sudo systemctl enable  rsyslog_exporter.service
-#      echo
-#      go get -u github.com/chijiajian/rsyslog_exporter
-#      echo
-#      echo -e "\e[32mRsyslog Exporter Installed\e[39m"
-# fi
-# echo
-# echo
-# echo -e "\e[32mDocker Installation\e[39m"
-# echo
-# #DOCKER
-# apt-get -qq -y install ca-certificates curl gnupg lsb-release
-# curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-# apt-get -qq -y install docker-ce docker-ce-cli containerd.io
-# echo
-# echo -e "\e[32mDocker Installed\e[39m"
-# echo
-
-# echo
-# echo -e "\e[32mDocker-compose installation\e[39m"
-# echo
-# #DOCKER COMPOSE
-# wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
-# chmod +x /usr/local/bin/docker-compose
-# echo
-# echo -e "\e[32mDocker-Compose Installed\e[39m"
-# echo
+ echo
+ echo -e "\e[32mDocker-compose installation\e[39m"
+ echo
+ #DOCKER COMPOSE
+ wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
+ chmod +x /usr/local/bin/docker-compose
+ echo
+ echo -e "\e[32mDocker-Compose Installation complete\e[39m"
+ echo
 
 
 
 # #OpenSSL
-# echo
-# echo -e "\e[32mOpenSSL Installation\e[39m"
-# echo
-# apt-get -qq -y install libssl-dev
-# apt-get -qq -y install libncurses5-dev
-# apt-get -qq -y install libsqlite3-dev
-# apt-get -qq -y install libreadline-dev
-# apt-get -qq -y install libtk8.6
-# apt-get -qq -y install libgdm-dev
-# apt-get -qq -y install libdb4o-cil-dev
-# apt-get -qq -y install libpcap-dev
+echo
+echo -e "\e[32mOpenSSL Installation\e[39m"
+echo
+apt-get -qq -y install libssl-dev
+apt-get -qq -y install libncurses5-dev
+apt-get -qq -y install libsqlite3-dev
+apt-get -qq -y install libreadline-dev
+apt-get -qq -y install libtk8.6
+apt-get -qq -y install libgdm-dev
+apt-get -qq -y install libdb4o-cil-dev
+apt-get -qq -y install libpcap-dev
 
-# wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz 
-# tar zxvf openssl-1.1.1g.tar.gz >& /dev/null
-# cd openssl-1.1.1g
-# ./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2 >& /dev/null
-# make -s >& /dev/null
-# make -s install >& /dev/null
-# echo 'export PATH=$HOME/openssl/bin:$PATH
-# export LD_LIBRARY_PATH=$HOME/openssl/lib
-# export LC_ALL="en_US.UTF-8"
-# export LDFLAGS="-L /home/username/openssl/lib -Wl,-rpath,/home/username/openssl/lib"' > ~/.bash_profile
-# source ~/.bash_profile
+wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz 
+tar zxvf openssl-1.1.1g.tar.gz >& /dev/null
+cd openssl-1.1.1g
+./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2 >& /dev/null
+make -s >& /dev/null
+make -s install >& /dev/null
+echo 'export PATH=$HOME/openssl/bin:$PATH
+export LD_LIBRARY_PATH=$HOME/openssl/lib
+export LC_ALL="en_US.UTF-8"
+export LDFLAGS="-L /home/username/openssl/lib -Wl,-rpath,/home/username/openssl/lib"' > ~/.bash_profile
+source ~/.bash_profile
 
-# echo
-# echo -e "\e[32mOpenSSL Installed\e[39m"
-# echo
+echo
+echo -e "\e[32mOpenSSL Installation complete\e[39m"
+echo
 
-# echo
-# echo -e "\e[32mPython 3.10 installation\e[39m"
-# echo
+echo
+echo -e "\e[32mPython 3.10 installation\e[39m"
+echo
+echo "Current user: `whoami`"
+echo "Python 3.10 package is downloaded on current user Home directory"
 # #Python 3.10
-# cd /home/admin-support/Script_Preventive_Maintenance/
-# apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
-# wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
-# tar -xf Python-3.10.*.tgz >& /dev/null
-# cd Python-3.10.*/
-# ./configure --with-openssl=/home/$USER/openssl >& /dev/null
-# sudo make -s >& /dev/null
-# sudo make -s altinstall >& /dev/null
-# update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1 >& /dev/null
-# update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1 >& /dev/null
+cd $home
+apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
+wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
+tar -xf Python-3.10.*.tgz >& /dev/null
+cd Python-3.10.*/
+./configure --with-openssl=/home/$USER/openssl >& /dev/null
+sudo make -s >& /dev/null
+sudo make -s altinstall >& /dev/null
+update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1 >& /dev/null
+update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1 >& /dev/null
 
-# echo
-# echo -e "\e[32mPython3.10 installed\e[39m"
-# echo
+echo
+echo -e "\e[32mPython3.10 Installation Complete\e[39m"
+echo
 
+sudo -H pip3.10 install --quiet pysftp >& /dev/null
+sudo -H pip3.10 install --quiet influx-client >& /dev/null
+sudo -H pip3.10 install --quiet prometheus-client >& /dev/null
+sudo -H pip3.10 install --quiet flask >& /dev/null
+sudo -H pip3.10 install --quiet requests >& /dev/null
+apt-get -qq -y install tftpd-hpa >& /dev/null
+export PYTHONPATH=/usr/local/bin/python3.10
+echo
+echo -e "\e[32mPython3.10 Dependencies Complete\e[39m"
+echo
 
-# sudo -H pip3.10 install --quiet pysftp >& /dev/null
-# sudo -H pip3.10 install --quiet influx-client >& /dev/null
-# sudo -H pip3.10 install --quiet prometheus-client >& /dev/null
-# sudo -H pip3.10 install --quiet flask >& /dev/null
-# sudo -H pip3.10 install --quiet requests >& /dev/null
-# apt-get -qq -y install tftpd-hpa >& /dev/null
-# export PYTHONPATH=/usr/local/bin/python3.10
-# echo
-# echo -e "\e[32mPython3.10 dependences installed\e[39m"
-# echo
-
-echo "Devices log directory /var/log/devices/ created"
 mkdir /var/log/devices/ >& /dev/null
 touch /var/log/devices/logtemp.json
 chmod 755 /var/log/devices/
 chown admin-support:admin-support /var/log/devices/
+echo "Devices syslog directory /var/log/devices/ created"
+
 sleep 2
+echo -e "\e[32mTFTP Server installation\e[39m"
 echo "# /etc/default/tftpd-hpa
 
 TFTP_USERNAME=\"tftp\"
 TFTP_DIRECTORY=\"/tftpboot\"
 TFTP_ADDRESS=\"0.0.0.0:69\"
 TFTP_OPTIONS=\"-l -c -s\" " > /etc/default/tftpd-hpa
+
+echo -e "\e[32mInstallation Complete\e[39m"
 
 # Check of Rsyslog status and if parsing errors
 status=`systemctl status rsyslog|grep active|awk '{print $3'}|sed -e "s/(/ /g"|sed -e "s/)/ /g"`
@@ -1365,10 +1331,16 @@ elif [[ $parsing ]];
 then
     echo -e "\e[31mParsing error found \e[39mon /etc/rsyslog.conf"
 else
-    echo "No parsing error on Configuration Files"
+    echo "No parsing error found on Configuration Files"
 fi
-echo -e "\e[32mWorking directory in /opt/ALE_Script\e[39m"
-
+echo -e "\e[32mThe installation is complete\e[39m"
+echo -e "\e[32mSyslogs received from allowed networks are redirected to /var/log/devices/<device_hostname>/ directories\e[39m"
+echo -e "\e[32mWhen a syslog matches with application rule a JSON file is created in /var/log/devices for post processing by application\e[39m"
+echo -e "\e[32mScripts and configuration files are stored in /opt/ALE_Script/\e[39m"
+echo -e "\e[32mFor some use cases a Rainbow Adaptive Card is generated with multiple choice - the answer if No or Yes and Remember are stored in /opt/ALE_Script/decisions_save.conf gile\e[39m"
+echo -e "\e[32mPlease ensure the OmniSwitches as well as Stellar APs are sending syslog messages to UDP Port 10514\e[39m"
+echo -e "\e[32mOmniSwitches CLI command: swlog output socket <server_ip_address>:10514 <vrf_name>\e[39m"
+echo
 for rep in "${reponse_tab[@]}"
 do
     sudo /opt/ALE_Script/opt_pattern.py "$rep"
@@ -1384,17 +1356,18 @@ while IFS="," read -r rec_column1 rec_column2 rec_column3 rec_column4 rec_column
 do
   if [ "$rec_column11" != "" ]
   then
-      echo -e "\e[31mVNA already setup"
+      echo -e "\e[31mVNA Workflow already exists for this company"
   else
       sudo python /opt/ALE_Script/setup_called.py "$company"
       echo "Setup complete"
   fi
 done < /opt/ALE_Script/ALE_script.conf
 
-echo "Launching Docker-compose"
+echo "Launching Analytics containers"
 cd /opt/ALE_Script/Analytics
 docker-compose up -d
-echo "Docker-compose Ok"
+echo "Analytics engine is started"
+echo "If you want to access Analytics go to http://<server_ip_address>:3000, Login: admin, Password: Letacla01*"
 
 
 
