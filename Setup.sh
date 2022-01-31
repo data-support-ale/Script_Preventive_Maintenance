@@ -3,7 +3,13 @@
 #1. Do you want to be notified by email, rainbow bot or both?
 #==> variable notif= (1) email (2) rainbow (3) both
 
-
+echo "##############################################################################"
+echo "######################## Preventive Maintenance ##############################"
+echo "##############################################################################"
+echo "      "
+echo "This setup will collect your network environment settings for LAN and WLAN   "
+echo "The Rainbow JID and Emails addresses are mandatories for automating the Workflow and Rainbow bubble creation"
+echo "      "
 if [ "$EUID" -ne 0 ]
   then echo "Please execute with root privileges or use sudo"
   exit
@@ -15,7 +21,7 @@ if ! [ "`ls  |grep ${0##*/}`" == "${0##*/}" ]
 fi
 
 if ! [ "`ls  |grep Devices.csv`" == "Devices.csv" ]
-  then echo "Please make sure you have the file Device.csv file is in the same directory as Setup.sh before execute the program."
+  then echo "Please make sure the file Device.csv file is in the same directory as Setup.sh before executing the program. This file contains the list of OmniSwitches IP Addresses you want to monitor"
   exit
 fi
 
