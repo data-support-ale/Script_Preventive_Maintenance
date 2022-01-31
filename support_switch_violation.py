@@ -96,15 +96,12 @@ if answer == '1':
         send_file(info, jid, ip)
         info = "A port violation has been cleared up on device {}".format(ip)
         send_message(info, jid)
-
+        
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')
     # CLEAR VIOLATION
     cmd = "clear violation port " + port
     os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip,cmd))
-    if jid != '':
-        info = "A port violation has been cleared up on device {}".format(ip)
-        send_message(info, jid)
 
 else:
     print("Mail request set as no")
