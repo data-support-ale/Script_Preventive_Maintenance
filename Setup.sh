@@ -1086,7 +1086,7 @@ if \$msg contains 'omprog' then /var/log/devices/omprog.log
 
 systemctl restart rsyslog
 
-echo -e "\e[32Rsyslog configuration complete\e[39m"
+echo -e "\e[32mRsyslog configuration complete\e[39m"
 
 echo
 echo -e "\e[32mConfiguration of logrotate\e[39m"
@@ -1223,7 +1223,7 @@ then
 fi
 
 
-echo -e "\e[32Logrotate configuration complete\e[39m"
+echo -e "\e[32mLogrotate configuration complete\e[39m"
 
 echo
 echo -e "\e[32mInstallation and configuration of service for OmniSwitches monitoring\e[39m"
