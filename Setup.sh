@@ -1407,6 +1407,12 @@ do
   fi
 done < /opt/ALE_Script/ALE_script.conf
 
+# Replacing IP addr
+while IFS='' read -r a; do
+    echo "${a//10.130.7.13/$ip_server_log}"
+done < /opt/ALE_Script/Analytics/prometheus.yml > /opt/ALE_Script/Analytics/prometheus.yml
+
+
 echo "Launching Analytics containers"
 cd /opt/ALE_Script/Analytics
 docker-compose up -d
