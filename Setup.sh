@@ -1294,7 +1294,7 @@ apt-get -qq -y install libpcap-dev
 wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz 
 tar zxvf openssl-1.1.1g.tar.gz >& /dev/null
 cd openssl-1.1.1g
-./config --prefix=/home/$USER/openssl --openssldir=/home/$USER/openssl no-ssl2 >& /dev/null
+./config --prefix=/home/admin-support/openssl --openssldir=/home/admin-support/openssl no-ssl2 >& /dev/null
 make -s >& /dev/null
 make -s install >& /dev/null
 echo 'export PATH=$HOME/openssl/bin:$PATH
@@ -1318,7 +1318,7 @@ apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev li
 wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
 tar -xf Python-3.10.*.tgz >& /dev/null
 cd Python-3.10.*/
-./configure --with-openssl=/home/$USER/openssl >& /dev/null
+./configure --with-openssl=/home/admin-support/openssl >& /dev/null
 sudo make -s >& /dev/null
 sudo make -s altinstall >& /dev/null
 update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1 >& /dev/null
@@ -1408,9 +1408,11 @@ do
 done < /opt/ALE_Script/ALE_script.conf
 
 # Replacing IP addr
+sudo chown admin-support:admin-support /opt/ALE_Script/Analytics/prometheus.yml
 while IFS='' read -r a; do
     echo "${a//10.130.7.13/$ip_server_log}"
-done < /opt/ALE_Script/Analytics/prometheus.yml > /opt/ALE_Script/Analytics/prometheus.yml
+done < /opt/ALE_Script/Analytics/prometheus.yml > /opt/ALE_Script/Analytics/prometheusV2.yml
+sudo mv /opt/ALE_Script/Analytics/prometheusV2.yml /opt/ALE_Script/Analytics/prometheus.yml
 
 
 echo "Launching Analytics containers"
