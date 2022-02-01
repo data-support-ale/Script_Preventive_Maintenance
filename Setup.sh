@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#1. Do you want to be notified by email, rainbow bot or both?
-#==> variable notif= (1) email (2) rainbow (3) both
-
 echo "##############################################################################"
 echo "#                                                                            #"
 echo "######################## Preventive Maintenance ##############################"
@@ -323,15 +320,9 @@ echo -e "\e[32mSummary of your informations:\e[39m"
 echo "   "
 echo "OmniSwitches Login: $login_switch"
 echo "OmniSwitches Password: $pass_switch"
-if [[ "$notif" == 2 || "$notif" == 3 ]]
-then
 echo "Your Rainbow JID:  $rainbow_jid"
-fi
 echo
-if [[ "$notif" == 1 || "$notif" == 3 ]]
-then
 echo "Your Emails addresses: $mails"
-fi
 echo "Your company name: $company"
 echo "Your OmniSwitches patterns: "
 
