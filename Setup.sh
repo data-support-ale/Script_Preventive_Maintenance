@@ -33,13 +33,15 @@ sudo usermod -a -G admin-support admin-support >& /dev/null
 
 mkdir $dir >& /dev/null
 mkdir /tftpboot/upgrades >& /dev/null
-cp ./Setup.sh $dir/
+
 #Analytics
-archi=`dpkg --prinlst-architecture >& /dev/null` 
+archi=`dpkg --print-architecture >& /dev/null` 
 if [[ $archi == *"arm"* ]]
 then
+     mkdir $dir/Analytics
      cp -r ./Analytics/arm/* $dir/Analytics/
 else
+     mkdir $dir/Analytics
      cp -r ./Analytics/amd64/* $dir/Analytics/
 fi
 cp -r ./VNA_Workflow $dir/
@@ -1178,6 +1180,48 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
         endscript
 }
 " > /etc/logrotate.d/rsyslog
+
+
+if [[ $archi == *"arm"* ]]
+then
+     #GOLANG
+     echo
+     echo -e "\e[32mGolang Installation\e[39m"
+     echo
+     wget  -q --inet4-only https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
+     tar -C /usr/local -xzf go1.14.4.linux-amd64.tar.gz >& /dev/null
+     mkdir /opt/ALE_Script/Analytics/go && chown admin-support:admin-support /opt/ALE_Script/Analytics/go
+     chown admin-support:admin-support /usr/local/go
+     echo 'PATH=$PATH:/usr/local/go/bin
+     GOPATH=/opt/ALE_Script/Analytics/go' > ~/.profile
+     source ~/.profile
+     echo
+     echo -e "\e[32mGolang Installed\e[39m"
+     echo
+     #RSYSLOG EXPORTER
+     echo
+
+     echo -e "\e[32mRsyslog Exporter Installation\e[39m"
+     sudo echo "[Unit]
+     Description=Rsyslog exporter
+
+     [Service]
+     ExecStart=/opt/ALE_Script/Analytics/go/bin/rsyslog_exporter
+     Restart=on-failure
+     User=admin-support
+     Group=admin-support
+
+     [Install]
+     WantedBy=multi-user.target" > /etc/systemd/system/rsyslog_exporter.service
+     sudo systemctl daemon-reload
+     sudo systemctl start rsyslog_exporter.service
+     sudo systemctl enable  rsyslog_exporter.service
+     echo
+     go get -u github.com/chijiajian/rsyslog_exporter
+     echo
+     echo -e "\e[32mRsyslog Exporter Installed\e[39m"
+fi
+
 
 echo -e "\e[32Logrotate configuration complete\e[39m"
 
