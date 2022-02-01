@@ -1398,7 +1398,7 @@ echo -e "\e[32mFor some use cases a Rainbow Adaptive Card is generated with mult
 echo "     "
 echo -e "\e[32mPlease ensure the OmniSwitches as well as Stellar APs are sending syslog messages to UDP Port 10514\e[39m"
 echo "     "
-echo -e "\e[32mOmniSwitches CLI command: swlog output socket <server_ip_address>:10514 <vrf_name>\e[39m"
+echo -e "\e[32mOmniSwitches CLI command: swlog output socket $ip_server_log:10514 <vrf_name>\e[39m"
 echo
 for rep in "${reponse_tab[@]}"
 do
@@ -1432,7 +1432,7 @@ echo "Launching Analytics containers"
 cd /opt/ALE_Script/Analytics
 docker-compose up -d
 echo "Analytics engine is started"
-echo "If you want to access Analytics go to http://<server_ip_address>:3000, Login: admin, Password: Letacla01*"
+echo "If you want to access Analytics go to http://$ip_server_log:3000, Login: admin, Password: Letacla01*"
 
 
 
