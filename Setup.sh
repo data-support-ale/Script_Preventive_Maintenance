@@ -1254,7 +1254,8 @@ echo
 echo
 echo -e "\e[32mInstallation of Analytics components\e[39m"
 echo
-
+echo "Installation of apt-transport-https"
+apt-get install apt-transport-https
 echo
 echo
 echo -e "\e[32mDocker Installation\e[39m"
@@ -1263,6 +1264,7 @@ echo
 apt-get -qq -y install ca-certificates curl gnupg lsb-release
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get update
 apt-get -qq -y install docker-ce docker-ce-cli containerd.io
 echo
 echo -e "\e[32mDocker installation complete\e[39m"
