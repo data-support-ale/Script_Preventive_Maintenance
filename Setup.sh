@@ -4,7 +4,9 @@
 #==> variable notif= (1) email (2) rainbow (3) both
 
 echo "##############################################################################"
+echo "#                                                                            #"
 echo "######################## Preventive Maintenance ##############################"
+echo "#                                                                            #"
 echo "##############################################################################"
 echo "      "
 echo "This setup will collect your network environment settings for LAN and WLAN   "
@@ -1377,12 +1379,23 @@ then
 else
     echo "No parsing error found on Configuration Files"
 fi
-echo -e "\e[32mThe installation is complete\e[39m"
+
+echo "##############################################################################"
+echo "#                                                                            #"
+echo "####################   The installation is complete   ########################"
+echo "#                                                                            #"
+echo "##############################################################################"
+
 echo -e "\e[32mSyslogs received from allowed networks are redirected to /var/log/devices/<device_hostname>/ directories\e[39m"
+echo "     "
 echo -e "\e[32mWhen a syslog matches with application rule a JSON file is created in /var/log/devices for post processing by application\e[39m"
+echo "     "
 echo -e "\e[32mScripts and configuration files are stored in /opt/ALE_Script/\e[39m"
+echo "     "
 echo -e "\e[32mFor some use cases a Rainbow Adaptive Card is generated with multiple choice - the answer if No or Yes and Remember are stored in /opt/ALE_Script/decisions_save.conf gile\e[39m"
+echo "     "
 echo -e "\e[32mPlease ensure the OmniSwitches as well as Stellar APs are sending syslog messages to UDP Port 10514\e[39m"
+echo "     "
 echo -e "\e[32mOmniSwitches CLI command: swlog output socket <server_ip_address>:10514 <vrf_name>\e[39m"
 echo
 for rep in "${reponse_tab[@]}"
