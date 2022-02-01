@@ -4,7 +4,9 @@
 #==> variable notif= (1) email (2) rainbow (3) both
 
 echo "##############################################################################"
+echo "#                                                                            #"
 echo "######################## Preventive Maintenance ##############################"
+echo "#                                                                            #"
 echo "##############################################################################"
 echo "      "
 echo "This setup will collect your network environment settings for LAN and WLAN   "
@@ -1086,7 +1088,7 @@ if \$msg contains 'omprog' then /var/log/devices/omprog.log
 
 systemctl restart rsyslog
 
-echo -e "\e[32Rsyslog configuration complete\e[39m"
+echo -e "\e[32mRsyslog configuration complete\e[39m"
 
 echo
 echo -e "\e[32mConfiguration of logrotate\e[39m"
@@ -1223,7 +1225,7 @@ then
 fi
 
 
-echo -e "\e[32Logrotate configuration complete\e[39m"
+echo -e "\e[32mLogrotate configuration complete\e[39m"
 
 echo
 echo -e "\e[32mInstallation and configuration of service for OmniSwitches monitoring\e[39m"
@@ -1252,7 +1254,8 @@ echo
 echo
 echo -e "\e[32mInstallation of Analytics components\e[39m"
 echo
-
+echo "Installation of apt-transport-https"
+apt-get install apt-transport-https
 echo
 echo
 echo -e "\e[32mDocker Installation\e[39m"
@@ -1261,6 +1264,7 @@ echo
 apt-get -qq -y install ca-certificates curl gnupg lsb-release
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+apt-get update
 apt-get -qq -y install docker-ce docker-ce-cli containerd.io
 echo
 echo -e "\e[32mDocker installation complete\e[39m"
@@ -1377,13 +1381,24 @@ then
 else
     echo "No parsing error found on Configuration Files"
 fi
-echo -e "\e[32mThe installation is complete\e[39m"
+
+echo "##############################################################################"
+echo "#                                                                            #"
+echo "####################   The installation is complete   ########################"
+echo "#                                                                            #"
+echo "##############################################################################"
+
 echo -e "\e[32mSyslogs received from allowed networks are redirected to /var/log/devices/<device_hostname>/ directories\e[39m"
+echo "     "
 echo -e "\e[32mWhen a syslog matches with application rule a JSON file is created in /var/log/devices for post processing by application\e[39m"
+echo "     "
 echo -e "\e[32mScripts and configuration files are stored in /opt/ALE_Script/\e[39m"
+echo "     "
 echo -e "\e[32mFor some use cases a Rainbow Adaptive Card is generated with multiple choice - the answer if No or Yes and Remember are stored in /opt/ALE_Script/decisions_save.conf gile\e[39m"
+echo "     "
 echo -e "\e[32mPlease ensure the OmniSwitches as well as Stellar APs are sending syslog messages to UDP Port 10514\e[39m"
-echo -e "\e[32mOmniSwitches CLI command: swlog output socket <server_ip_address>:10514 <vrf_name>\e[39m"
+echo "     "
+echo -e "\e[32mOmniSwitches CLI command: swlog output socket $ip_server_log:10514 <vrf_name>\e[39m"
 echo
 for rep in "${reponse_tab[@]}"
 do
@@ -1419,7 +1434,7 @@ echo "Launching Analytics containers"
 cd /opt/ALE_Script/Analytics
 docker-compose up -d
 echo "Analytics engine is started"
-echo "If you want to access Analytics go to http://<server_ip_address>:3000, Login: admin, Password: Letacla01*"
+echo "If you want to access Analytics go to http://$ip_server_log:3000, Login: admin, Password: Letacla01*"
 
 
 
