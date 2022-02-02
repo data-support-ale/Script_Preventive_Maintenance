@@ -1227,7 +1227,7 @@ sudo echo "[Unit]
 Description=Python exporter
 
 [Service]
-ExecStart=/usr/bin/python /opt/ALE_Script/support_switch_usage.py
+ExecStart=/opt/ALE_Script/support_switch_usage.py
 Restart=on-failure
 User=admin-support
 Group=admin-support
@@ -1261,45 +1261,14 @@ echo
 echo -e "\e[32mDocker installation complete\e[39m"
 echo
 
- echo
- echo -e "\e[32mDocker-compose installation\e[39m"
- echo
- #DOCKER COMPOSE
- wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
- chmod +x /usr/local/bin/docker-compose
- echo
- echo -e "\e[32mDocker-Compose Installation complete\e[39m"
- echo
-
-
-
-# #OpenSSL
 echo
-echo -e "\e[32mOpenSSL Installation\e[39m"
+echo -e "\e[32mDocker-compose installation\e[39m"
 echo
-apt-get -qq -y install libssl-dev
-apt-get -qq -y install libncurses5-dev
-apt-get -qq -y install libsqlite3-dev
-apt-get -qq -y install libreadline-dev
-apt-get -qq -y install libtk8.6
-apt-get -qq -y install libgdm-dev
-apt-get -qq -y install libdb4o-cil-dev
-apt-get -qq -y install libpcap-dev
-
-wget -q --inet4-only https://www.openssl.org/source/openssl-1.1.1g.tar.gz 
-tar zxvf openssl-1.1.1g.tar.gz >& /dev/null
-cd openssl-1.1.1g
-./config --prefix=/home/admin-support/openssl --openssldir=/home/admin-support/openssl no-ssl2 >& /dev/null
-make -s >& /dev/null
-make -s install >& /dev/null
-echo 'export PATH=$HOME/openssl/bin:$PATH
-export LD_LIBRARY_PATH=$HOME/openssl/lib
-export LC_ALL="en_US.UTF-8"
-export LDFLAGS="-L /home/username/openssl/lib -Wl,-rpath,/home/username/openssl/lib"' > ~/.bash_profile
-source ~/.bash_profile
-
+#DOCKER COMPOSE
+wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
+chmod +x /usr/local/bin/docker-compose
 echo
-echo -e "\e[32mOpenSSL Installation complete\e[39m"
+echo -e "\e[32mDocker-Compose Installation complete\e[39m"
 echo
 
 echo
@@ -1308,28 +1277,41 @@ echo
 echo "Current user: `whoami`"
 echo "Python 3.10 package is downloaded on current user Home directory"
 # #Python 3.10
-cd $home
-apt-get -qq -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
-wget -q --inet4-only https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
-tar -xf Python-3.10.*.tgz >& /dev/null
-cd Python-3.10.*/
-./configure --with-openssl=/home/admin-support/openssl >& /dev/null
-sudo make -s >& /dev/null
-sudo make -s altinstall >& /dev/null
-update-alternatives --install /usr/bin/python python /usr/local/bin/python3.10 1 >& /dev/null
-update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1 >& /dev/null
+
+apt-get update
+apt-get install -y build-essential openssl openssl-dev* wget curl
+wget https://www.python.org/ftp/python/3.7.8/Python-3.7.8.tgz
+tar -xvf Python-3.7.8.tgz
+cd Python-3.7.8
+./configure --enable-shared
+make 
+make test
+make install
+
+# Steps from here are to enable other libraries in linux to 
+# access the shared python libraries.
+
+cd /usr/local/lib/
+cp libpython3.so /usr/lib64/
+cp libpython3.so /usr/lib
+cp libpython3.7m.so.1.0 /usr/lib64/
+cp libpython3.7m.so.1.0 /usr/lib/
+cd /usr/lib64
+ln -s libpython3.7m.so.1.0 libpython3.7m.so
+cd /usr/lib
+ln -s libpython3.7m.so.1.0 libpython3.7m.so
+
+python3 -m pip install --upgrade pip
 
 echo
 echo -e "\e[32mPython3.10 Installation Complete\e[39m"
 echo
 
-sudo -H pip3.10 install --quiet pysftp >& /dev/null
-sudo -H pip3.10 install --quiet influx-client >& /dev/null
-sudo -H pip3.10 install --quiet prometheus-client >& /dev/null
-sudo -H pip3.10 install --quiet flask >& /dev/null
-sudo -H pip3.10 install --quiet requests >& /dev/null
-apt-get -qq -y install tftpd-hpa >& /dev/null
-export PYTHONPATH=/usr/local/bin/python3.10
+cd /opt/ALE_Script
+python3 -m venv venv
+source venv/bin/activate
+python3 -m pip install -r requirement.txt
+
 echo
 echo -e "\e[32mPython3.10 Dependencies Complete\e[39m"
 echo
