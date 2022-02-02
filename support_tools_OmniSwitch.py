@@ -34,7 +34,7 @@ def get_credentials(attribute=None):
      :return str mails:              List of email addresses of recipients
      """
 
-     with open("/opt/ALE_Script/ALE_script.conf", "r", errors='ignore') as content_variable:
+     with open("/opt/ALE_Script/ALE_script.conf", "r") as content_variable:
       login_switch,pass_switch,mails,rainbow_jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company,room_id, *_ = re.findall(r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
       if attribute == None:
          return login_switch,pass_switch,mails,rainbow_jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company
@@ -273,7 +273,7 @@ def enable_port(user,password,ipadd,portnumber):
     :param str user:                Switch user login
     :param str password:            Switch user password
     :param str ipadd:               Switch IP Address
-    :param str portnumber:          The Switch port where there is a loop. shape : x/y/z with x = chassis n° ; y = slot n° ; z = port n°
+    :param str portnumber:          The Switch port where there is a loop. shape : x/y/z with x = chassis n ; y = slot n ; z = port n
     :return:                        None
     """
     cmd = "interfaces port {0} admin-state enable".format(portnumber)
@@ -1392,7 +1392,7 @@ def disable_port(user,password,ipadd,portnumber):
     :param str user:                Switch user login
     :param str password:            Switch user password
     :param str ipadd:               Switch IP Address
-    :param str portnumber:          The Switch port where there is a loop. shape : x/y/z with x = chassis n° ; y = slot n° ; z = port n°
+    :param str portnumber:          The Switch port where there is a loop. shape : x/y/z with x = chassis n ; y = slot n ; z = port n
     :return:                        None
     """
     cmd = "interfaces port {0} admin-state disable".format(portnumber)
@@ -1430,7 +1430,6 @@ def send_file(filename_path,subject,action,result):
      os.system('logger -t montag -p user.info REST API Call Failure') 
 
 if __name__ == "__main__":
-   check_save("192.168.80.81","1/1/24","port_disable")
    login_switch,pass_switch,mails,rainbow_jid,ip_server_log,login_AP,pass_AP,tech_pass,random_id,company =get_credentials()
    jid = "570e12872d768e9b52a8b975@openrainbow.com"
    switch_password="switch"

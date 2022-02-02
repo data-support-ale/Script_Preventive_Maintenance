@@ -1307,9 +1307,8 @@ echo
 echo -e "\e[32mPython3.10 Installation Complete\e[39m"
 echo
 
-cd /opt/ALE_Script
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv /opt/ALE_Script/venv
+source /opt/ALE_Script/venv/bin/activate
 python3 -m pip install -r requirement.txt
 
 echo
