@@ -5,7 +5,7 @@ import os
 
 pattern = sys.argv[1]
 text = """
-if $msg contains '"""+ pattern + """' then {
+if $msg contains '""" + pattern + """' then {
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_AP_get_log.py \\\"""" + pattern + """\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
@@ -29,4 +29,4 @@ with open(r"/etc/rsyslog.conf", 'r+') as fp:
 
 
 with open("/etc/rsyslog.conf", "a+") as file:
-   file.write(text)
+    file.write(text)

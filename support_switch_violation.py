@@ -16,7 +16,7 @@ os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
+switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as log_file:
@@ -36,7 +36,8 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
         print("File /var/log/devices/lastlog_violation.json empty")
         exit()
 
-    port, reason = re.findall(r"Port (.*?) in violation - source (.*?) reason", msg)[0]
+    port, reason = re.findall(
+        r"Port (.*?) in violation - source (.*?) reason", msg)[0]
 
     if reason == "0":
         reason = "Unknown"
@@ -68,19 +69,20 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
         reason = "LLDP"
 
 
-#always 1 
+# always 1
 #never -1
-#? 0
-save_resp = check_save(ip,port,"violation")
+# ? 0
+save_resp = check_save(ip, port, "violation")
 
 if save_resp == "0":
-    notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + ", source: " + reason + ". Do you want to clear the violation? " + ip_server 
-    answer = send_message_request(notif,jid)
+    notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + \
+        ", source: " + reason + ". Do you want to clear the violation? " + ip_server
+    answer = send_message_request(notif, jid)
     print(answer)
     if answer == "2":
-        add_new_save(ip,port,"violation",choice = "always")
+        add_new_save(ip, port, "violation", choice="always")
     elif answer == "0":
-        add_new_save(ip,port,"violation",choice = "never")
+        add_new_save(ip, port, "violation", choice="never")
 elif save_resp == "-1":
     sys.exit()
 elif save_resp == "1":
@@ -92,18 +94,20 @@ if answer == '1':
     os.system('logger -t montag -p user.info Process terminated')
     # CLEAR VIOLATION
     cmd = "clear violation port " + port
-    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip,cmd))
+    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
+        switch_password, switch_user, ip, cmd))
     if jid != '':
         info = "Log of device : {0}".format(ip)
         send_file(info, jid, ip)
         info = "A port violation has been cleared up on device {}".format(ip)
         send_message(info, jid)
-        
+
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')
     # CLEAR VIOLATION
     cmd = "clear violation port " + port
-    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip,cmd))
+    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
+        switch_password, switch_user, ip, cmd))
 
 else:
     print("Mail request set as no")
@@ -111,7 +115,8 @@ else:
     sleep(1)
 
 try:
-    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "Reason": reason, "port" : port}, "fields": {"count": 1}}])
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
+                    "IP": ip, "Reason": reason, "port": port}, "fields": {"count": 1}}])
 except UnboundLocalError as error:
     print(error)
     sys.exit()

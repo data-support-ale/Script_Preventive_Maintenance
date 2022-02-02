@@ -58,7 +58,7 @@ SYSTEM_ROUTING_TOTAL = prometheus_client.Gauge(
     "Routing_Table_Total_Entries", 'Metrics scraped with python', ['name', 'ip'])
 path = "/opt/ALE_Script/"
 
-switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
+switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 
 class IPThread(threading.Thread):
@@ -108,13 +108,13 @@ class IPThread(threading.Thread):
         if error_code != 0:
             print("Error {} in {} (ip:{})".format(
                 error_code, self.name, self.ip))
-    
+
     def join(self):
-        print("Ending "+ self.name)
+        print("Ending " + self.name)
         return super().join()
 
     def addMetrics(self):
-        try: # Exception if no device is not reachable by SSH
+        try:  # Exception if no device is not reachable by SSH
             # NAME
             switch_cmd = "show system | grep Name"
             try:
@@ -137,7 +137,7 @@ class IPThread(threading.Thread):
                 try:
 
                     SYSTEM_MEM.labels(name=name, ip=self.ip,
-                                    chassis=chassis, slot=slot).set(mem)
+                                      chassis=chassis, slot=slot).set(mem)
 
                 except ValueError:
                     return 3
@@ -155,7 +155,7 @@ class IPThread(threading.Thread):
                 try:
 
                     SYSTEM_CPU.labels(name=name, ip=self.ip,
-                                    chassis=chassis, slot=slot).set(cpu)
+                                      chassis=chassis, slot=slot).set(cpu)
 
                 except ValueError:
                     return 5
@@ -172,7 +172,7 @@ class IPThread(threading.Thread):
                 try:
 
                     SYSTEM_TEMP.labels(name=name, ip=self.ip,
-                                    chassis=chassis).set(temp)
+                                       chassis=chassis).set(temp)
                 except ValueError:
                     return 7
 
@@ -228,9 +228,12 @@ class IPThread(threading.Thread):
 
             # Ratio (number of MAC Filtering State / number of MAC Total) * 100
             try:
-                matchs_mac_learning_total_entries = (matchs_mac_learning_bridging_entries + matchs_mac_learning_servicing_entries + matchs_mac_learning_filtering_entries)          
-                matchs_mac_filtering_ratio_entries = (matchs_mac_learning_filtering_entries / matchs_mac_learning_total_entries) * 100
-                SYSTEM_MAC_FILTERING_RATIO.labels(name=name, ip=self.ip).set(matchs_mac_filtering_ratio_entries)
+                matchs_mac_learning_total_entries = (
+                    matchs_mac_learning_bridging_entries + matchs_mac_learning_servicing_entries + matchs_mac_learning_filtering_entries)
+                matchs_mac_filtering_ratio_entries = (
+                    matchs_mac_learning_filtering_entries / matchs_mac_learning_total_entries) * 100
+                SYSTEM_MAC_FILTERING_RATIO.labels(name=name, ip=self.ip).set(
+                    matchs_mac_filtering_ratio_entries)
             except KeyError:
                 pass
             except ZeroDivisionError:
@@ -266,19 +269,22 @@ class IPThread(threading.Thread):
 
             try:
                 matchs_unp_user_total_entries = count['Bridge']
-                SYSTEM_UNP_USER_TOTAL.labels(name=name, ip=self.ip).set(matchs_unp_user_total_entries)
+                SYSTEM_UNP_USER_TOTAL.labels(name=name, ip=self.ip).set(
+                    matchs_unp_user_total_entries)
             except KeyError:
                 pass
 
             # Ratio (number of UNP User Block State / number of UNP User Total) * 100
-            try:           
-                matchs_unp_user_ratio_entries = (matchs_unp_user_block_entries / matchs_unp_user_total_entries) * 100
+            try:
+                matchs_unp_user_ratio_entries = (
+                    matchs_unp_user_block_entries / matchs_unp_user_total_entries) * 100
                 print(matchs_unp_user_ratio_entries)
-                SYSTEM_UNP_USER_RATIO.labels(name=name, ip=self.ip).set(matchs_unp_user_ratio_entries)
+                SYSTEM_UNP_USER_RATIO.labels(name=name, ip=self.ip).set(
+                    matchs_unp_user_ratio_entries)
             except KeyError:
-                 pass
+                pass
             except ZeroDivisionError:
-                 pass
+                pass
 
             # Routing Table metrics
             switch_cmd = "show ip routes"
@@ -290,10 +296,11 @@ class IPThread(threading.Thread):
 
             matchs_routing_table_total_entries = 0
             try:
-                matchs_routing_table_total_entries = re.findall(r" Total (\d*) routes", output)
+                matchs_routing_table_total_entries = re.findall(
+                    r" Total (\d*) routes", output)
                 for routing_table_total_entries in matchs_routing_table_total_entries:
                     SYSTEM_ROUTING_TOTAL.labels(name=name, ip=self.ip).set(
-                                         routing_table_total_entries)
+                        routing_table_total_entries)
 
             except KeyError:
                 pass
@@ -355,7 +362,7 @@ class IPThread(threading.Thread):
 
 if __name__ == '__main__':
     prometheus_client.start_http_server(9999)
-    
+
     while True:
         threads = []
         count = 0

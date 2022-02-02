@@ -1271,41 +1271,41 @@ echo
 echo -e "\e[32mDocker-Compose Installation complete\e[39m"
 echo
 
-# echo
-# echo -e "\e[32mPython 3.10 installation\e[39m"
-# echo
-# echo "Current user: `whoami`"
-# echo "Python 3.10 package is downloaded on current user Home directory"
-# # #Python 3.10
+echo
+echo -e "\e[32mPython 3.10 installation\e[39m"
+echo
+echo "Current user: `whoami`"
+echo "Python 3.10 package is downloaded on current user Home directory"
+# #Python 3.10
 
-# apt-get update
-# apt-get install -y build-essential openssl openssl-dev* wget curl
-# wget https://www.python.org/ftp/python/3.7.8/Python-3.7.8.tgz
-# tar -xvf Python-3.7.8.tgz
-# cd Python-3.7.8
-# ./configure --enable-shared
-# make 
-# make test
-# make install
+apt-get update
+apt-get install -y build-essential openssl openssl-dev* wget curl
+wget --inet4-only https://www.python.org/ftp/python/3.7.8/Python-3.7.8.tgz
+tar -xvf Python-3.7.8.tgz
+cd Python-3.7.8
+./configure --enable-shared
+make 
+make test
+make install
 
-# # Steps from here are to enable other libraries in linux to 
-# # access the shared python libraries.
+# Steps from here are to enable other libraries in linux to 
+# access the shared python libraries.
 
-# cd /usr/local/lib/
-# cp libpython3.so /usr/lib64/
-# cp libpython3.so /usr/lib
-# cp libpython3.7m.so.1.0 /usr/lib64/
-# cp libpython3.7m.so.1.0 /usr/lib/
-# cd /usr/lib64
-# ln -s libpython3.7m.so.1.0 libpython3.7m.so
-# cd /usr/lib
-# ln -s libpython3.7m.so.1.0 libpython3.7m.so
+cd /usr/local/lib/
+cp libpython3.so /usr/lib64/
+cp libpython3.so /usr/lib
+cp libpython3.7m.so.1.0 /usr/lib64/
+cp libpython3.7m.so.1.0 /usr/lib/
+cd /usr/lib64
+ln -s libpython3.7m.so.1.0 libpython3.7m.so
+cd /usr/lib
+ln -s libpython3.7m.so.1.0 libpython3.7m.so
 
-# python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade pip
 
-# echo
-# echo -e "\e[32mPython3.10 Installation Complete\e[39m"
-# echo
+echo
+echo -e "\e[32mPython3.10 Installation Complete\e[39m"
+echo
 
 python3 -m venv /opt/ALE_Script/venv
 source /opt/ALE_Script/venv/bin/activate

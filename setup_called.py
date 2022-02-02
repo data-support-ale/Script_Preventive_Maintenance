@@ -16,7 +16,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from ALE_script.conf (mails, mails_raw, company name)
 
-switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
+switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Notification sent to ALE admin for notifying ALE Admin on a dedicated Rainbow bubble that a setup init is called
 subject = (
@@ -34,7 +34,7 @@ try:
         print(mails)
         url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_New_Bubble"
         headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-                'mails': '{0}'.format(mails), 'company': '{0}'.format(company)}
+                   'mails': '{0}'.format(mails), 'company': '{0}'.format(company)}
         response = requests.get(url, headers=headers)
         response = str(response.content)
         response = response.replace("b", "", 1)
@@ -48,7 +48,8 @@ try:
         with open("/opt/ALE_Script/ALE_script.conf", "r", errors='ignore') as ALE_conf:
             data_conf = ALE_conf.read()
         with open("/opt/ALE_Script/ALE_script.conf", "w+", errors='ignore') as ALE_conf:
-            ALE_conf.write((str(data_conf)+str(room).strip()+",").replace("\n", "").replace(" ", ""))
+            ALE_conf.write((str(data_conf)+str(room).strip() +
+                           ",").replace("\n", "").replace(" ", ""))
 
     # All generic fields (Rainbow bubble, emails, workflow name) are replaced based on ALE_script.conf file and Room_ID received from api/flows/NBDNotif_New_Bubble
         with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic.json", "r", errors='ignore') as file_json:
@@ -97,9 +98,11 @@ try:
             tenant_id, id)  # This URL validate the import use the tenant_id but also the import_id from the import request
         # replacement of different fields to specify the IDs in the .json before sending it out
         payload = re.sub(r"%uuid_0%", id, payload)
-        payload = re.sub(r"%tenantName%", "NBDNotif_Classic_"+company, payload, 1)
+        payload = re.sub(
+            r"%tenantName%", "NBDNotif_Classic_"+company, payload, 1)
         payload = re.sub(r"%tenantName%", "NBDNotif_File_"+company, payload, 1)
-        payload = re.sub(r"%tenantName%", "NBDNotif_Alert_"+company, payload, 1)
+        payload = re.sub(r"%tenantName%", "NBDNotif_Alert_" +
+                         company, payload, 1)
         payload = re.sub(r"%tenantName%", "NBDNotif_Test_"+company, payload, 1)
         headers = {
             'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',
@@ -108,59 +111,60 @@ try:
         }
         response = requests.request("PUT", url, headers=headers, data=payload)
         if response.status_code == 200:
-              os.system('logger -t montag -p user.info 200 OK')
-              print("VNA Workflow registering in progress")
+            os.system('logger -t montag -p user.info 200 OK')
+            print("VNA Workflow registering in progress")
         elif response.status_code == 400:
-              os.system('logger -t montag -p user.info 400 OK')
-              print("VNA Workflow already register")
+            os.system('logger -t montag -p user.info 400 OK')
+            print("VNA Workflow already register")
         else:
-              os.system('logger -t montag -p user.info REST API Call Failure')
-              print("VNA Workflow registering failed")
+            os.system('logger -t montag -p user.info REST API Call Failure')
+            print("VNA Workflow registering failed")
 
     # REST-API method PUT /api/tenants/<tenant_id>/flows/<id>/deploy is called for enabling the VNA Workflow
         url = "https://tpe-vna.al-mydemo.com/management/api/tenants/{}/flows/{}/deploy".format(
             tenant_id, id)
         response = requests.request("PUT", url, headers=headers, data=payload)
         if response.status_code == 200:
-              os.system('logger -t montag -p user.info 200 OK')
-              print("VNA Workflow deployed and enabled")
+            os.system('logger -t montag -p user.info 200 OK')
+            print("VNA Workflow deployed and enabled")
         elif response.status_code == 400:
-              os.system('logger -t montag -p user.info 400 OK')
-              print("VNA Workflow already deployed")
+            os.system('logger -t montag -p user.info 400 OK')
+            print("VNA Workflow already deployed")
         else:
-              os.system('logger -t montag -p user.info REST API Call Failure')
-              print("VNA Workflow depoyment failed")
+            os.system('logger -t montag -p user.info REST API Call Failure')
+            print("VNA Workflow depoyment failed")
 
-    # REST-API for sending Welcome gif to Rainbow bubble    
-        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}".format(company)
-        payload=open("/opt/ALE_Script/VNA_Workflow/images/giphy.gif", "rb")
+    # REST-API for sending Welcome gif to Rainbow bubble
+        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}".format(
+            company)
+        payload = open("/opt/ALE_Script/VNA_Workflow/images/giphy.gif", "rb")
         headers = {
-                  'jid1': '{0}'.format(jid),
-                  'toto': 'Welcome to the Club',
-                  'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',
-                  'Content-Type': 'image/gif'
-                  }
+            'jid1': '{0}'.format(jid),
+            'toto': 'Welcome to the Club',
+            'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',
+            'Content-Type': 'image/gif'
+        }
 
         response = requests.request("POST", url, headers=headers, data=payload)
         if response.status_code == 200:
-              os.system('logger -t montag -p user.info 200 OK')
-              print("Rainbow bubble created")
+            os.system('logger -t montag -p user.info 200 OK')
+            print("Rainbow bubble created")
         elif response.status_code == 400:
-              os.system('logger -t montag -p user.info 400 OK')
-              print("Rainbow bubble aldready created")
+            os.system('logger -t montag -p user.info 400 OK')
+            print("Rainbow bubble aldready created")
         else:
-              os.system('logger -t montag -p user.info REST API Call Failure')
-              print("Rainbow bubble creation failed")
+            os.system('logger -t montag -p user.info REST API Call Failure')
+            print("Rainbow bubble creation failed")
 
     else:
         print("There are no emails saved into the database")
         sys.exit()
 except ValueError:
-        print("There are no emails saved into the database")
-        sys.exit()
-except EOFError :
-        print("There are no emails saved into the database")
-        sys.exit()
+    print("There are no emails saved into the database")
+    sys.exit()
+except EOFError:
+    print("There are no emails saved into the database")
+    sys.exit()
 except KeyboardInterrupt:
-        print("User hits the interrupt key. Function set_called aborted")
-        sys.exit()
+    print("User hits the interrupt key. Function set_called aborted")
+    sys.exit()
