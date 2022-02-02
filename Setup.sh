@@ -674,9 +674,16 @@ if \$msg contains 'Received deauth' then {
 
 if \$msg contains 'sysreboot' then {
      \$RepeatedMsgReduction on
+     if \$msg contains 'Power Off' then {
+       action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\"  binary=\"/opt/ALE_Script/support_wlan_generic.py unexpected_reboot\")
+       stop
+     }
+     else {
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omprog\" name=\"support_wlan_generic_sysreboot\" binary=\"/opt/ALE_Script/support_wlan_generic.py reboot\")
      stop
+     }
 }
 
 if \$msg contains 'enter in sysupgrade' then {
@@ -731,12 +738,19 @@ if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_s
 }
 
 ##### WLAN Rules for WIPS ########
-#if \$msg contains '[Lbd-Deny-Cnt] : Set Client' then {
-#  \$RepeatedMsgReduction on
-#  action(type=\"omfile\" DynaFile=\"devicelogwips\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-#  action(type=\"omprog\" name=\"support_wlan_generic_wips\" binary=\"/opt/ALE_Script/support_wlan_generic.py wips\")
-#  stop
-#}
+if \$msg contains 'Add black list mac' then {
+  \$RepeatedMsgReduction on
+  action(type=\"omfile\" DynaFile=\"devicelogwips\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+  action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py wips\")
+  stop
+}
+
+if \$msg contains 'status 37' then {
+  \$RepeatedMsgReduction on
+  action(type=\"omfile\" DynaFile=\"devicelogwips\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+  action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_generic.py wips\")
+  stop
+}
 
 
 ##### LAN -  MAC-SEC Rules ########
