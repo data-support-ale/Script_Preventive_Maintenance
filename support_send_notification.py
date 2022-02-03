@@ -36,32 +36,39 @@ def send_message(info, jid):
             pass    
     except requests.exceptions.ConnectionError as response:
         print(response)
-        response="ConnectionError"
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
         print(response)
-        response="Timeout"
-        pass response
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
         print(response)
-        response="TooManyRedirects"
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
         print(response)
-        response="RequestException"
-        pass
-    try:
-        print("coucou")
-        print(response)
-        print("coucou")
-        write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
                         "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-    except UnboundLocalError as error:
-        print(error)
-        sys.exit()
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
 
 
 def send_alert(info, jid):
@@ -90,30 +97,40 @@ def send_alert(info, jid):
             os.system('logger -t montag -p user.info REST API Timeout')
             pass    
     except requests.exceptions.ConnectionError as response:
-        response=response
         print(response)
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
-        response=response
         print(response)
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
-        response=response
         print(response)
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
-        response=response
         print(response)
-        pass
-    try:
-        write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
-    except UnboundLocalError as error:
-        print(error)
-        sys.exit()
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
 
 
 def send_message_aijaz(subject, info, jid):
@@ -142,30 +159,40 @@ def send_message_aijaz(subject, info, jid):
             os.system('logger -t montag -p user.info REST API Timeout')
             pass    
     except requests.exceptions.ConnectionError as response:
-        response=response
         print(response)
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
-        response=response
         print(response)
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
-        response=response
         print(response)
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
-        response=response
         print(response)
-        pass
-    try:
-        write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
                         "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-    except UnboundLocalError as error:
-        print(error)
-        sys.exit()
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
 
 
 def send_message_request(info, jid):
@@ -201,32 +228,44 @@ def send_message_request(info, jid):
             send_message(info, jid)
             value = "1"
     except requests.exceptions.ConnectionError as response:
-        response="ConnectionError"
         print(response)
         value = "1"
-        return response 
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
         print(response)
         value = "1"
-        return response 
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
         print(response)
         value = "1"
-        return response 
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
         print(response)
         value = "1"
-        return response 
-
-    try:
-        write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
                         "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
-    except UnboundLocalError as error:
-        print(error)
-        sys.exit()
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     return value
 
 
@@ -282,30 +321,40 @@ def send_file(info, jid, ipadd, filename_path=''):
                 os.system('logger -t montag -p user.info REST API Timeout')
                 pass    
         except requests.exceptions.ConnectionError as response:
-                response=response
-                print(response)
-                pass
+            print(response)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                            "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
         except requests.exceptions.Timeout as response:
-                print("Request Timeout when calling URL: " + url)
-                response=response
-                print(response)
-                pass
+            print("Request Timeout when calling URL: " + url)
+            print(response)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                            "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
         except requests.exceptions.TooManyRedirects as response:
-                print("Too Many Redirects when calling URL: " + url)
-                response=response
-                print(response)
-                pass
+            print("Too Many Redirects when calling URL: " + url)
+            print(response)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                            "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
         except requests.exceptions.RequestException as response:
-                print("Request exception when calling URL: " + url)
-                response=response
-                print(response)
-                pass
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                            "HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
+            print("Request exception when calling URL: " + url)
+            print(response)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                            "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
 
     info = "Log of device : {0}".format(ipadd)
 
@@ -358,28 +407,38 @@ def send_file(info, jid, ipadd, filename_path=''):
             os.system('logger -t montag -p user.info REST API Timeout')
             pass    
     except requests.exceptions.ConnectionError as response:
-        response=response
         print(response)
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
-        response=response
         print(response)
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
-        response=response
         print(response)
-        pass
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
-        response=response
         print(response)
-        pass 
-    try:
-        write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
-    except UnboundLocalError as error:
-        print(error)
-        sys.exit()
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     sleep(5)
