@@ -1321,12 +1321,11 @@ echo
 echo -e "\e[32mPython3.10 Installation Complete\e[39m"
 echo
 
-python3 -m venv /opt/ALE_Script/venv
-source /opt/ALE_Script/venv/bin/activate
 python3 -m pip install pysftp 
-python3 -m pip install influx-client 
+python3 -m pip install influxdb-client 
 python3 -m pip install prometheus-client 
 python3 -m pip install flask 
+python3 -m pip install asyncio
 python3 -m pip install requests
 apt-get -qq -y install tftpd-hpa 
 

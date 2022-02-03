@@ -21,7 +21,38 @@ def send_message(info, jid):
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
-    response = requests.get(url, headers=headers, timeout=300)
+    try:
+        response = requests.get(url, headers=headers,timeout=5)
+        code = re.findall(r"<Response \[(.*?)\]>", str(response))
+        if "200" in code:
+            os.system('logger -t montag -p user.info 200 OK')
+            print("Response  Text from VNA")
+            value = response.text
+            print(value)
+            print(code)
+            pass
+        else:
+            os.system('logger -t montag -p user.info REST API Timeout')
+            pass    
+    except requests.exceptions.ConnectionError as response:
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.Timeout as response:
+        print("Request Timeout when calling URL: " + url)
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.TooManyRedirects as response:
+        print("Too Many Redirects when calling URL: " + url)
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.RequestException as response:
+        print("Request exception when calling URL: " + url)
+        response=response
+        print(response)
+        pass
     try:
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
                         "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
@@ -42,7 +73,38 @@ def send_alert(info, jid):
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_EMEA"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
-    response = requests.get(url, headers=headers, timeout=300)
+    try:
+        response = requests.get(url, headers=headers,timeout=5)
+        code = re.findall(r"<Response \[(.*?)\]>", str(response))
+        if "200" in code:
+            os.system('logger -t montag -p user.info 200 OK')
+            print("Response  Text from VNA")
+            value = response.text
+            print(value)
+            print(code)
+            pass
+        else:
+            os.system('logger -t montag -p user.info REST API Timeout')
+            pass    
+    except requests.exceptions.ConnectionError as response:
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.Timeout as response:
+        print("Request Timeout when calling URL: " + url)
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.TooManyRedirects as response:
+        print("Too Many Redirects when calling URL: " + url)
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.RequestException as response:
+        print("Request exception when calling URL: " + url)
+        response=response
+        print(response)
+        pass
     try:
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
                         "HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
@@ -63,7 +125,38 @@ def send_message_aijaz(subject, info, jid):
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Aijaz"
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject), 'toto': '{0}'.format(info), 'Card': '0'}
-    response = requests.get(url, headers=headers, timeout=300)
+    try:
+        response = requests.get(url, headers=headers,timeout=5)
+        code = re.findall(r"<Response \[(.*?)\]>", str(response))
+        if "200" in code:
+            os.system('logger -t montag -p user.info 200 OK')
+            print("Response  Text from VNA")
+            value = response.text
+            print(value)
+            print(code)
+            pass
+        else:
+            os.system('logger -t montag -p user.info REST API Timeout')
+            pass    
+    except requests.exceptions.ConnectionError as response:
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.Timeout as response:
+        print("Request Timeout when calling URL: " + url)
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.TooManyRedirects as response:
+        print("Too Many Redirects when calling URL: " + url)
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.RequestException as response:
+        print("Request exception when calling URL: " + url)
+        response=response
+        print(response)
+        pass
     try:
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
                         "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
@@ -104,17 +197,26 @@ def send_message_request(info, jid):
             info = "No answer received from VNA/Rainbow application - Answer Yes set by default"
             send_message(info, jid)
             value = "1"
-    except requests.exceptions.ConnectionError:
+    except requests.exceptions.ConnectionError as response:
+        response="ConnectionError"
+        print(response)
         value = "1"
-    except requests.exceptions.Timeout:
+        return response 
+    except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
+        print(response)
         value = "1"
-    except requests.exceptions.TooManyRedirects:
+        return response 
+    except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
+        print(response)
         value = "1"
-    except requests.exceptions.RequestException:
+        return response 
+    except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
+        print(response)
         value = "1"
+        return response 
 
     try:
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
@@ -161,9 +263,40 @@ def send_file(info, jid, ipadd, filename_path=''):
         headers = {'Content-type': "application/x-tar", 'Content-Disposition': "attachment;filename={0}".format(
             filename), 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info)}
         #files = {'file': fp}
-        response = requests.post(url, headers=headers,
-                                 data=payload, timeout=300)
-        print(response)
+
+        try:
+            response = requests.post(url, headers=headers,
+                                 data=payload, timeout=120)
+            code = re.findall(r"<Response \[(.*?)\]>", str(response))
+            if "200" in code:
+                os.system('logger -t montag -p user.info 200 OK')
+                print("Response  Text from VNA")
+                value = response.text
+                print(value)
+                print(code)
+                pass
+            else:
+                os.system('logger -t montag -p user.info REST API Timeout')
+                pass    
+        except requests.exceptions.ConnectionError as response:
+                response=response
+                print(response)
+                pass
+        except requests.exceptions.Timeout as response:
+                print("Request Timeout when calling URL: " + url)
+                response=response
+                print(response)
+                pass
+        except requests.exceptions.TooManyRedirects as response:
+                print("Too Many Redirects when calling URL: " + url)
+                response=response
+                print(response)
+                pass
+        except requests.exceptions.RequestException as response:
+                print("Request exception when calling URL: " + url)
+                response=response
+                print(response)
+                pass
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
                             "HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
@@ -207,7 +340,39 @@ def send_file(info, jid, ipadd, filename_path=''):
     headers = {'Content-type': "text/plain", 'Content-Disposition': "attachment;filename=short_attachment.log",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info)}
     files = {'file': open('/var/log/devices/short_attachment.log', 'r')}
-    response = requests.post(url, files=files, headers=headers, timeout=300)
+    response = requests.post(url, files=files, headers=headers, timeout=120)
+    try:
+        response = requests.post(url, files=files, headers=headers, timeout=120)
+        code = re.findall(r"<Response \[(.*?)\]>", str(response))
+        if "200" in code:
+            os.system('logger -t montag -p user.info 200 OK')
+            print("Response  Text from VNA")
+            value = response.text
+            print(value)
+            print(code)
+            pass
+        else:
+            os.system('logger -t montag -p user.info REST API Timeout')
+            pass    
+    except requests.exceptions.ConnectionError as response:
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.Timeout as response:
+        print("Request Timeout when calling URL: " + url)
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.TooManyRedirects as response:
+        print("Too Many Redirects when calling URL: " + url)
+        response=response
+        print(response)
+        pass
+    except requests.exceptions.RequestException as response:
+        print("Request exception when calling URL: " + url)
+        response=response
+        print(response)
+        pass 
     try:
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
                         "HTTP_Request": url, "HTTP_Response": response}, "fields": {"count": 1}}])
