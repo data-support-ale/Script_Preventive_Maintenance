@@ -76,7 +76,7 @@ Then execute the script ```sudo python3 support_switch_auth_fail.py```
 ###### 7. Check if the application has connectivity with VNA, you can modify the test.py script as below and execute with command ```sudo python3 /opt/ALE_Script/test.py NAR```, it will call VNA workflow thru a HTTPS REST-API and will send message "NBD Preventive Maintenance - This is a test!" on your Rainbow bubble
 ```
 admin-support@debian2:/opt/ALE_Script$ cat test.py
-#!/usr/bin/env python3
+#!/usr/bin/env python33
 
 import sys
 import os
@@ -140,7 +140,7 @@ sudo systemctl status rsyslog
 ```
 - ###### **9.c** create your script /opt/ALE_Script/myscript.py. Script open json file ```/var/log/devices/get_log_switch.json```, get switch ip address, switch hostname, port number with function get_port()
 ```
-#!/usr/bin/env python3
+#!/usr/bin/env python33
 
 import sys
 import os

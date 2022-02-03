@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from cProfile import run
 import sys
 import requests
@@ -35,25 +35,28 @@ def send_message(info, jid):
             os.system('logger -t montag -p user.info REST API Timeout')
             pass    
     except requests.exceptions.ConnectionError as response:
-        response=response
         print(response)
+        response="ConnectionError"
         pass
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
-        response=response
         print(response)
-        pass
+        response="Timeout"
+        pass response
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
-        response=response
         print(response)
+        response="TooManyRedirects"
         pass
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
-        response=response
         print(response)
+        response="RequestException"
         pass
     try:
+        print("coucou")
+        print(response)
+        print("coucou")
         write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
                         "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
