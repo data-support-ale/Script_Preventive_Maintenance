@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/bin/python3.7
 from cProfile import run
 import sys
 import requests

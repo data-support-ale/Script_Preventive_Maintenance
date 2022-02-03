@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/bin/python3.7
 
 from asyncio.subprocess import PIPE
 from copy import error

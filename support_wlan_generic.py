@@ -1,4 +1,4 @@
-#!/usr/bin/env python33
+#!/usr/local/bin/python3.73
 
 import sys
 import os
