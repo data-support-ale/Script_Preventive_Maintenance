@@ -22,7 +22,7 @@ def send_message(info, jid):
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
     try:
-        response = requests.get(url, headers=headers,timeout=5)
+        response = requests.get(url, headers=headers, timeout=5)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
             os.system('logger -t montag -p user.info 200 OK')
@@ -33,12 +33,12 @@ def send_message(info, jid):
             pass
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
-            pass    
+            pass
     except requests.exceptions.ConnectionError as response:
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -47,7 +47,7 @@ def send_message(info, jid):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -56,7 +56,7 @@ def send_message(info, jid):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -65,7 +65,7 @@ def send_message(info, jid):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -84,7 +84,7 @@ def send_alert(info, jid):
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
     try:
-        response = requests.get(url, headers=headers,timeout=5)
+        response = requests.get(url, headers=headers, timeout=5)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
             os.system('logger -t montag -p user.info 200 OK')
@@ -95,12 +95,12 @@ def send_alert(info, jid):
             pass
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
-            pass    
+            pass
     except requests.exceptions.ConnectionError as response:
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -109,7 +109,7 @@ def send_alert(info, jid):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -118,7 +118,7 @@ def send_alert(info, jid):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -127,7 +127,7 @@ def send_alert(info, jid):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -146,7 +146,7 @@ def send_message_aijaz(subject, info, jid):
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject), 'toto': '{0}'.format(info), 'Card': '0'}
     try:
-        response = requests.get(url, headers=headers,timeout=5)
+        response = requests.get(url, headers=headers, timeout=5)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
             os.system('logger -t montag -p user.info 200 OK')
@@ -157,12 +157,12 @@ def send_message_aijaz(subject, info, jid):
             pass
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
-            pass    
+            pass
     except requests.exceptions.ConnectionError as response:
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -171,7 +171,7 @@ def send_message_aijaz(subject, info, jid):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -180,7 +180,7 @@ def send_message_aijaz(subject, info, jid):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -189,7 +189,7 @@ def send_message_aijaz(subject, info, jid):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -232,7 +232,7 @@ def send_message_request(info, jid):
         value = "1"
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -242,7 +242,7 @@ def send_message_request(info, jid):
         value = "1"
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -252,7 +252,7 @@ def send_message_request(info, jid):
         value = "1"
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -262,7 +262,7 @@ def send_message_request(info, jid):
         value = "1"
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -308,7 +308,7 @@ def send_file(info, jid, ipadd, filename_path=''):
 
         try:
             response = requests.post(url, headers=headers,
-                                 data=payload, timeout=120)
+                                     data=payload, timeout=120)
             code = re.findall(r"<Response \[(.*?)\]>", str(response))
             if "200" in code:
                 os.system('logger -t montag -p user.info 200 OK')
@@ -319,12 +319,12 @@ def send_file(info, jid, ipadd, filename_path=''):
                 pass
             else:
                 os.system('logger -t montag -p user.info REST API Timeout')
-                pass    
+                pass
         except requests.exceptions.ConnectionError as response:
             print(response)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                            "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -333,7 +333,7 @@ def send_file(info, jid, ipadd, filename_path=''):
             print(response)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                            "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -342,7 +342,7 @@ def send_file(info, jid, ipadd, filename_path=''):
             print(response)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                            "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -351,7 +351,7 @@ def send_file(info, jid, ipadd, filename_path=''):
             print(response)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                            "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -394,7 +394,8 @@ def send_file(info, jid, ipadd, filename_path=''):
     files = {'file': open('/var/log/devices/short_attachment.log', 'r')}
     response = requests.post(url, files=files, headers=headers, timeout=120)
     try:
-        response = requests.post(url, files=files, headers=headers, timeout=120)
+        response = requests.post(
+            url, files=files, headers=headers, timeout=120)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
             os.system('logger -t montag -p user.info 200 OK')
@@ -405,12 +406,12 @@ def send_file(info, jid, ipadd, filename_path=''):
             pass
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
-            pass    
+            pass
     except requests.exceptions.ConnectionError as response:
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -419,7 +420,7 @@ def send_file(info, jid, ipadd, filename_path=''):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -428,7 +429,7 @@ def send_file(info, jid, ipadd, filename_path=''):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -437,7 +438,7 @@ def send_file(info, jid, ipadd, filename_path=''):
         print(response)
         try:
             write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                        "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()

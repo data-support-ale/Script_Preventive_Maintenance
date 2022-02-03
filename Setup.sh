@@ -1407,7 +1407,7 @@ do
   then
       echo -e "\e[31mVNA Workflow already exists for this company"
   else
-      sudo python /opt/ALE_Script/setup_called.py "$company"
+      sudo python /opt/ALE_Script/setup_called.py
       echo "Setup complete"
   fi
 done < /opt/ALE_Script/ALE_script.conf
