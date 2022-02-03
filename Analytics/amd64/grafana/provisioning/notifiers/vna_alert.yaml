@@ -1,5 +1,5 @@
 notifiers:
-  - name: VNA
+  - name: VNA_POST
     type: webhook
     uid: notifier1
     org_id: 1
