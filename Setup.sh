@@ -1190,9 +1190,9 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
 
 echo -e "\e[32mAPT-GET Install\e[39m"
 echo "this operation can take several minutes"
-apt-get -qq -y  update >& /dev/null
-apt-get -qq -y install wget curl >& /dev/null
-apt-get -qq -y install sshpass >& /dev/null
+apt-get -qq -y  update
+#apt-get -qq -y install wget curl
+apt-get -qq -y install sshpass
 
 if [[ $archi == *"arm"* ]]
 then
@@ -1264,7 +1264,6 @@ echo
 echo -e "\e[32mInstallation of Analytics components\e[39m"
 echo
 echo "Installation of apt-transport-https"
-apt-get -qq -y update >& /dev/null
 apt-get  -qq -y install apt-transport-https >& /dev/null
 echo
 echo
