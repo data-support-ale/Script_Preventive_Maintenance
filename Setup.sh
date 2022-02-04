@@ -1194,6 +1194,54 @@ apt-get -qq -y  update
 #apt-get -qq -y install wget curl
 apt-get -qq -y install sshpass
 
+echo
+echo -e "\e[32mPython 3.10 installation\e[39m"
+echo
+echo "Current user: `whoami`"
+echo "Python 3.10 package is downloaded on current user Home directory"
+# #Python 3.10
+
+apt-get -qq -y update
+apt-get -qq -y install build-essential openssl openssl-dev*
+wget --inet4-only https://www.python.org/ftp/python/3.7.8/Python-3.7.8.tgz
+tar -xvf Python-3.7.8.tgz
+cd Python-3.7.8
+./configure --enable-shared
+make 
+make test
+make install
+
+# Steps from here are to enable other libraries in linux to 
+# access the shared python libraries.
+
+cd /usr/local/lib/
+cp libpython3.so /usr/lib64/
+cp libpython3.so /usr/lib
+cp libpython3.7m.so.1.0 /usr/lib64/
+cp libpython3.7m.so.1.0 /usr/lib/
+cd /usr/lib64
+ln -s libpython3.7m.so.1.0 libpython3.7m.so
+cd /usr/lib
+ln -s libpython3.7m.so.1.0 libpython3.7m.so
+
+python3 -m pip install --upgrade pip
+
+echo
+echo -e "\e[32mPython3.10 Installation Complete\e[39m"
+echo
+
+python3 -m pip install pysftp 
+python3 -m pip install influxdb-client 
+python3 -m pip install prometheus-client 
+python3 -m pip install flask 
+python3 -m pip install asyncio
+python3 -m pip install requests
+apt-get -qq -y install tftpd-hpa 
+
+echo
+echo -e "\e[32mPython3.10 Dependencies Complete\e[39m"
+echo
+
 if [[ $archi == *"arm"* ]]
 then
      #GOLANG
@@ -1289,53 +1337,6 @@ echo
 echo -e "\e[32mDocker-Compose Installation complete\e[39m"
 echo
 
-echo
-echo -e "\e[32mPython 3.10 installation\e[39m"
-echo
-echo "Current user: `whoami`"
-echo "Python 3.10 package is downloaded on current user Home directory"
-# #Python 3.10
-
-apt-get -qq -y update
-apt-get -qq -y install build-essential openssl openssl-dev*
-wget --inet4-only https://www.python.org/ftp/python/3.7.8/Python-3.7.8.tgz
-tar -xvf Python-3.7.8.tgz
-cd Python-3.7.8
-./configure --enable-shared
-make 
-make test
-make install
-
-# Steps from here are to enable other libraries in linux to 
-# access the shared python libraries.
-
-cd /usr/local/lib/
-cp libpython3.so /usr/lib64/
-cp libpython3.so /usr/lib
-cp libpython3.7m.so.1.0 /usr/lib64/
-cp libpython3.7m.so.1.0 /usr/lib/
-cd /usr/lib64
-ln -s libpython3.7m.so.1.0 libpython3.7m.so
-cd /usr/lib
-ln -s libpython3.7m.so.1.0 libpython3.7m.so
-
-python3 -m pip install --upgrade pip
-
-echo
-echo -e "\e[32mPython3.10 Installation Complete\e[39m"
-echo
-
-python3 -m pip install pysftp 
-python3 -m pip install influxdb-client 
-python3 -m pip install prometheus-client 
-python3 -m pip install flask 
-python3 -m pip install asyncio
-python3 -m pip install requests
-apt-get -qq -y install tftpd-hpa 
-
-echo
-echo -e "\e[32mPython3.10 Dependencies Complete\e[39m"
-echo
 
 mkdir /var/log/devices/ >& /dev/null
 touch /var/log/devices/logtemp.json
