@@ -93,7 +93,7 @@ class IPThread(threading.Thread):
             self.ssh.close()
             self.ssh = False
             pass
-          except paramiko.ssh_exception.SSHException:
+        except paramiko.ssh_exception.SSHException:
             self.ssh.close()
             self.ssh = False
             pass
