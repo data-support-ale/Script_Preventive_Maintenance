@@ -18,6 +18,9 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
+if(get_credentials("room_id") != ""):
+    sys.exit()
+
 # Notification sent to ALE admin for notifying ALE Admin on a dedicated Rainbow bubble that a setup init is called
 subject = (
     "NBD Preventive Maintenance - There is a new Setup, End Customer: \"{0}\"").format(company)

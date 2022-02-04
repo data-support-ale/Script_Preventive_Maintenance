@@ -1401,16 +1401,8 @@ do
 done
 
 echo "Sending notification to ALE DevOPS team for setup VNA application"
-while IFS="," read -r rec_column1 rec_column2 rec_column3 rec_column4 rec_column5 rec_column6 rec_column7 rec_column8 rec_column9 rec_column10 rec_column11 rec_remaining
-do
-  if [ "$rec_column11" != "" ]
-  then
-      echo -e "\e[31mVNA Workflow already exists for this company"
-  else
-      sudo /opt/ALE_Script/setup_called.py
-      echo "Setup complete"
-  fi
-done < /opt/ALE_Script/ALE_script.conf
+sudo /opt/ALE_Script/setup_called.py
+
 
 # Replacing IP addr
 sudo chown admin-support:admin-support /opt/ALE_Script/Analytics/prometheus.yml
