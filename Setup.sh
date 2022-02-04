@@ -1189,7 +1189,7 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
 " > /etc/logrotate.d/rsyslog
 
 echo -e "\e[32mAPT-GET Install\e[39m"
-echo "this operation can take several minutes"
+echo "This operation can take several minutes"
 apt-get -qq -y  update
 #apt-get -qq -y install wget curl
 apt-get -qq -y install sshpass
