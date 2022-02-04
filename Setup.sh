@@ -1420,6 +1420,7 @@ cd /opt/ALE_Script/Analytics
 docker-compose up -d
 echo "Analytics engine is started"
 echo "If you want to access Analytics go to http://$ip_server_log:3000, Login: admin, Password: Letacla01*"
+echo "If you want to monitor OmniSwitch Health script - use the command 'sudo journalctl -eu python_exporter'"
 
 sudo systemctl daemon-reload
 sudo systemctl restart python_exporter.service
