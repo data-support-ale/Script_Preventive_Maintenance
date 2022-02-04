@@ -1375,6 +1375,41 @@ else
     echo "No parsing error found on Configuration Files"
 fi
 
+
+status=`docker --version | grep version`
+if [ "$status" == "" ]
+then
+    echo -e "\e[31mSomething went wrong\e[39m, Docker not installed... Reinstalling"
+    echo -e "\e[32mInstallation of Analytics components\e[39m"
+    echo
+    echo "Installation of apt-transport-https"
+    sudo apt-get -qq -y update
+    sudo apt-get  -qq -y install apt-transport-https
+    echo
+    echo
+    echo -e "\e[32mDocker Installation\e[39m"
+    echo
+    #DOCKER
+    sudo apt-get -qq -y install ca-certificates gnupg lsb-release
+    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
+    apt-get -qq - y update
+    apt-get -qq -y install docker-ce docker-ce-cli containerd.io
+    echo
+    echo -e "\e[32mDocker installation complete\e[39m"
+    echo
+
+    echo
+    echo -e "\e[32mDocker-compose installation\e[39m"
+    echo
+    #DOCKER COMPOSE
+    wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
+    chmod +x /usr/local/bin/docker-compose
+    echo
+    echo -e "\e[32mDocker-Compose Installation complete\e[39m"
+    echo
+fi
+
 echo "##############################################################################"
 echo "#                                                                            #"
 echo "####################   The installation is complete   ########################"
@@ -1420,8 +1455,7 @@ cd /opt/ALE_Script/Analytics
 docker-compose up -d
 echo "Analytics engine is started"
 echo "If you want to access Analytics go to http://$ip_server_log:3000, Login: admin, Password: Letacla01*"
+echo "If you want to monitor OmniSwitch Health script - use the command 'sudo journalctl -eu python_exporter'"
 
 sudo systemctl daemon-reload
 sudo systemctl restart python_exporter.service
-sudo systemctl restart syslog.service
-
