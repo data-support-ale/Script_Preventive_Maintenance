@@ -1188,6 +1188,9 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
 }
 " > /etc/logrotate.d/rsyslog
 
+apt-get -qq -y  update >& /dev/null
+apt-get -qq -y install wget curl >& /dev/null
+apt-get -qq -y install sshpass >& /dev/null
 
 if [[ $archi == *"arm"* ]]
 then
@@ -1235,8 +1238,7 @@ echo -e "\e[32mLogrotate configuration complete\e[39m"
 echo
 echo -e "\e[32mInstallation and configuration of service for OmniSwitches monitoring\e[39m"
 echo
-apt-get -qq -y  update >& /dev/null
-apt-get -qq -y install sshpass >& /dev/null
+
 sudo echo "[Unit]
 Description=Python exporter
 
@@ -1260,17 +1262,18 @@ echo
 echo -e "\e[32mInstallation of Analytics components\e[39m"
 echo
 echo "Installation of apt-transport-https"
-apt-get install apt-transport-https
+apt-get -qq -y update >& /dev/null
+apt-get  -qq -y install apt-transport-https >& /dev/null
 echo
 echo
 echo -e "\e[32mDocker Installation\e[39m"
 echo
 #DOCKER
-apt-get -qq -y install ca-certificates curl gnupg lsb-release
+apt-get -qq -y install ca-certificates gnupg lsb-release >& /dev/null
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt-get update
-apt-get -qq -y install docker-ce docker-ce-cli containerd.io
+apt-get -qq - y update >& /dev/null
+apt-get -qq -y install docker-ce docker-ce-cli containerd.io >& /dev/null
 echo
 echo -e "\e[32mDocker installation complete\e[39m"
 echo
@@ -1292,8 +1295,8 @@ echo "Current user: `whoami`"
 echo "Python 3.10 package is downloaded on current user Home directory"
 # #Python 3.10
 
-apt-get update
-apt-get install -y build-essential openssl openssl-dev* wget curl
+apt-get -qq -y update
+apt-get -qq -y install build-essential openssl openssl-dev*
 wget --inet4-only https://www.python.org/ftp/python/3.7.8/Python-3.7.8.tgz
 tar -xvf Python-3.7.8.tgz
 cd Python-3.7.8
@@ -1418,5 +1421,7 @@ docker-compose up -d
 echo "Analytics engine is started"
 echo "If you want to access Analytics go to http://$ip_server_log:3000, Login: admin, Password: Letacla01*"
 
-
+sudo systemctl daemon-reload
+sudo systemctl restart python_exporter.service
+sudo systemctl restart syslog.service
 
