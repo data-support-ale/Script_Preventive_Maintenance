@@ -94,8 +94,11 @@ for switch_cmd in l_switch_cmd:
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     except subprocess.TimeoutExpired as exception:
         info = (
@@ -103,8 +106,11 @@ for switch_cmd in l_switch_cmd:
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     except FileNotFoundError as exception:
         info = (
@@ -112,8 +118,11 @@ for switch_cmd in l_switch_cmd:
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
 
 date = datetime.date.today()

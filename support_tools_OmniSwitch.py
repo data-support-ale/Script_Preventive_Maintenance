@@ -94,8 +94,11 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     except paramiko.ssh_exception.AuthenticationException:
         exception = "AuthenticationException"
@@ -104,8 +107,11 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             "SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit(0)
     except paramiko.ssh_exception.NoValidConnectionsError:
         exception = "NoValidConnectionsError"
@@ -116,8 +122,11 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit(0)
     try:
         stdin, stdout, stderr = p.exec_command(cmd, timeout=120)
@@ -131,8 +140,11 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     except paramiko.ssh_exception.SSHException:
         exception = "Timeout"
@@ -141,8 +153,11 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     exception = stderr.readlines()
     exception = str(exception)
@@ -154,8 +169,11 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         send_message(info, jid)
         os.system('logger -t montag -p user.info ' + info)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit(2)
     else:
         info = ("SSH Session established successfully on OmniSwitch {0}").format(
@@ -194,8 +212,11 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sftp.close()
             sys.exit()
         except paramiko.ssh_exception.IOError:
@@ -205,8 +226,11 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sftp.close()
             sys.exit()
         except paramiko.ssh_exception.Exception as error:
@@ -217,8 +241,11 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sftp.close()
             sys.exit()
         except paramiko.ssh_exception.SSHException as error:
@@ -230,8 +257,11 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sftp.close()
             sys.exit()
     except paramiko.ssh_exception.AuthenticationException:
@@ -241,8 +271,11 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         ssh.close()
         sys.exit()
     ssh.close()
@@ -267,8 +300,11 @@ def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sftp.close()
         sys.exit()
     sftp.close()
@@ -357,8 +393,11 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
             "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     except paramiko.ssh_exception.AuthenticationException:
         print("Authentication failed enter valid user name and password on OmniSwitch " + ipadd)
@@ -366,8 +405,11 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
             "SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit(0)
     except paramiko.ssh_exception.NoValidConnectionsError:
         print("Device unreachable")
@@ -376,8 +418,11 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
             ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit(0)
     cmd = ("rm -rf {0}").format(filename)
     stdin, stdout, stderr = p.exec_command(cmd)
@@ -389,8 +434,11 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
             "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         send_message(info, jid)
         os.system('logger -t montag -p user.info ' + info)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit(2)
 
     stdin, stdout, stderr = p.exec_command("show tech-support eng complete")
@@ -402,8 +450,11 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
             "\"The show tech support eng complete\" command on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         send_message(info, jid)
         os.system('logger -t montag -p user.info ' + info)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit(2)
 
     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  ls | grep {3}".format(
@@ -479,8 +530,11 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -488,8 +542,11 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -497,8 +554,11 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -559,8 +619,11 @@ def collect_command_output_ovc(switch_user, switch_password, decision, host, ipa
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -568,8 +631,11 @@ def collect_command_output_ovc(switch_user, switch_password, decision, host, ipa
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -577,8 +643,11 @@ def collect_command_output_ovc(switch_user, switch_password, decision, host, ipa
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -639,8 +708,11 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -648,8 +720,11 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -657,8 +732,11 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -725,8 +803,11 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -734,8 +815,11 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -743,8 +827,11 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -812,8 +899,11 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -821,8 +911,11 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -830,8 +923,11 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -891,8 +987,11 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -900,8 +999,11 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -909,8 +1011,11 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -966,8 +1071,11 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -975,8 +1083,11 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -984,8 +1095,11 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -1043,8 +1157,11 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -1052,8 +1169,11 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -1061,8 +1181,11 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -1120,8 +1243,11 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -1129,8 +1255,11 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -1138,8 +1267,11 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -1219,8 +1351,11 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -1228,8 +1363,11 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -1237,8 +1375,11 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -1265,8 +1406,11 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     except subprocess.FileNotFoundError as exception:
         info = (
@@ -1274,8 +1418,11 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     if "capacitor-detection enable" in lanpower_settings_status:
         print("Capacitor detection enabled!")
@@ -1324,8 +1471,11 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     except AttributeError as exception:
         info = (
@@ -1333,8 +1483,11 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     except FileNotFoundError as exception:
         info = (
@@ -1342,8 +1495,11 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     if "enabled" in service_status:
         print("Protocol " + protocol + " enabled!")
@@ -1368,8 +1524,11 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     except subprocess.CalledProcessError as e:
         aaa_status = "disabled"
@@ -1379,8 +1538,11 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
     except FileNotFoundError as exception:
         info = (
@@ -1388,8 +1550,11 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                         "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
 
     print(aaa_status)
@@ -1434,8 +1599,11 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
@@ -1443,8 +1611,11 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except subprocess.FileNotFoundError as exception:
             info = (
@@ -1452,8 +1623,11 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                             "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     date = datetime.date.today()
     date_hm = datetime.datetime.today()

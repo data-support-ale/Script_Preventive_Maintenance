@@ -37,8 +37,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except Exception:
             exception = "SFTP Get Timeout"
@@ -47,8 +50,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     except paramiko.ssh_exception.AuthenticationException:
         exception = "SFTP Get Timeout"
@@ -57,10 +63,13 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-        sys.exit()
-
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        sys.exit()  
+        
     cmd = "configuration apply ./working/configqos "
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
 

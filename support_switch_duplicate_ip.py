@@ -44,8 +44,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
         except Exception:
             exception = "SFTP Get Timeout"
@@ -54,8 +57,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
             sys.exit()
     except paramiko.ssh_exception.AuthenticationException:
         exception = "SFTP Get Timeout"
@@ -64,8 +70,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
         sys.exit()
 
     cmd = "configuration apply ./working/configqos "
@@ -125,5 +134,8 @@ if answer == '1':
         info = "A IP duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(
             mac, ip)
         send_message(info, jid)
-        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                        "IP": ip, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
+        try:
+            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
+                "IP": ip, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)

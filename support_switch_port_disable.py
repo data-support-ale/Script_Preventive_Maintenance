@@ -63,7 +63,6 @@ if len(file_lines) != 0:
 # if check_timestamp()>15: # if the last log has been received less than 10 seconds ago :
 if detect_port_loop():  # if there is more than 10 log with less of 2 seconds apart:
     print("call function disable port")
-    replace_logtemp()
     subject = "A loop was detected on your OmniSwitch!"
 
     try:
