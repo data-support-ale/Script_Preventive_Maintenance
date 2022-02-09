@@ -592,7 +592,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
     l_switch_cmd.append("show system")
     l_switch_cmd.append("show chassis")
     l_switch_cmd.append("show interfaces " + port + " status")
-    l_switch_cmd.append("show mac-learning " + port)
+    l_switch_cmd.append("show mac-learning  port " + port)
     l_switch_cmd.append("show vlan members port " + port)
 
     for switch_cmd in l_switch_cmd:
