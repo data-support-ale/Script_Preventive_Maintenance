@@ -30,6 +30,12 @@ def send_message(info, jid):
             value = response.text
             print(value)
             print(code)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": value}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
             pass
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
@@ -92,7 +98,12 @@ def send_alert(info, jid):
             value = response.text
             print(value)
             print(code)
-            pass
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": value}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
             pass
@@ -154,7 +165,12 @@ def send_message_aijaz(subject, info, jid):
             value = response.text
             print(value)
             print(code)
-            pass
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": value}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
             pass
@@ -222,6 +238,13 @@ def send_message_request(info, jid):
             print("Response  Text from VNA")
             value = response.text
             print(value)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes", "Decision": value}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            pass
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
             info = "No answer received from VNA/Rainbow application - Answer Yes set by default"
@@ -316,7 +339,12 @@ def send_file(info, jid, ipadd, filename_path=''):
                 value = response.text
                 print(value)
                 print(code)
-                pass
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": value}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                    sys.exit()
             else:
                 os.system('logger -t montag -p user.info REST API Timeout')
                 pass
@@ -403,7 +431,12 @@ def send_file(info, jid, ipadd, filename_path=''):
             value = response.text
             print(value)
             print(code)
-            pass
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": value}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
             pass

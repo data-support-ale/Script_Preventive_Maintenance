@@ -20,6 +20,7 @@ switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pas
 content_variable = open('/var/log/devices/lastlog_loop.json', 'r')
 file_lines = content_variable.readlines()
 content_variable.close()
+
 if len(file_lines) != 0:
     last_line = file_lines[0]
     f = last_line.split(',')
@@ -87,6 +88,13 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         elif answer == "0":
             add_new_save(ipadd, port, "port_disable", choice="never")
     elif save_resp == "-1":
+        # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
+        appid = "bcmd"
+        subapp = "all"
+        level = "info"
+        # Call debugging function from support_tools_OmniSwitch
+        print("call function enable debugging")
+        debugging(switch_user, switch_password, ipadd, appid, subapp, level)
         sys.exit()
     else:
         answer = '1'
@@ -104,7 +112,14 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
             info = "A loop has been detected on your network and the port {0} is administratively disabled on device {1}".format(
                 port, ipadd)
             send_message(info, jid)
-
+            # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
+            appid = "bcmd"
+            subapp = "all"
+            level = "info"
+            # Call debugging function from support_tools_OmniSwitch
+            print("call function enable debugging")
+            debugging(switch_user, switch_password, ipadd, appid, subapp, level)
+        sleep(10)
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
         appid = "bcmd"
         subapp = "all"
