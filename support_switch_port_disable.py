@@ -3,10 +3,10 @@
 import sys
 import os
 import json
-from support_tools_OmniSwitch import get_credentials, detect_port_loop, replace_logtemp, ssh_connectivity_check, debugging, add_new_save, check_save, check_timestamp
+from support_tools_OmniSwitch import get_credentials, detect_port_loop, ssh_connectivity_check, debugging, add_new_save, check_save, send_file, collect_command_output_network_loop
 from time import strftime, localtime, sleep
 import re  # Regex
-from support_send_notification import send_message, send_file, send_message_request
+from support_send_notification import send_message, send_message_request
 from database_conf import *
 
 # Script init
@@ -89,6 +89,8 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
             add_new_save(ipadd, port, "port_disable", choice="never")
     elif save_resp == "-1":
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
+        info = "A loop has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Never, we do not proceed further".format(port, ipadd, ip_server)
+        send_message(info,jid)
         appid = "bcmd"
         subapp = "all"
         level = "info"
@@ -98,6 +100,8 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         sys.exit()
     else:
         answer = '1'
+        info = "A loop has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ipadd, ip_server)
+        send_message(info,jid)
 
     if answer == '1':
         cmd = "interfaces port {0} admin-state disable".format(port)
@@ -107,19 +111,11 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         # disable_port(switch_user,switch_password,ipadd,port)
         os.system('logger -t montag -p user.info Port disabled')
         if jid != '':
-            info = "Log of device : {0}".format(ipadd)
-            # send_file(info,jid,ipadd)
             info = "A loop has been detected on your network and the port {0} is administratively disabled on device {1}".format(
                 port, ipadd)
-            send_message(info, jid)
-            # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
-            appid = "bcmd"
-            subapp = "all"
-            level = "info"
-            # Call debugging function from support_tools_OmniSwitch
-            print("call function enable debugging")
-            debugging(switch_user, switch_password, ipadd, appid, subapp, level)
-        sleep(10)
+            filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
+            send_file(filename_path, subject, action, result, category)
+        sleep(5)
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
         appid = "bcmd"
         subapp = "all"
@@ -141,3 +137,4 @@ else:
     os.system('logger -t montag -p user.info Logs are too close')
     # clear lastlog file
     open('/var/log/devices/lastlog_loop.json', 'w').close()
+
