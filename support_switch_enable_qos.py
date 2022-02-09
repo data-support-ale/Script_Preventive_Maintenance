@@ -82,40 +82,26 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 # Get informations from logs.
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 last = ""
-with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_file:
+with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_file:
     for line in log_file:
         last = line
 
-with open("/var/log/devices/lastlog_ddos.json", "w", errors='ignore') as log_file:
+with open("/var/log/devices/lastlog_ddos_ip.json", "w", errors='ignore') as log_file:
     log_file.write(last)
 
-with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_file:
+with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_file:
     try:
         log_json = json.load(log_file)
         ip_switch = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        ip_switch_ddos = re.findall(r" ([.0-9]*)$", msg)[0]
+        print()
     except json.decoder.JSONDecodeError:
-        print("File /var/log/devices/lastlog_ddos.json empty")
+        print("File /var/log/devices/lastlog_ddos_ip.json empty")
         exit()
-
-
-last = ""
-with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_file:
-    for line in log_file:
-        last = line
-
-with open("/var/log/devices/lastlog_ddos.json", "w", errors='ignore') as log_file:
-    log_file.write(last)
-
-with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_file:
-    try:
-        log_json = json.load(log_file)
-        ip_switch_ddos = log_json["relayip"]
-        host = log_json["hostname"]
-        msg = log_json["message"]
-    except json.decoder.JSONDecodeError:
-        print("File /var/log/devices/lastlog_ddos.json empty")
+    except IndexError:
+        print("Index error in regex")
         exit()
 
     subject = "A port scan has been detected on your network "
