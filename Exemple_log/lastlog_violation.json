@@ -1,1 +1,0 @@
-{"@timestamp":"2022-02-07T14:14:30-05:00","type":"syslog_json","relayip":"10.130.7.247","hostname":"os6860e_vc_core","message":"<134>Feb  7 14:14:30 OS6860E_VC_Core swlogd portMgrCmm main EVENT: CUSTLOG CMM Port 2\/1\/46 in violation - source 10 reason Not a recovery reason","end_msg":""}

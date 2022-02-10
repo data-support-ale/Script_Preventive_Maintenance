@@ -557,6 +557,8 @@ def extract_WIPS():
                 message = "WIPS - Adding Client MAC Address {0} in the Block List".format(
                     device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
+                send_alert(message, jid)
+                send_message(message_reason, jid)
             if "status 37" in element:
                 device_mac = re.findall(
                     r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
@@ -567,6 +569,8 @@ def extract_WIPS():
                 message = "Client MAC Address {0} authentication rejected by ACL".format(
                     device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
+                send_alert(message, jid)
+                send_message(message_reason, jid)
     return device_mac, reason
 
 

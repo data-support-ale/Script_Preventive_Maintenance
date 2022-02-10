@@ -45,7 +45,7 @@ else
 fi
 cp -r ./VNA_Workflow $dir/
 
-cp ./*.py $dir/
+cp ./Scripts/* $dir/
 cp ./*.csv $dir/ >& /dev/null
 chmod 755 $dir/*
 chown admin-support:admin-support $dir/*
