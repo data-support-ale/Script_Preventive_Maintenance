@@ -36,7 +36,7 @@ def send_message(info, jid):
             print(code)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": value}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -105,7 +105,7 @@ def send_alert(info, jid):
             print(code)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": value}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -172,7 +172,7 @@ def send_message_aijaz(subject, info, jid):
             print(code)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": value}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -350,7 +350,7 @@ def send_file(info, jid, ipadd, filename_path=''):
                 print(code)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": value}, "fields": {"count": 1}}])
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                     sys.exit()
@@ -443,7 +443,7 @@ def send_file(info, jid, ipadd, filename_path=''):
             print(code)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": value}, "fields": {"count": 1}}])
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
