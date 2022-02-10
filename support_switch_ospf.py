@@ -34,13 +34,18 @@ with open("/var/log/devices/lastlog_ospf.json", "r", errors='ignore') as log_fil
         ip = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
-
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_ospf.json empty")
         exit()
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
-    neighbor_ip, router_id, initial_state, final_state = re.findall(
-        r"CUSTLOG CMM OSPF neighbor state change for (.*?), router-id (.*?): (.*?) to (.*)", msg)[0]
+    try:    
+        neighbor_ip, router_id, initial_state, final_state = re.findall(r"CUSTLOG CMM OSPF neighbor state change for (.*?), router-id (.*?): (.*?) to (.*)", msg)[0]
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
 if jid != '':
     notif = "OSPF Neighbor state change on OmniSwitch \"" + host + "\" IP: " + ip + \

@@ -31,7 +31,7 @@ if sys.argv[1] != None:
     }
     try:
         response = requests.get(url, headers=headers, timeout=60)
-        if "200" in code:
+        if "200" in response:
             os.system('logger -t montag -p user.info 200 OK')
             print("Response  Text from VNA")
             value = response.text
@@ -63,7 +63,7 @@ if sys.argv[1] != None:
     try:
         response = requests.request(
             "POST", url, headers=headers, data=payload, timeout=60)
-        if "200" in code:
+        if "200" in response:
             os.system('logger -t montag -p user.info 200 OK')
             print("Response  Text from VNA")
             value = response.text

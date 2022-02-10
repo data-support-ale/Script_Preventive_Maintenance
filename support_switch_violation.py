@@ -35,10 +35,16 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_violation.json empty")
         exit()
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
-    port, reason = re.findall(
-        r"Port (.*?) in violation - source (.*?) reason", msg)[0]
-
+    try:
+        port, reason = re.findall(r"Port (.*?) in violation - source (.*?) reason", msg)[0]
+    except IndexError:
+        print("Index error in regex")
+        exit()
+        
     if reason == "0":
         reason = "Unknown"
     elif reason == "1":
@@ -84,7 +90,16 @@ if save_resp == "0":
     elif answer == "0":
         add_new_save(ip, port, "violation", choice="never")
 elif save_resp == "-1":
-    sys.exit()
+    try:
+        print(port)
+        print(reason)
+        print(ip)
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "Reason": reason, "port": port}, "fields": {"count": 1}}])
+        sys.exit()   
+    except UnboundLocalError as error:
+       print(error)
+       sys.exit()
+
 elif save_resp == "1":
     answer = '2'
 else:

@@ -37,13 +37,18 @@ with open("/var/log/devices/lastlog_ddm.json", "r", errors='ignore') as log_file
         ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
-
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_ddm.json empty")
         exit()
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
-    sfp_power, slot, port, threshold = re.findall(
-        r"Power=(.*?) dBm on slot=(.*?) port=(.*?), crossed DDM threshold (.*)", msg)[0]
+    try:
+        sfp_power, slot, port, threshold = re.findall(r"Power=(.*?) dBm on slot=(.*?) port=(.*?), crossed DDM threshold (.*)", msg)[0]
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
 if jid != '':
     notif = "The SFP " + slot + "/" + port + " on OmniSwitch \"" + host + "\" IP: " + \

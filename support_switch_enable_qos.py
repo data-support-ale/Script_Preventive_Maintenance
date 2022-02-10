@@ -72,6 +72,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
         
     cmd = "configuration apply ./working/configqos "
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+    try:
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "DDOS": ipadd_ddos}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
 
 # Script init
@@ -121,7 +126,12 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         elif answer == "0":
             add_new_save(ip_switch, "0", "scan", choice="never")
     elif save_resp == "-1":
-        sys.exit()
+        try:
+            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "DDOS": ipadd_ddos}, "fields": {"count": 1}}])
+            sys.exit()   
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
     else:
         answer = '1'
 

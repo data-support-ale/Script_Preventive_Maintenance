@@ -100,9 +100,15 @@ with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_fi
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_dupip.json empty")
         exit()
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
-    ip_dup, port, mac = re.findall(
-        r"duplicate IP address (.*?) from port (.*?) eth addr (.*)", msg)[0]
+    try:
+        ip_dup, port, mac = re.findall(r"duplicate IP address (.*?) from port (.*?) eth addr (.*)", msg)[0]
+    except IndexError:
+        print("Index error in regex")
+        exit()   
     mac = format_mac(mac)
 
 # always 1
@@ -121,7 +127,12 @@ if save_resp == "0":
     elif answer == "0":
         add_new_save(ip, port, "duplicate", choice="never")
 elif save_resp == "-1":
-    sys.exit()
+    try:
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
+        sys.exit()   
+    except UnboundLocalError as error:
+       print(error)
+       sys.exit()
 else:
     answer = '1'
 

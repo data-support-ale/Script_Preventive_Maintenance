@@ -34,9 +34,14 @@ with open("/var/log/devices/lastlog_authfail.json", "r", errors='ignore') as log
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_authfail.json empty")
         exit()
-
-    user, source_ip, protocol = re.findall(
-        r"Login by (.*?) from (.*?) through (.*?) Failed", msg)[0]
+    except IndexError:
+        print("Index error in regex")
+        exit()
+    try:
+        user, source_ip, protocol = re.findall(r"Login by (.*?) from (.*?) through (.*?) Failed", msg)[0]
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
 if jid != '':
     notif = "Authentication failed on OmniSwitch \"" + host + "\" IP: " + ip + \

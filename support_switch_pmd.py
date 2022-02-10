@@ -84,10 +84,16 @@ def extract_pmd_path():
         except json.decoder.JSONDecodeError:
             print("File /var/log/devices/lastlog_pmd.json empty")
             exit()
-        filename_pmd = re.findall(r"PMD generated at (.*)", msg)[0]
-        print(filename_pmd)
+        except IndexError:
+            print("Index error in regex")
+            exit()
+        try:    
+            filename_pmd = re.findall(r"PMD generated at (.*)", msg)[0]
+            print(filename_pmd)
+        except IndexError:
+            print("Index error in regex")
+            exit()
     return filename_pmd, msg
-
 
 print("Core DUMP - call function collecting log")
 

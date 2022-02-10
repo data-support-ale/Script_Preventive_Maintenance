@@ -34,6 +34,9 @@ with open("/var/log/devices/lastlog_power_supply_down.json", "r", errors='ignore
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_power_supply_down.json empty")
         exit()
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
     # Sample log
     # OS6860E swlogd ChassisSupervisor Power Mgr INFO: Power Supply 1 Removed

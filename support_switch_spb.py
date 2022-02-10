@@ -37,9 +37,15 @@ with open("/var/log/devices/lastlog_spb.json", "r", errors='ignore') as log_file
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_spb.json empty")
         exit()
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
-    adjacency_id, port_1 = re.findall(
-        r"Lost L1 adjacency with (.*?) on ifId (.*)", msg)[0]
+    try:
+        adjacency_id, port_1 = re.findall(r"Lost L1 adjacency with (.*?) on ifId (.*)", msg)[0]
+    except IndexError:
+        print("Index error in regex")
+        exit()
     # n=int(port_1)
     n = len(str(port_1))
     print(n)
@@ -51,14 +57,17 @@ with open("/var/log/devices/lastlog_spb.json", "r", errors='ignore') as log_file
     unit = dig[0]
     slot = dig[2]
     port = str(dig[4]) + str(dig[5])
+
+    port = str(unit) + "/" + str(slot) + "/" + str(port)
+    port = "Port " + port
     if n > 6:
         port = str(dig[7])
-    port = str(unit) + "/" + str(slot) + "/" + str(port)
+        port = "Linkagg " + port
     print(port)
 
 if jid != '':
     notif = "SPB Adjacency state change on OmniSwitch \"" + host + \
-        "\" IP: " + ip + " System ID " + adjacency_id + " from port " + port
+        "\" IP: " + ip + " System ID " + adjacency_id + " from " + port
     send_message(notif, jid)
 else:
     print("Mail request set as no")
@@ -68,7 +77,7 @@ else:
 
 try:
     write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                    "System_ID": adjacency_id, "IP": ip, "Port": port}, "fields": {"count": 1}}])
+                    "System_ID": adjacency_id, "IP": ip, "Port/LinkAgg": port}, "fields": {"count": 1}}])
 except UnboundLocalError as error:
     print(error)
     sys.exit()

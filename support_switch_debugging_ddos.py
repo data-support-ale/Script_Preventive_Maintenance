@@ -34,9 +34,15 @@ with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_fil
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_ddos.json empty")
         exit()
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
-    ddos_type = re.findall(
-        r"Denial of Service attack detected: <(.*?)>", msg)[0]
+    try:
+        ddos_type = re.findall(r"Denial of Service attack detected: <(.*?)>", msg)[0]
+    except IndexError:
+        print("Index error in regex")
+        exit()
 
 if jid != '':
     notif = "A Denial of Service Attack is detected on OmniSwitch \"" + \
