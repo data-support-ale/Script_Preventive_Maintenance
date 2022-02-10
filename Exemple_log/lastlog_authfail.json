@@ -1,1 +1,0 @@
-{"@timestamp":"2022-02-07T14:14:30-05:00","type":"syslog_json","relayip":"10.130.7.247","hostname":"os6860e_vc_core","message":"<134>Feb  7 14:14:30 OS6860E_VC_Core swlogd SES AAA INFO: Login by admin-support from 10.130.7.13 through SSH Failed [in LoginAaaSession::handleLoginResult()]","end_msg":""}

@@ -65,13 +65,6 @@ def get_credentials(attribute=None):
         elif attribute == "room_id":
             return room_id
 
-
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials(
-    None)
-
-# Function SSH for checking connectivity before collecting logs
-
-
 def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     """ 
     This function takes entry the command to push remotely on OmniSwitch by SSH with Python Paramiko module

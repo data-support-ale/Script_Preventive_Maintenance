@@ -554,9 +554,10 @@ def extract_WIPS():
                 device_mac = re.findall(
                     r"Add black list mac is (.*?) ]", msg)[0]
                 print(device_mac)
-                message = "WIPS - Adding Client MAC Address {0} in the Block List".format(
+                message = "WLAN WIPS - Adding Client's MAC Address {0} in the Block List".format(
                     device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
+                send_alert(message, jid)
             if "status 37" in element:
                 device_mac = re.findall(
                     r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
@@ -564,9 +565,10 @@ def extract_WIPS():
                 reason = re.findall(r"status (.*?),", msg)[0]
                 print(reason)
                 print(device_mac)
-                message = "Client MAC Address {0} authentication rejected by ACL".format(
+                message = "WLAN Client MAC Address {0} authentication rejected by ACL".format(
                     device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
+                send_alert(message, jid)
     return device_mac, reason
 
 

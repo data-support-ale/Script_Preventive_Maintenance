@@ -1,1 +1,0 @@
-{"@timestamp":"2022-02-07T14:14:30-05:00","type":"syslog_json","relayip":"10.130.7.247","hostname":"os6860e_vc_core","message":"<134>Feb  7 14:14:30 OS6900_VC_Core swlogd ipv4 alv4ni DBG1: ALV4 event: PSCAN vrf 0 10.130.7.81","end_msg":""}

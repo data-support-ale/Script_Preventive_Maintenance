@@ -6,6 +6,7 @@ from time import sleep, strftime, localtime
 import re
 from database_conf import *
 
+
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 
@@ -17,8 +18,9 @@ def send_message(info, jid):
     :param str jid:                 Rainbow jid where the message will be send
     :return:                        None
     """
-
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
+    from support_tools_OmniSwitch import get_credentials
+    company = get_credentials("company")
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_" + company
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
     try:
@@ -85,8 +87,9 @@ def send_alert(info, jid):
     :param str jid:                 Rainbow jid where the message will be send
     :return:                        None
     """
-
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_EMEA"
+    from support_tools_OmniSwitch import get_credentials
+    company = get_credentials("company")
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_"+company
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
     try:
@@ -223,7 +226,9 @@ def send_message_request(info, jid):
     :return:                        None
     """
     try:
-        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
+        from support_tools_OmniSwitch import get_credentials
+        company = get_credentials("company")
+        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
         headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                    'Card': '1', 'jid1': '{0}'.format(jid), 'toto': '{0}.'.format(info)}
         print(runtime)
@@ -324,7 +329,9 @@ def send_file(info, jid, ipadd, filename_path=''):
         filename = filename_path.split("/")
         filename = filename[-1]
         info = "Log of device : {0}".format(ipadd)
-        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_EMEA"
+        from support_tools_OmniSwitch import get_credentials
+        company = get_credentials("company")
+        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_"+company
         headers = {'Content-type': "application/x-tar", 'Content-Disposition': "attachment;filename={0}".format(
             filename), 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info)}
         #files = {'file': fp}
@@ -415,8 +422,9 @@ def send_file(info, jid, ipadd, filename_path=''):
     with open("/var/log/devices/short_attachment.log", "w+", errors='ignore') as s_log:
         print(new_file)
         s_log.write(new_file)
-
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_EMEA"
+    from support_tools_OmniSwitch import get_credentials
+    company = get_credentials("company")
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_"+company
     headers = {'Content-type': "text/plain", 'Content-Disposition': "attachment;filename=short_attachment.log",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info)}
     files = {'file': open('/var/log/devices/short_attachment.log', 'r')}
