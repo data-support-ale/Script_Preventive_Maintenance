@@ -558,6 +558,10 @@ def extract_WIPS():
                     device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
                 send_alert(message, jid)
+<<<<<<< HEAD:Scripts/support_wlan_generic.py
+=======
+                send_message(message_reason, jid)
+>>>>>>> 96539665e20b3c3d85bb39a3197ebc7aae982ffe:Scripts/support_wlan_generic.py
             if "status 37" in element:
                 device_mac = re.findall(
                     r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
@@ -569,6 +573,10 @@ def extract_WIPS():
                     device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
                 send_alert(message, jid)
+<<<<<<< HEAD:Scripts/support_wlan_generic.py
+=======
+                send_message(message_reason, jid)
+>>>>>>> 96539665e20b3c3d85bb39a3197ebc7aae982ffe:Scripts/support_wlan_generic.py
     return device_mac, reason
 
 

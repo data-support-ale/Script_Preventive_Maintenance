@@ -5,6 +5,8 @@ import requests
 from time import sleep, strftime, localtime
 import re
 from database_conf import *
+from support_tools_OmniSwitch import get_credentials
+
 
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
