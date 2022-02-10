@@ -96,7 +96,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -109,7 +109,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+                "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit(0)
@@ -124,7 +124,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
+                "Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit(0)
@@ -142,7 +142,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -155,7 +155,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -171,7 +171,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         os.system('logger -t montag -p user.info ' + info)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit(2)
@@ -214,7 +214,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sftp.close()
@@ -228,7 +228,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sftp.close()
@@ -243,7 +243,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sftp.close()
@@ -259,7 +259,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sftp.close()
@@ -273,7 +273,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         ssh.close()
@@ -302,7 +302,7 @@ def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sftp.close()
@@ -395,7 +395,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -407,7 +407,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+                "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit(0)
@@ -420,7 +420,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
+                "Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit(0)
@@ -436,7 +436,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         os.system('logger -t montag -p user.info ' + info)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit(2)
@@ -452,7 +452,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         os.system('logger -t montag -p user.info ' + info)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit(2)
@@ -532,7 +532,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -544,7 +544,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -556,7 +556,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -577,6 +577,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
     category = "qos"
     return filename_path, subject, action, result, category
 
+
 def collect_command_output_network_loop(switch_user, switch_password, ipadd, port):
     """ 
     This function takes entries arguments the OmniSwitch IP Address where Network Loop is noticed.
@@ -592,7 +593,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
     l_switch_cmd.append("show system")
     l_switch_cmd.append("show chassis")
     l_switch_cmd.append("show interfaces " + port + " status")
-    l_switch_cmd.append("show mac-learning port " + port)
+    l_switch_cmd.append("show mac-learning  port " + port)
     l_switch_cmd.append("show vlan members port " + port)
 
     for switch_cmd in l_switch_cmd:
@@ -615,7 +616,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -627,7 +628,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -639,7 +640,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -653,14 +654,13 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
     f_logs.write(text)
     f_logs.close()
     subject = (
-        "Preventive Maintenance Application - A loop has been detected on your network and the port {0} is administratively disabled on device {1}").format(port,ipadd)
+        "Preventive Maintenance Application - A loop has been detected on your network and the port {0} is administratively disabled on device {1}").format(port, ipadd)
     action = (
         "A Network Loop is noticed on OmniSwitch: {0} and we have deactivated the interface administratively").format(ipadd)
-    result = ("Find enclosed to this notification the log collection of last 5 minutes and interface port {0} stauts").format(port)
+    result = (
+        "Find enclosed to this notification the log collection of last 5 minutes and interface port {0} stauts").format(port)
     category = "network_loop"
     return filename_path, subject, action, result, category
-
-
 
 
 # Function to collect several command outputs related to Cloud-Agent (OV Cirrus) failure
@@ -705,7 +705,7 @@ def collect_command_output_ovc(switch_user, switch_password, decision, host, ipa
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -717,7 +717,7 @@ def collect_command_output_ovc(switch_user, switch_password, decision, host, ipa
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -729,7 +729,7 @@ def collect_command_output_ovc(switch_user, switch_password, decision, host, ipa
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -794,7 +794,7 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -806,7 +806,7 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -818,7 +818,7 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -889,7 +889,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -901,7 +901,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -913,7 +913,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -985,7 +985,7 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -997,7 +997,7 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1009,7 +1009,7 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1073,7 +1073,7 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -1085,7 +1085,7 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1097,7 +1097,7 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1157,7 +1157,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -1169,7 +1169,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1181,7 +1181,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1243,7 +1243,7 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -1255,7 +1255,7 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1267,7 +1267,7 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1329,7 +1329,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -1341,7 +1341,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1353,7 +1353,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1437,7 +1437,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -1449,7 +1449,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1461,7 +1461,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1492,7 +1492,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -1504,7 +1504,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -1557,7 +1557,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -1569,7 +1569,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -1581,7 +1581,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -1610,7 +1610,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -1624,7 +1624,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -1636,7 +1636,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         sys.exit()
@@ -1685,7 +1685,7 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
                 send_message(info, jid)
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 sys.exit()
@@ -1697,7 +1697,7 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1709,7 +1709,7 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
@@ -1942,32 +1942,33 @@ if __name__ == "__main__":
     host = "LAN-6860N-2"
     port = "1/1/4"
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, host, ipadd, port)
-    send_file(filename_path, subject, action, result,category)
+    filename_path, subject, action, result, category = collect_command_output_network_loop(
+        switch_user, switch_password, host, ipadd, port)
+    send_file(filename_path, subject, action, result, category)
     filename_path, subject, action, result, category = collect_command_output_poe(
         switch_user, switch_password, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result, category)
     agg = "6"
     filename_path, subject, action, result, category = collect_command_output_linkagg(
         switch_user, switch_password, agg, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result, category)
     vcid = "2"
     filename_path, subject, action, result, category = collect_command_output_vc(
         switch_user, switch_password, vcid, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result, category)
     psid = "2"
     filename_path, subject, action, result, category = collect_command_output_ps(
         switch_user, switch_password, psid, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result, category)
     source = "Access Guardian"
 
     decision = "0"
     filename_path, subject, action, result, category = collect_command_output_violation(
         switch_user, switch_password, port, source, decision, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result, category)
     filename_path, subject, action, result, category = collect_command_output_storm(
         switch_user, switch_password, port, source, decision, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result, category)
     protocol = "HTTPS"
     user = "toto"
     source_ip = "10.130.7.17"
@@ -1975,7 +1976,7 @@ if __name__ == "__main__":
         switch_user, switch_password, protocol, ipadd)
     filename_path, subject, action, result, category = authentication_failure(
         switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result, category)
 
 else:
     print("Support_Tools_OmniSwitch Script called by another script")

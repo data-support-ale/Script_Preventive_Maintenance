@@ -142,3 +142,4 @@ else:
     os.system('logger -t montag -p user.info Logs are too close')
     # clear lastlog file
     open('/var/log/devices/lastlog_loop.json', 'w').close()
+
