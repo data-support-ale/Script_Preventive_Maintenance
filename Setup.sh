@@ -1195,10 +1195,10 @@ apt-get -qq -y  update
 apt-get -qq -y install sshpass
 
 echo
-echo -e "\e[32mPython 3.10 installation\e[39m"
+echo -e "\e[32mPython 3.7 installation\e[39m"
 echo
 echo "Current user: `whoami`"
-echo "Python 3.10 package is downloaded on current user Home directory"
+echo "Python 3.7 package is downloaded on current user Home directory"
 # #Python 3.10
 
 apt-get -qq -y update
@@ -1227,7 +1227,7 @@ ln -s libpython3.7m.so.1.0 libpython3.7m.so
 python3 -m pip install --upgrade pip
 
 echo
-echo -e "\e[32mPython3.10 Installation Complete\e[39m"
+echo -e "\e[32mPython3.7 Installation Complete\e[39m"
 echo
 
 python3 -m pip install pysftp 
