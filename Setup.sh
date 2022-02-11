@@ -1203,6 +1203,7 @@ echo "Python 3.7 package is downloaded on current user Home directory"
 
 apt-get -qq -y update
 apt-get -qq -y install build-essential openssl openssl-dev*
+apt-get -qq -y install libssl*
 wget --inet4-only https://www.python.org/ftp/python/3.7.8/Python-3.7.8.tgz
 tar -xvf Python-3.7.8.tgz
 cd Python-3.7.8

@@ -9,6 +9,33 @@ from database_conf import *
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 
+def get_credentials(attribute=None):
+    """ 
+    This function collects all the information about the switch's credentials in the log. 
+    It collects also the information usefull for  notification sender in the file ALE_script.conf.
+
+    :param:                         None
+    :return str user:               Switch user login
+    :return str password:           Switch user password
+    :return str jid:                 Rainbow JID  of recipients
+    :return str gmail_usr:          Sender's email userID
+    :return str gmail_passwd:       Sender's email password               
+    :return str mails:              List of email addresses of recipients
+    """
+
+    with open("/opt/ALE_Script/ALE_script.conf", "r") as content_variable:
+        login_switch, pass_switch, mails, rainbow_jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id, * \
+            kargs = re.findall(
+                r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
+        if attribute == None:
+            return login_switch, pass_switch, mails, rainbow_jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company
+        elif attribute == "company":
+            return company
+        elif attribute == "room_id":
+            return room_id
+
+
+
 def send_message(info, jid):
     """ 
     Send the message in info to a Rainbowbot. This bot will send this message to the jid in parameters
@@ -17,8 +44,8 @@ def send_message(info, jid):
     :param str jid:                 Rainbow jid where the message will be send
     :return:                        None
     """
-
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
+    company = get_credentials("company")
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
     try:
@@ -85,8 +112,8 @@ def send_alert(info, jid):
     :param str jid:                 Rainbow jid where the message will be send
     :return:                        None
     """
-
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_EMEA"
+    company = get_credentials("company")
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_"+company
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
     try:
@@ -223,7 +250,8 @@ def send_message_request(info, jid):
     :return:                        None
     """
     try:
-        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_EMEA"
+        company = get_credentials("company")
+        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
         headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                    'Card': '1', 'jid1': '{0}'.format(jid), 'toto': '{0}.'.format(info)}
         print(runtime)
@@ -301,30 +329,13 @@ def send_file(info, jid, ipadd, filename_path=''):
     :return:                        None
     """
 
-
-#    if re.search("A Pattern has been detected in switch",info) :
-#       cmd = "ls -t /tftpboot/"
-#       run=cmd.split()
-#       p = subprocess.Popen(run, stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
-#       p = subprocess.Popen(('grep',ipadd),stdin=p.stdout, stdout=subprocess.PIPE)
-#       p =  subprocess.Popen(('head','-n','1'),stdin=p.stdout,stdout=subprocess.PIPE)
-#       out, err = p.communicate()
-#       out=out.decode('UTF-8').strip()
-
-#       fp = open("/tftpboot/{0}".format(out),'rb')
-#       info = "Log of device : {0}".format(ipadd)
-#       url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotifFile/"
-#       headers = { 'Content-Transfer-Encoding': 'application/gzip', 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
-#       files = {'file': open('/tftpboot/{0}'.format(out),'rb')}
-#       params = {'filename'  :'{0}'.format(out)}
-#       response = requests.post(url,files=files,params=params, headers=headers)
-
     if not filename_path == '':
         payload = open("{0}".format(filename_path), 'rb')
         filename = filename_path.split("/")
         filename = filename[-1]
         info = "Log of device : {0}".format(ipadd)
-        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_EMEA"
+        company = get_credentials("company")
+        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_"+company
         headers = {'Content-type': "application/x-tar", 'Content-Disposition': "attachment;filename={0}".format(
             filename), 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info)}
         #files = {'file': fp}
@@ -415,8 +426,8 @@ def send_file(info, jid, ipadd, filename_path=''):
     with open("/var/log/devices/short_attachment.log", "w+", errors='ignore') as s_log:
         print(new_file)
         s_log.write(new_file)
-
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_EMEA"
+    company = get_credentials("company")
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_"+company
     headers = {'Content-type': "text/plain", 'Content-Disposition': "attachment;filename=short_attachment.log",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info)}
     files = {'file': open('/var/log/devices/short_attachment.log', 'r')}
