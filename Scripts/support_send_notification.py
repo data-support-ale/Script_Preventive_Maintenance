@@ -487,5 +487,3 @@ def send_file(info, jid, ipadd, filename_path=''):
             print(error)
             sys.exit()
     sleep(5)
-
-send_message("HEHEO", "j_9403700392@openrainbow.com")
