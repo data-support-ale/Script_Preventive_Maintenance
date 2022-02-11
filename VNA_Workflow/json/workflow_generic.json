@@ -56,7 +56,7 @@
             "params": {
                 "response_timeout": {
                     "type": "int",
-                    "value": 600
+                    "value": 60
                 },
                 "variables": {
                     "type": "VariablesList",
@@ -70,7 +70,7 @@
                             "parameter": "body",
                             "name": "body",
                             "parameterEditable": false,
-                            "type": "file"
+                            "type": "object"
                         },
                         {
                             "origin": "headers",
@@ -119,7 +119,7 @@
                 },
                 "url": {
                     "type": "string",
-                    "value": "/api/flows/%tenantName%"
+                    "value": "/api/flows/$tenantName1"
                 }
             },
             "featureVersion": "2.3",
@@ -271,7 +271,7 @@
                 },
                 "url": {
                     "type": "string",
-                    "value": "/api/flows/%tenantName%"
+                    "value": "/api/flows/$tenantName2"
                 }
             },
             "featureVersion": "2.3",
@@ -350,7 +350,7 @@
                     "value": "VAR(jid1)"
                 },
                 "cardPayload": {
-                    "type": "AdaptiveCard",
+                    "type": "adaptiveCard",
                     "value": "{\"$schema\":\"http://adaptivecards.io/schemas/adaptive-card.json\",\"body\":[{\"type\":\"TextBlock\",\"text\":\"Log: ${ParticipantInfoForm.log}\",\"size\":\"medium\",\"wrap\":true,\"weight\":\"bolder\"}],\"actions\":[{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[0].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[0].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"yes\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[1].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[1].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"no\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[2].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[2].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"save\"}}}}],\"version\":\"1.0\"}"
                 },
                 "value": {
@@ -982,7 +982,7 @@
                             "parameter": "body",
                             "name": "body",
                             "parameterEditable": false,
-                            "type": "file"
+                            "type": "object"
                         },
                         {
                             "origin": "headers",
@@ -1010,7 +1010,7 @@
                 },
                 "url": {
                     "type": "string",
-                    "value": "/api/flows/%tenantName%"
+                    "value": "/api/flows/$tenantName3"
                 }
             },
             "featureVersion": "2.3",
@@ -1136,7 +1136,7 @@
                             "parameter": "body",
                             "name": "body",
                             "parameterEditable": false,
-                            "type": "file"
+                            "type": "object"
                         },
                         {
                             "origin": "headers",
@@ -1171,7 +1171,7 @@
                 },
                 "url": {
                     "type": "string",
-                    "value": "/api/flows/%tenantName%"
+                    "value": "/api/flows/$tenantName4"
                 }
             },
             "featureVersion": "2.3",

@@ -95,23 +95,23 @@ try:
         response = requests.request("POST", url, headers=headers, data=payload)
         json_response = json.loads(response.text)
         id = json_response["id"]
+        payload = response.text
 
     # REST-API method PUT api/tenants/<tenant_id>/flows/<id>/imported is called within path <id> value received from REST-API /api/tenants/<tenant_id>/flows/import for validating  the VNA Workflow import
         url = "https://tpe-vna.al-mydemo.com/management/api/tenants/{}/flows/{}/imported".format(
             tenant_id, id)  # This URL validate the import use the tenant_id but also the import_id from the import request
         # replacement of different fields to specify the IDs in the .json before sending it out
-        payload = re.sub(r"%uuid_0%", id, payload)
-        payload = re.sub(
-            r"%tenantName%", "NBDNotif_Classic_"+company, payload, 1)
-        payload = re.sub(r"%tenantName%", "NBDNotif_File_"+company, payload, 1)
-        payload = re.sub(r"%tenantName%", "NBDNotif_Alert_" +
-                         company, payload, 1)
-        payload = re.sub(r"%tenantName%", "NBDNotif_Test_"+company, payload, 1)
         headers = {
             'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',
             'Content-Type': 'application/json',
             'Cookie': 'JSESSIONID=80E64766B76B28CBFF0B44B3876ADA01'
         }
+
+        payload = re.sub(r"\$tenantName1", "NBDNotif_Classic_"+company, payload, 1)
+        payload = re.sub(r"\$tenantName2", "NBDNotif_File_"+company, payload, 1)
+        payload = re.sub(r"\$tenantName3", "NBDNotif_Alert_" +company, payload, 1)
+        payload = re.sub(r"\$tenantName4", "NBDNotif_Test_"+company, payload, 1)
+
         response = requests.request("PUT", url, headers=headers, data=payload)
         if response.status_code == 200:
             os.system('logger -t montag -p user.info 200 OK')
