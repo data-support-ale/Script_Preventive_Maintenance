@@ -651,7 +651,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
         "Preventive Maintenance Application - A loop has been detected on your network and the port {0} is administratively disabled on device {1}").format(port,ipadd)
     action = (
         "A Network Loop is noticed on OmniSwitch: {0} and we have deactivated the interface administratively").format(ipadd)
-    result = ("Find enclosed to this notification the log collection of last 5 minutes and interface port {0} stauts").format(port)
+    result = ("Find enclosed to this notification the log collection of last 5 minutes and interface port {0} status").format(port)
     category = "network_loop"
     return filename_path, subject, action, result, category
 
