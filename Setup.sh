@@ -31,7 +31,7 @@ sudo groupadd -g 1500 admin-support >& /dev/null
 sudo usermod -a -G admin-support admin-support >& /dev/null
 
 mkdir $dir >& /dev/null
-mkdir /tftpboot/upgrades >& /dev/null
+mkdir /tftpboot/ >& /dev/null
 
 #Analytics
 archi=`dpkg --print-architecture >& /dev/null` 
@@ -488,6 +488,9 @@ template (name=\"devicelogbgp\" type=\"string\"
 
 template (name=\"devicelogddm\" type=\"string\"
      string=\"/var/log/devices/lastlog_ddm.json\")
+
+template (name=\"devicelogradius\" type=\"string\"
+     string=\"/var/log/devices/lastlog_radius_down.json\")
 
 template(name=\"json_syslog\"
   type=\"list\") {
@@ -1071,11 +1074,11 @@ if \$msg contains 'alert' and \$msg contains 'The top 20' then {
        stop
 }
 
-if \$msg contains 'RADIUS Primary Server' and \$msg contains 'DOWN' then {
+if \$msg contains 'radcli' and \$msg contains 'RADIUS' then {
        \$RepeatedMsgReduction on
 	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"RADIUS Primary Server DOWN\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       action(type=\"omfile\" DynaFile=\"devicelogradius\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_radius.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
