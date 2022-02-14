@@ -859,12 +859,11 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     l_switch_cmd.append("show interfaces " + port + " status")
     l_switch_cmd.append("show interfaces " + port + " counters")
     l_switch_cmd.append("show interfaces " + port + " flood-rate")
-    if decision == "1":
+    if decision == "1" or decision == "2":
         l_switch_cmd.append("interfaces port " + port + " admin-state disable")
     l_switch_cmd.append("clear violation port " + port)
     l_switch_cmd.append("show violation")
     l_switch_cmd.append("show violation port " + port)
-
     for switch_cmd in l_switch_cmd:
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
             switch_password, switch_user, ipadd, switch_cmd)
@@ -924,7 +923,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     f_logs.close()
     subject = (
         "Preventive Maintenance Application - Unexpected traffic (storm) detected on switch: {0}, reason {1}").format(ipadd, source)
-    if decision == "1":
+    if decision == "1" or decision == "2":
         action = ("The Port {0} is administratively disabled on OmniSwitch (Hostname: {1})").format(
             port, host)
         result = "Find enclosed to this notification the log collection of actions done"

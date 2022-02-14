@@ -6,7 +6,7 @@ import re
 import json
 from support_tools_OmniSwitch import get_credentials, collect_command_output_storm, send_file
 from time import strftime, localtime, sleep
-from support_send_notification import send_message_request
+from support_send_notification import send_message_request, send_message
 from database_conf import *
 from support_tools_OmniSwitch import add_new_save, check_save
 
@@ -73,6 +73,8 @@ if save_resp == "0":
     elif answer == "0":
         add_new_save(ip, port, "storm", choice="never")
 elif save_resp == "-1":
+    info = "A Storm Threshold violation has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Never, we do not proceed further".format(port, ip, ip_server)
+    send_message(info,jid)
     try:
         print(port)
         print(reason)
@@ -85,8 +87,11 @@ elif save_resp == "-1":
 
 elif save_resp == "1":
     answer = '2'
+    info = "A Storm Threshold violation has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ip, ip_server)
+    send_message(info,jid)
 else:
-    answer = '1'
+    info = "A Storm Threshold violation has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ip, ip_server)
+    send_message(info,jid)
 
 if answer == '1':
     os.system('logger -t montag -p user.info Process terminated')

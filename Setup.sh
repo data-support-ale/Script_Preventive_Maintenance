@@ -1360,7 +1360,7 @@ echo
 echo -e "\e[32mDocker-compose installation\e[39m"
 echo
 #DOCKER COMPOSE
-wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
+wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-$(uname -s)-$(uname -m)";
 chmod +x /usr/local/bin/docker-compose
 echo
 echo -e "\e[32mDocker-Compose Installation complete\e[39m"
