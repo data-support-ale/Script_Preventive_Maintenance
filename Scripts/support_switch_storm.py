@@ -4,9 +4,9 @@ import sys
 import os
 import re
 import json
-from support_tools_OmniSwitch import get_credentials
+from support_tools_OmniSwitch import get_credentials, collect_command_output_storm, send_file
 from time import strftime, localtime, sleep
-from support_send_notification import send_message, send_file, send_message_request
+from support_send_notification import send_message_request
 from database_conf import *
 from support_tools_OmniSwitch import add_new_save, check_save
 
@@ -65,7 +65,7 @@ with open("/var/log/devices/lastlog_storm.json", "r", errors='ignore') as log_fi
 save_resp = check_save(ip, port, "storm")
 
 if save_resp == "0":
-    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to clear the violation? " + ip_server
+    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? " + ip_server
     answer = send_message_request(notif, jid)
     print(answer)
     if answer == "2":
@@ -91,14 +91,14 @@ else:
 if answer == '1':
     os.system('logger -t montag -p user.info Process terminated')
     # CLEAR VIOLATION
-    cmd = "clear violation port " + port
-    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-        switch_password, switch_user, ip, cmd))
     if jid != '':
-        info = "Log of device : {0}".format(ip)
-        send_file(info, jid, ip)
-        info = "A port Storm violation has been cleared up on device {}".format(ip)
-        send_message(info, jid)
+        filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ip)
+        #cmd = "clear violation port " + port
+        #os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, cmd))
+    
+        send_file(filename_path, subject, action, result, category)
+        #info = "A port Storm violation has been cleared up on device {}".format(ip)
+        #send_message(info, jid)
 
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')

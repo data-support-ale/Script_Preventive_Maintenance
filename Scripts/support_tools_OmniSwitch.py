@@ -65,6 +65,7 @@ def get_credentials(attribute=None):
         elif attribute == "room_id":
             return room_id
 
+login_switch, pass_switch, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
@@ -1937,7 +1938,7 @@ if __name__ == "__main__":
     host = "LAN-6860N-2"
     port = "1/1/4"
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, host, ipadd, port)
+    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
     send_file(filename_path, subject, action, result,category)
     filename_path, subject, action, result, category = collect_command_output_poe(
         switch_user, switch_password, host, ipadd)
