@@ -496,6 +496,9 @@ template (name=\"devicelogddm\" type=\"string\"
 template (name=\"devicelogradius\" type=\"string\"
      string=\"/var/log/devices/lastlog_radius_down.json\")
 
+template (name=\"devicelogstorm\" type=\"string\"
+     string=\"/var/log/devices/lastlog_storm.json\")
+
 template(name=\"json_syslog\"
   type=\"list\") {
     constant(value=\"{\")
@@ -963,6 +966,24 @@ if \$msg contains 'cmmEsmCheckDDMThresholdViolations' then {
        stop
 }
 
+#### Storm Threshold Violation - LAN ####
+if \$msg contains 'Storm Threshold violation' then {
+       \$RepeatedMsgReduction on
+	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloggetlogstorm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_storm.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+#### Radius Server status - LAN ####
+if \$msg contains 'radcli' and \$msg contains 'RADIUS' then {
+       \$RepeatedMsgReduction on
+	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogradius\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_radius.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
 #### Additionnal rules - LAN ####
 
 if \$msg contains 'failed handling msg from' then {
@@ -978,14 +999,6 @@ if \$msg contains 'TCAM_RET_NOT_FOUND' then {
 	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"TCAM_RET_NOT_FOUND\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'Storm Threshold violation' then {
-       \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"Storm Threshold violation\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
@@ -1075,14 +1088,6 @@ if \$msg contains 'alert' and \$msg contains 'The top 20' then {
 	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"High memory issue\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'radcli' and \$msg contains 'RADIUS' then {
-       \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"devicelogradius\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_radius.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
@@ -1198,7 +1203,7 @@ echo "/var/log/devices/*.log /var/log/devices/*/*.log
 echo -e "\e[32mAPT-GET Install\e[39m"
 echo "This operation can take several minutes"
 apt-get -qq -y  update
-#apt-get -qq -y install wget curl
+apt-get -qq -y install wget curl
 apt-get -qq -y install sshpass
 
 echo
@@ -1206,7 +1211,6 @@ echo -e "\e[32mPython 3.7 installation\e[39m"
 echo
 echo "Current user: `whoami`"
 echo "Python 3.7 package is downloaded on current user Home directory"
-# #Python 3.10
 
 apt-get -qq -y update
 apt-get -qq -y install build-essential openssl openssl-dev*
