@@ -1223,7 +1223,7 @@
 				},
 				"url": {
 					"type": "string",
-					"value": "/api/flows/%tenantName%"
+					"value": "/api/flows/$tenantName4"
 				},
 				"token": {
 					"type": "token"
