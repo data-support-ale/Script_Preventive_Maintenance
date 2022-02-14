@@ -1214,13 +1214,30 @@ echo "Python 3.7 package is downloaded on current user Home directory"
 
 apt-get -qq -y update
 apt-get -qq -y install build-essential openssl openssl-dev*
-apt-get -qq -y install libssl*
+apt-get -qq -y install checkinstall libreadline-gplv2-dev libncursesw5-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
+
+cd /usr/src
+curl https://www.openssl.org/source/openssl-1.1.1c.tar.gz | tar xz
+cd openssl-1.1.1c/
+./config shared --prefix=/usr/local/
+make
+sudo make install
+
+export LDFLAGS="-L/usr/local/lib/"
+export LD_LIBRARY_PATH="/usr/local/lib/"
+export CPPFLAGS="-I/usr/local/include -I/usr/local/include/openssl"
+
 wget --inet4-only https://www.python.org/ftp/python/3.7.8/Python-3.7.8.tgz
 tar -xvf Python-3.7.8.tgz
 cd Python-3.7.8
-./configure --enable-shared
+./configure --with-openssl=/usr/src/openssl-1.1.1c --enable-shared
 make 
 make test
+
+export LDFLAGS="-L/usr/local/lib/"
+export LD_LIBRARY_PATH="/usr/local/lib/"
+export CPPFLAGS="-I/usr/local/include -I/usr/local/include/openssl"
+
 make install
 
 # Steps from here are to enable other libraries in linux to 
