@@ -396,13 +396,6 @@ module(
   log.file=\"/var/log/rsyslog-stats\"
 )
 
-ruleset(name=\"process_stats\") {
-  action(
-    type=\"omprog\"
-    name=\"to_exporter\"
-    binary=\"/opt/rsyslog_exporter/rsyslog_exporter\"
-  )
-}
 
 ### Template definition ####
 \$template DynamicFile,\"/var/log/devices/%hostname%/syslog.log\"
