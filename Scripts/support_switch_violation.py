@@ -30,7 +30,7 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
     try:
         log_json = json.load(log_file)
         ip = log_json["relayip"]
-        nom = log_json["hostname"]
+        host = log_json["hostname"]
         msg = log_json["message"]
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_violation.json empty")
@@ -81,7 +81,7 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
 save_resp = check_save(ip, port, "violation")
 
 if save_resp == "0":
-    notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + \
+    notif = "A port violation occurs on OmniSwitch " + host + "port " + port + \
         ", source: " + reason + ". Do you want to clear the violation? " + ip_server
     answer = send_message_request(notif, jid)
     print(answer)
