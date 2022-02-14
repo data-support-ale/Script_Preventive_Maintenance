@@ -34,14 +34,18 @@ mkdir $dir >& /dev/null
 mkdir /tftpboot/ >& /dev/null
 
 #Analytics
-archi=`dpkg --print-architecture >& /dev/null` 
-if [[ $archi == *"arm"* ]]
+archi=`dpkg --print-architecture` 
+if [[ $archi == *"amd64"* ]]
 then
      mkdir $dir/Analytics
-     cp -r ./Analytics/arm/* $dir/Analytics/
+     cp -r ./Analytics/amd64/* $dir/Analytics/
+elif [[ $archi == *"arm64"* ]]
+then
+     mkdir $dir/Analytics
+     cp -r ./Analytics/arm64/* $dir/Analytics/
 else
      mkdir $dir/Analytics
-     cp -r ./Analytics/amd64/* $dir/Analytics/
+     cp -r ./Analytics/amd/* $dir/Analytics/
 fi
 cp -r ./VNA_Workflow $dir/
 
@@ -1246,7 +1250,7 @@ echo
 echo -e "\e[32mPython3.10 Dependencies Complete\e[39m"
 echo
 
-if [[ $archi == *"arm"* ]]
+if [[ $archi != *"amd64"* ]] && [[ $archi != *"arm64"* ]] # if not 64 bits
 then
      #GOLANG
      echo
