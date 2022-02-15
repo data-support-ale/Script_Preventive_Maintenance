@@ -1199,58 +1199,81 @@ apt-get -qq -y  update
 apt-get -qq -y install wget curl
 apt-get -qq -y install sshpass
 
-echo
-echo -e "\e[32mPython 3.7 installation\e[39m"
-echo
-echo "Current user: `whoami`"
-echo "Python 3.7 package is downloaded on current user Home directory"
 
-apt-get -qq -y update
-apt-get -qq -y install build-essential openssl openssl-dev*
-apt-get -qq -y install checkinstall libreadline-gplv2-dev libncursesw5-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
 
-cd /usr/src
-curl https://www.openssl.org/source/openssl-1.1.1c.tar.gz | tar xz
-cd openssl-1.1.1c/
-./config shared --prefix=/usr/local/
-make
-sudo make install
+ver=$(python3 -V 2>&1 | sed 's/.* \([0-9]\).\([0-9]\).*/\1\2/')
+if [ "$ver" -lt "37" ]
+then
+    echo -e "\e[32mThis script requires python 3.7 or greater\e[39m"
 
-export LDFLAGS="-L/usr/local/lib/"
-export LD_LIBRARY_PATH="/usr/local/lib/"
-export CPPFLAGS="-I/usr/local/include -I/usr/local/include/openssl"
+    echo
+    echo -e "\e[32mPython 3.7 installation\e[39m"
+    echo
+    echo "Current user: `whoami`"
+    echo "Python 3.7 package is downloaded on current user Home directory"
+    
+    apt-get -qq -y update
+    apt-get -qq -y install build-essential openssl openssl-dev*
+    apt-get -qq -y install checkinstall libreadline-gplv2-dev libncursesw5-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
+    apt-get -qq -y install libssl-dev*
+    
+    cd /usr/src
+    curl https://www.openssl.org/source/openssl-1.1.1c.tar.gz | tar xz
+    cd openssl-1.1.1c/
+    ./config shared --prefix=/usr/local/
+    make
+    sudo make install
+    
+    export LDFLAGS="-L/usr/local/lib/"
+    export LD_LIBRARY_PATH="/usr/local/lib/"
+    export CPPFLAGS="-I/usr/local/include -I/usr/local/include/openssl"
+    
+    wget --inet4-only https://www.python.org/ftp/python/3.7.8/Python-3.7.8.tgz
+    tar -xvf Python-3.7.8.tgz
+    cd Python-3.7.8
+    ./configure --with-openssl=/usr/src/openssl-1.1.1c --enable-shared
+    make 
+    make test
 
-wget --inet4-only https://www.python.org/ftp/python/3.7.8/Python-3.7.8.tgz
-tar -xvf Python-3.7.8.tgz
-cd Python-3.7.8
-./configure --with-openssl=/usr/src/openssl-1.1.1c --enable-shared
-make 
-make test
+    export LDFLAGS="-L/usr/local/lib/"
+    export LD_LIBRARY_PATH="/usr/local/lib/"
+    export CPPFLAGS="-I/usr/local/include -I/usr/local/include/openssl"
+    
+    make install
+    
+    # Steps from here are to enable other libraries in linux to 
+    # access the shared python libraries.
+    
+    cd /usr/local/lib/
+    cp libpython3.so /usr/lib64/
+    cp libpython3.so /usr/lib
+    cp libpython3.7m.so.1.0 /usr/lib64/
+    cp libpython3.7m.so.1.0 /usr/lib/
+    cd /usr/lib64
+    ln -s libpython3.7m.so.1.0 libpython3.7m.so
+    cd /usr/lib
+    ln -s libpython3.7m.so.1.0 libpython3.7m.so
+    
+    python3 -m pip install --upgrade pip
+    
+    echo
+    echo -e "\e[32mPython3.7 Installation Complete\e[39m"
+    echo
 
-export LDFLAGS="-L/usr/local/lib/"
-export LD_LIBRARY_PATH="/usr/local/lib/"
-export CPPFLAGS="-I/usr/local/include -I/usr/local/include/openssl"
+else
+    echo -e "\e[32mPython 3.7 or above detected, installation not required\e[39m"
+fi
 
-make install
+ver=$(python3 -m pip --version | grep from)
+echo $ver
 
-# Steps from here are to enable other libraries in linux to 
-# access the shared python libraries.
-
-cd /usr/local/lib/
-cp libpython3.so /usr/lib64/
-cp libpython3.so /usr/lib
-cp libpython3.7m.so.1.0 /usr/lib64/
-cp libpython3.7m.so.1.0 /usr/lib/
-cd /usr/lib64
-ln -s libpython3.7m.so.1.0 libpython3.7m.so
-cd /usr/lib
-ln -s libpython3.7m.so.1.0 libpython3.7m.so
-
-python3 -m pip install --upgrade pip
-
-echo
-echo -e "\e[32mPython3.7 Installation Complete\e[39m"
-echo
+if [ "$ver" != "" ]
+then
+    echo -e "\e[32mPython-pip already installed\e[39m"
+else
+    echo -e "\e[32mPython-pip installation\e[39m"
+    apt-get install python3-pip
+fi
 
 python3 -m pip install pysftp 
 python3 -m pip install influxdb-client 
@@ -1427,7 +1450,7 @@ then
     echo -e "\e[32mDocker-compose installation\e[39m"
     echo
     #DOCKER COMPOSE
-    wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64";
+    wget -q --inet4-only --output-document=/usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-$(uname -s)-$(uname -m)";
     chmod +x /usr/local/bin/docker-compose
     echo
     echo -e "\e[32mDocker-Compose Installation complete\e[39m"
