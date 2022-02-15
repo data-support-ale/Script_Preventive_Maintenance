@@ -386,16 +386,6 @@ module(load=\"omprog\") # provides support for script
 module(load=\"imudp\")
 input(type=\"imudp\" port=\"10514\")
 
-# provides stats for node exporter - Prometheus
-module(
-  load=\"impstats\"
-  interval=\"300\"
-  format=\"json\"
-  resetCounters=\"off\"
-  ruleset=\"process_stats\"
-  log.file=\"/var/log/rsyslog-stats\"
-)
-
 
 ### Template definition ####
 \$template DynamicFile,\"/var/log/devices/%hostname%/syslog.log\"
@@ -543,23 +533,6 @@ lpr.*                           -/var/log/lpr.log
 mail.*                          -/var/log/mail.log
 user.*                          -/var/log/user.log
 #
-# Logging for the mail system.  Split it up so that
-# it is easy to write scripts to parse these files.
-#
-mail.info                       -/var/log/mail.info
-mail.warn                       -/var/log/mail.warn
-mail.err                        /var/log/mail.err
-#
-# Some \"catch-all\" log files.
-#
-*.=debug;\\\
-        auth,authpriv.none;\\\
-        news.none;mail.none     -/var/log/debug
-*.=info;*.=notice;*.=warn;\\\
-        auth,authpriv.none;\\\
-        cron,daemon.none;\\\
-        mail,news.none          -/var/log/messages
-#
 # Emergencies are sent to everybody logged in.
 #
 *.emerg                         :omusrmsg:*
@@ -652,10 +625,10 @@ if \$msg contains 'verdict:[NF_DROP]' then {
 ##### WLAN Rules for Stellar AP deassociation or deauthentication #####
 
 if \$msg contains 'Send deauth, reason 1' or \$msg contains 'deauth reason 1' or \$msg contains 'Send deauth from wam, reason 36' then {
-  \$RepeatedMsgReduction on
-  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-  action(type=\"omprog\" name=\"support_wlan_generic_roaming\" binary=\"/opt/ALE_Script/support_wlan_generic.py roaming\")
-  stop
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_wlan_generic_roaming\" binary=\"/opt/ALE_Script/support_wlan_generic.py roaming\")
+     stop
 }
 
 if \$msg contains 'Send deauth, reason' or \$msg contains 'Send deauth from wam, reason' or \$msg contains 'Received disassoc' then {
@@ -667,10 +640,10 @@ if \$msg contains 'Send deauth, reason' or \$msg contains 'Send deauth from wam,
 }
 
 if \$msg contains 'Received deauth' then {
-  \$RepeatedMsgReduction on
-  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-  action(type=\"omprog\" name=\"support_wlan_generic_leaving\" binary=\"/opt/ALE_Script/support_wlan_generic.py leaving\")
-  stop
+    \$RepeatedMsgReduction on
+    action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+    action(type=\"omprog\" name=\"support_wlan_generic_leaving\" binary=\"/opt/ALE_Script/support_wlan_generic.py leaving\")
+    stop
 }
 
 ##### WLAN Rules for Stellar AP upgrade or reboot #####
@@ -955,7 +928,7 @@ if \$msg contains 'bgp' and \$msg contains 'transitioned to' then {
 if \$msg contains 'cmmEsmCheckDDMThresholdViolations' then {
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogddm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" name=\"support_lan_generic_ddm\" name=\"support_switch_queue_DDM\" binary=\"/opt/ALE_Script/support_switch_ddm.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       action(type=\"omprog\" name=\"support_lan_generic_ddm\" binary=\"/opt/ALE_Script/support_switch_ddm.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
@@ -963,7 +936,7 @@ if \$msg contains 'cmmEsmCheckDDMThresholdViolations' then {
 if \$msg contains 'Storm Threshold violation' then {
        \$RepeatedMsgReduction on
 	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogstorm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogstorm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_storm.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
@@ -1440,7 +1413,7 @@ then
     sudo apt-get -qq -y install ca-certificates gnupg lsb-release
     curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
-    apt-get -qq - y update
+    apt-get -qq -y update
     apt-get -qq -y --allow-unauthenticated install docker-ce docker-ce-cli containerd.io
     echo
     echo -e "\e[32mDocker installation complete\e[39m"
