@@ -13,7 +13,7 @@ import re
 from support_tools_OmniSwitch import get_credentials
 from support_send_notification import send_message, send_file, send_alert
 #from support_OV_get_wlan import OvHandler
-
+from database_conf import *
 
 script_name = sys.argv[0]
 argument = sys.argv[1]
@@ -44,6 +44,11 @@ def deassociation(ipadd, device_mac, timestamp, reason, reason_number):
     message_content_2 = "Reason number: ".format(reason_number)
     send_alert(message, jid)
     send_message(message_reason, jid)
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason, "topic": "deauth"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
     # REST-API for login on OV
     #ovrest = OvHandler()
@@ -69,7 +74,11 @@ def reboot(ipadd):
     message_content_2 = "sysreboot"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
-
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "sysreboot"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
 def unexpected_reboot(ipadd):
     os.system('logger -t montag -p user.info reboot detected')
@@ -79,7 +88,11 @@ def unexpected_reboot(ipadd):
     message_content_2 = "sysreboot"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
-
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "unexpected_reboot"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
 def upgrade(ipadd):
     os.system('logger -t montag -p user.info upgrade detected')
@@ -89,7 +102,11 @@ def upgrade(ipadd):
     message_content_2 = "sysupgrade"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
-
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "sysupgrade"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
 def exception(ipadd):
     os.system('logger -t montag -p user.info exception detected')
@@ -99,7 +116,11 @@ def exception(ipadd):
     message_content_2 = "Exception"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
-
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "exception"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
 def internal_error(ipadd):
     os.system('logger -t montag -p user.info internal error detected')
@@ -109,7 +130,11 @@ def internal_error(ipadd):
     message_content_2 = "Internal Error"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
-
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "internal error"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
 def target_asserted(ipadd):
     os.system('logger -t montag -p user.info target asserted detected')
@@ -119,6 +144,11 @@ def target_asserted(ipadd):
     message_content_2 = "Target Asserted"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "target asserted"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
 
 def kernel_panic(ipadd):
@@ -129,6 +159,11 @@ def kernel_panic(ipadd):
     message_content_2 = "Kernel panic"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "kernel panic"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
 
 def limit_reached(ipadd):
@@ -139,10 +174,18 @@ def limit_reached(ipadd):
     message_content_2 = "Associated STA limit reached"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
-
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "STA limit reached"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
 
 def authentication_step1(ipadd, device_mac, auth_type, ssid, deassociation):
-
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_association", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Auth_type": auth_type, "Association": deassociation}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
     if "0" in deassociation:
         message = "[{0}] WLAN deassociation detected from client {1} on Stellar AP {2} with Authentication type {3}".format(
             ssid, device_mac, ipadd, auth_type)
@@ -150,13 +193,22 @@ def authentication_step1(ipadd, device_mac, auth_type, ssid, deassociation):
 
 
 def authentication_step2(ipadd, user_name, ssid):
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_association", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "User name": user_name}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
     message = "[{0}] WLAN authentication on Captive Portal from User: {1} on Stellar AP {2}".format(
         ssid, user_name, ipadd)
     os.system('logger -t montag -p user.info ' + message)
 
 
 def mac_authentication(device_mac_auth, ARP, source, reason):
-
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_mac_auth", "tags": {"Client_MAC": device_mac_auth, "ARP": ARP, "Source": source, "Reason": reason}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
     if "failed" in reason:
         message = "WLAN Authentication failed from client {0} assigned to {1} from {2}".format(
             device_mac_auth, ARP, source)
@@ -172,7 +224,11 @@ def mac_authentication(device_mac_auth, ARP, source, reason):
 
 
 def radius_authentication(auth_result, device_mac, accounting_status):
-
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_radius_auth", "tags": {"Client_MAC": device_mac, "Auth_Result": auth_result, "Accounting_status": accounting_status}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
     if "Failed" in auth_result:
         message = "WLAN 802.1x Authentication {0} for client {1}".format(
             auth_result, device_mac)
@@ -191,15 +247,13 @@ def radius_authentication(auth_result, device_mac, accounting_status):
 
 
 def dhcp_ack(ipadd, device_mac):
-
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_dhcp", "tags": {"Client_MAC": device_mac, "DHCP_Lease": ip_dhcp}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
     message = "DHCP Ack received with IP Address {0} for client {1}".format(
         ip_dhcp, device_mac)
-    os.system('logger -t montag -p user.info ' + message)
-
-
-def authentication_step2(ipadd, user_name, ssid):
-    message = "[{0}] WLAN authentication on Captive Portal from User: {1} on Stellar AP {2}".format(
-        ssid, user_name, ipadd)
     os.system('logger -t montag -p user.info ' + message)
 
 
@@ -369,6 +423,11 @@ def extract_WCF():
             message = "Web Content Filtering for device {0} when accessing Site {1}".format(
                 device_mac_wcf, fqdn)
             os.system('logger -t montag -p user.info  ' + message)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_wlan_wcf", "tags": {"Client_MAC": device_mac_wcf, "URL": fqdn}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
 
 
 def extract_ARP():
@@ -558,6 +617,11 @@ def extract_WIPS():
                     device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
                 send_alert(message, jid)
+                try:
+                   write_api.write(bucket, org, [{"measurement": "support_wlan_wips", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason": "Added in BlockList"}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                   print(error)
+                   sys.exit()
             if "status 37" in element:
                 device_mac = re.findall(
                     r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
@@ -569,6 +633,11 @@ def extract_WIPS():
                     device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
                 send_alert(message, jid)
+                try:
+                   write_api.write(bucket, org, [{"measurement": "support_wlan_wips", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason": reason}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                   print(error)
+                   sys.exit()
     return device_mac, reason
 
 
@@ -660,6 +729,11 @@ if sys.argv[1] == "deauth":
     ipadd, message_reason = extract_ipadd()
     reason, device_mac, reason_number = extract_reason()
     deassociation(ipadd, device_mac, timestamp, reason, reason_number)
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason, "topic": "deauth"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
     os.system('logger -t montag -p user.info Sending email')
     os.system('logger -t montag -p user.info Process terminated')
     sys.exit(0)
@@ -670,6 +744,11 @@ elif sys.argv[1] == "roaming":
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     reason, device_mac, reason_number = extract_reason()
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason, "topic": "roaming"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
     sys.exit(0)
 
 elif sys.argv[1] == "leaving":
@@ -678,6 +757,11 @@ elif sys.argv[1] == "leaving":
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     reason, device_mac, reason_number = extract_reason()
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason, "topic": "leaving"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
     sys.exit(0)
 
 elif sys.argv[1] == "reboot":
