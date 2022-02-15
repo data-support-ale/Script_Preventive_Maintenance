@@ -684,7 +684,7 @@ if \$msg contains 'sysreboot' then {
      }
      else {
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_wlan_generic_sysreboot\" binary=\"/opt/ALE_Script/support_wlan_generic.py reboot\")
+     action(type=\"omprog\" name=\"support_wlan_generic_reboot\" binary=\"/opt/ALE_Script/support_wlan_generic.py reboot\")
      stop
      }
 }
@@ -692,7 +692,7 @@ if \$msg contains 'sysreboot' then {
 if \$msg contains 'enter in sysupgrade' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_wlan_generic_sysupgrade\" binary=\"/opt/ALE_Script/support_wlan_generic.py upgrade\")
+     action(type=\"omprog\" name=\"support_wlan_generic_upgrade\" binary=\"/opt/ALE_Script/support_wlan_generic.py upgrade\")
      stop
 }
 
