@@ -891,7 +891,7 @@ if \$msg contains 'Power supply' and \$msg contains 'inoperable'  then {
 
 if \$msg contains 'operational state changed to UNPOWERED' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" name=\"support_switch_queue_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
        stop
@@ -900,7 +900,7 @@ if \$msg contains 'operational state changed to UNPOWERED' then {
 #### SPB Adjacency DOWN - LAN ####
 if \$msg contains 'ADJACENCY INFO: Lost L1 adjacency' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogspb\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" name=\"support_lan_generic_spb\" binary=\"/opt/ALE_Script/support_switch_spb.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -917,7 +917,7 @@ if \$msg contains 'OSPF neighbor state change' then {
 
 #### BGP Neighbor DOWN - LAN ####
 if \$msg contains 'bgp' and \$msg contains 'transitioned to' then {
-	  \$RepeatedMsgReduction on
+       \$RepeatedMsgReduction on
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogbgp\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" name=\"support_lan_generic_bgp\" binary=\"/opt/ALE_Script/support_switch_bgp.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
@@ -935,16 +935,16 @@ if \$msg contains 'cmmEsmCheckDDMThresholdViolations' then {
 #### Storm Threshold Violation - LAN ####
 if \$msg contains 'Storm Threshold violation' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogstorm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_storm.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
 #### Radius Server status - LAN ####
-if \$msg contains 'radcli' and \$msg contains 'RADIUS' then {
+if \$msg contains 'radCli' and \$msg contains 'RADIUS' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogradius\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_radius.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -953,8 +953,8 @@ if \$msg contains 'radcli' and \$msg contains 'RADIUS' then {
 #### Additionnal rules - LAN ####
 
 if \$msg contains 'failed handling msg from' then {
-	  \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"failed handling msg from\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -962,7 +962,7 @@ if \$msg contains 'failed handling msg from' then {
 
 if \$msg contains 'TCAM_RET_NOT_FOUND' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"TCAM_RET_NOT_FOUND\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -970,8 +970,8 @@ if \$msg contains 'TCAM_RET_NOT_FOUND' then {
 
 
 if \$msg contains 'CMM chassisTrapsAlert - CMM Down' then {
-	  \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"CMM chassisTrapsAlert - CMM Down\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -979,7 +979,7 @@ if \$msg contains 'CMM chassisTrapsAlert - CMM Down' then {
 
 if \$msg contains 'FAULT State change 1b to 24' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"FAULT State change 1b to 24\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -987,7 +987,7 @@ if \$msg contains 'FAULT State change 1b to 24' then {
 
 if \$msg contains 'FAULT State change 1b to 25' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"FAULT State change 1b to 25\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -995,7 +995,7 @@ if \$msg contains 'FAULT State change 1b to 25' then {
 
 if \$msg contains 'FAULT State change 1b to 1e' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"FAULT State change 1b to 1e\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -1003,14 +1003,15 @@ if \$msg contains 'FAULT State change 1b to 1e' then {
 
 if \$msg contains 'FAULT State change 1b to 1c' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"FAULT State change 1b to 1c\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
 if \$msg contains 'lpStartNi' and \$msg contains 'Starting' then {
-       \$RepeatedMsgReduction onaction(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"LANPOWER Starting\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -1026,7 +1027,7 @@ if \$msg contains 'Unable to connect' and \$msg contains 'mqttd' then {
 
 if \$msg contains 'openvpn' and \$msg contains 'Cannot resolve host address' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"cloud agent not able to resolve tenant address\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -1034,7 +1035,7 @@ if \$msg contains 'openvpn' and \$msg contains 'Cannot resolve host address' the
 
 if \$msg contains 'ovcmm' and \$msg contains 'Invalid process status' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"cloud agent SN not created on Device Catalog\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -1042,7 +1043,7 @@ if \$msg contains 'ovcmm' and \$msg contains 'Invalid process status' then {
 
 if \$msg contains 'ospf' and \$msg contains 'oversized LSA' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"OSPF Oversized LSA received\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
@@ -1051,7 +1052,7 @@ if \$msg contains 'ospf' and \$msg contains 'oversized LSA' then {
 
 if \$msg contains 'alert' and \$msg contains 'The top 20' then {
        \$RepeatedMsgReduction on
-	  action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"High memory issue\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
