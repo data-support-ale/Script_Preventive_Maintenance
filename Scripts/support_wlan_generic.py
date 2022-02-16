@@ -618,7 +618,7 @@ def extract_WIPS():
                 os.system('logger -t montag -p user.info  ' + message)
                 send_alert(message, jid)
                 try:
-                   write_api.write(bucket, org, [{"measurement": "support_wlan_wips", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason": "Added in BlockList"}, "fields": {"count": 1}}])
+                   write_api.write(bucket, org, [{"measurement": "support_wlan_wips", "tags": {"Client_MAC": device_mac, "Reason": "Added in BlockList"}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                    print(error)
                    sys.exit()
@@ -634,7 +634,7 @@ def extract_WIPS():
                 os.system('logger -t montag -p user.info  ' + message)
                 send_alert(message, jid)
                 try:
-                   write_api.write(bucket, org, [{"measurement": "support_wlan_wips", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason": reason}, "fields": {"count": 1}}])
+                   write_api.write(bucket, org, [{"measurement": "support_wlan_wips", "tags": {"Client_MAC": device_mac, "Reason": reason}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                    print(error)
                    sys.exit()
