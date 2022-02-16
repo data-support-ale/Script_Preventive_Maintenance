@@ -1,13 +1,5 @@
 # Script_Preventive_Maintenance
 
-# Rsyslog - what is it?
-
-Rsyslog is a rocket-fast system for log processing.
-
-It offers high-performance, great security features and a modular design. While it started as a regular syslogd, rsyslog has evolved into a kind of swiss army knife of logging, being able to accept inputs from a wide variety of sources, transform them, and output to the results to diverse destinations.
-
-Rsyslog can deliver over one million messages per second to local destinations when limited processing is applied (based on v7, December 2013). Even with remote destinations and more elaborate processing the performance is usually considered "stunning".
-
 # Project Overview
 The purpose of this project is to provide scripting for automation of several tasks like:
 - automatic log collection
@@ -15,7 +7,17 @@ The purpose of this project is to provide scripting for automation of several ta
 - automatic incidence resolution
 - notifications by email or rainbow
 
-We use Linux Debian or Raspbian Distributions
+We use Linux Debian, Ubuntu or Raspbian Distributions
+
+The solution is based on Rsyslog Linux package (installed by default on Linux Distributions) for detecting specific patterns and trigger script execution
+
+# Rsyslog - what is it?
+
+Rsyslog is a rocket-fast system for log processing.
+
+It offers high-performance, great security features and a modular design. While it started as a regular syslogd, rsyslog has evolved into a kind of swiss army knife of logging, being able to accept inputs from a wide variety of sources, transform them, and output to the results to diverse destinations.
+
+Rsyslog can deliver over one million messages per second to local destinations when limited processing is applied (based on v7, December 2013). Even with remote destinations and more elaborate processing the performance is usually considered "stunning".
 
 # Checklist to verify that Setup is working fine:
 ###### 1. Add CLI Command ```swlog output socket <ip_address> <port> vrf <vrf_name>```
@@ -63,7 +65,7 @@ Dec 13 10:11:18 debian2 montag: Executing script /opt/ALE_Script/support_switch_
 Dec 13 10:11:56 debian2 montag: Executing script /opt/ALE_Script/support_switch_port_flapping.py
 ```
 
-###### 6. Check if the python scripts are executing without errors/exceptions:
+###### 6. Check if the python scripts are executed without errors/exceptions:
 Note: several scripts open a json file for processing data and find the ipaddress (column: relayip) the hostname, and additionnal data like port, vcid, power supply ID, therefore if json file is empty the script won't execute
 
 You can edit or create the ```/var/log/devices/lastlog_auth_fail.json``` file with content:
@@ -106,19 +108,17 @@ if sys.argv[1] != 0:
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info),'Card': '0'}
     response = requests.get(url, headers=headers)
 else:
-    send_file("TEST",jid, "10.130.7.247", "")
+    print("no argument received")
 ```
-Example:
+Example, message "NBD Preventive Maintenance - This is a test!" shall be displayed on the Rainbow Bubble/Rainbow JID configured on the VNA Workflow:
 ```
 admin-support@debian2:/opt/ALE_Script$ sudo python3 /opt/ALE_Script/test.py EMEA
 [sudo] password for admin-support:
-/usr/local/lib/python3.5/dist-packages/paramiko/transport.py:33: CryptographyDeprecationWarning: Python 3.5 support will be dropped in the next release of cryptography. Please upgrade your Python.
-  from cryptography.hazmat.backends import default_backend
 EMEA
 ```
-###### 8. About VNA, I created for you the workflow "Preventive_maintenance_Calabasas", basic things to check:
-- on Rainbow IM check if the bubble is correct, shall be "Tech_support_notif_NAR"
-- on Send Email check if the email destination are correct, user group or user's email address
+###### 8. About VNA,  the Setup.sh automate the VNA Workflow/APIs creation as well as Rainbow Bubble based on the company name, basic things to check:
+- on Rainbow IM check if the bubble is correct, shall be "Tech_support_notif_<company_name>"
+- on VNA Workflow building blocl "Send Email" check if the emails destination are correct, user group or user's email address
 
 ###### 9. Basic script for collecting CLI command output on OmniSwitch with an example how to get the port number if json file content is ```/var/log/devices/get_log_switch.json```:
 ```
