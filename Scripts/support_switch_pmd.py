@@ -112,7 +112,7 @@ filename_path = get_pmd_file_sftp(
     switch_user, switch_password, ipadd, filename_pmd)
 
 if jid != '':
-    info = "Tech-support eng complete and PMD files are collected and stored in /tftpboot/ on syslog server"
+    info = "Tech-support eng complete and PMD files are collected from OmniSwitch {0}/{1} and stored in /tftpboot/ on server IP Address: {2}".format(host, ipadd, ip_server)
     send_message(info, jid)
     send_message(msg, jid)
 

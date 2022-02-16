@@ -381,7 +381,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
     try:
         p = paramiko.SSHClient()
         p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        p.connect(ipadd, port=22, username="admin", password="switch")
+        p.connect(ipadd, port=22, username=switch_user, password=switch_password)
     except paramiko.ssh_exception.SSHException:
         exception = "Timeout"
         print("Timeout when establishing SSH Session on OmniSwitch " + ipadd)

@@ -32,6 +32,10 @@ with open("/var/log/devices/get_log_switch.json", "r", errors='ignore') as log_f
         ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        l = []
+        l.append('/code ')
+        l.append(msg)
+        message_reason = ''.join(l)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/get_log_switch.json empty")
         exit()
@@ -128,7 +132,7 @@ if jid != '':
     info = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. We are collecting logs on syslog server".format(
         ipadd, pattern)
     send_message(info, jid)
-    send_message(msg, jid)
+    send_message(message_reason, jid)
     try:
         write_api.write(bucket, org, [{"measurement": str(os.path.basename(
             __file__)), "tags": {"IP": ipadd, "Pattern": pattern}, "fields": {"count": 1}}])
@@ -142,10 +146,9 @@ get_tech_support_sftp(switch_user, switch_password, host, ipadd)
 print("Starting collecting additionnal logs")
 
 if jid != '':
-    info = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. Tech-support eng complete is collected and stored in /tftpboot/ on syslog server".format(
-        ipadd, pattern)
+    info = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. Tech-support eng complete is collected and stored in /tftpboot/ on server IP Address: {2}".format(
+        ipadd, pattern, ip_server)
     send_message(info, jid)
-    send_message(msg, jid)
 
 ##########################Get More LOGS########################################
 text = "More logs about the switch : {0} \n\n\n".format(ipadd)
@@ -220,7 +223,8 @@ filename = '/opt/ALE_Script/{0}.txt'.format(filename)
 print(filename)
 
 if jid != '':
-    #         send_file(info,jid,ipadd,filename)
-    print("file attached in Rainbow bubble")
+    info = "Additional logs collected from switch(IP : {0}) syslogs. and stored in /opt/ALE_Script/ on server IP Address: {2}".format(
+        ipadd, pattern, ip_server)
+    send_message(info, jid)
 
 open('/var/log/devices/get_log_switch.json', 'w').close()
