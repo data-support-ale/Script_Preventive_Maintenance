@@ -942,7 +942,7 @@ if \$msg contains 'Storm Threshold violation' then {
 }
 
 #### Radius Server status - LAN ####
-if \$msg contains 'radcli' and \$msg contains 'RADIUS' then {
+if \$msg contains 'radCli' and \$msg contains 'RADIUS' then {
        \$RepeatedMsgReduction on
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogradius\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
