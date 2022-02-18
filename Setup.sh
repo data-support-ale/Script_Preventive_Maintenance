@@ -1227,6 +1227,14 @@ then
     ln -s libpython3.7m.so.1.0 libpython3.7m.so
     cd /usr/lib
     ln -s libpython3.7m.so.1.0 libpython3.7m.so
+
+    for filename in Scripts/*.py; do
+        [ -e "$filename" ] || continue
+        var='#!\/usr\/local\/bin\/python3.7'
+        echo $filename
+        sed -i "1s/.*/$var/" $filename
+    done
+
     
     python3 -m pip install --upgrade pip
     

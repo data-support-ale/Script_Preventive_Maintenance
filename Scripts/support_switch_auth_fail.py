@@ -8,7 +8,9 @@ from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
 from support_send_notification import send_message
 from database_conf import *
+import sys
 
+print(sys.executable)
 # Script init
 script_name = sys.argv[0]
 os.system('logger -t montag -p user.info Executing script ' + script_name)
