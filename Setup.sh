@@ -482,6 +482,9 @@ template (name=\"devicelogradius\" type=\"string\"
 template (name=\"devicelogstorm\" type=\"string\"
      string=\"/var/log/devices/lastlog_storm.json\")
 
+template (name=\"devicelogfan\" type=\"string\"
+     string=\"/var/log/devices/lastlog_fan.json\")
+
 template(name=\"json_syslog\"
   type=\"list\") {
     constant(value=\"{\")
@@ -869,6 +872,15 @@ if \$msg contains 'The switch was restarted by' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogvcdown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omprog\" name=\"support_lan_generic_vc_cmm\" binary=\"$dir/support_switch_vc_down.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     stop
+}
+
+#### FAN DOWN - LAN ####
+if \$msg contains 'Fan Failure'  then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogfan\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_fan\" binary=\"$dir/support_switch_fan.py\")
      stop
 }
 

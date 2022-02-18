@@ -1113,9 +1113,133 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
     category = "spb"
     return filename_path, subject, action, result, category
 
+# Function to collect several command outputs related to FAN failure
+def collect_command_output_fan(switch_user, switch_password, host, ipadd):
+    """ 
+    This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+
+    :param str host:                  Switch Hostname
+    :param str ipadd:                 Switch IP address
+    :return:                          filename_path,subject,action,result,category
+    """
+    text = "More logs about the switch : {0} \n\n\n".format(ipadd)
+
+    l_switch_cmd = []
+    l_switch_cmd.append("show microcode")
+    l_switch_cmd.append("show system")
+    l_switch_cmd.append("show fan")
+    l_switch_cmd.append("show temperature")
+
+    for switch_cmd in l_switch_cmd:
+        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
+            switch_password, switch_user, ipadd, switch_cmd)
+        try:
+            output = ssh_connectivity_check(
+                switch_user, switch_password, ipadd, switch_cmd)
+            output = subprocess.check_output(
+                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            if output != None:
+                output = output.decode('UTF-8').strip()
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+            else:
+                exception = "Timeout"
+                info = (
+                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = (
+                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            sys.exit()
+        except subprocess.FileNotFoundError as exception:
+            info = (
+                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            sys.exit()
+    date = datetime.date.today()
+    date_hm = datetime.datetime.today()
+
+    filename = "{0}_{1}-{2}_{3}_fan_logs".format(
+        date, date_hm.hour, date_hm.minute, ipadd)
+    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    f_logs = open(filename_path, 'w')
+    f_logs.write(text)
+    f_logs.close()
+
+    switch_cmd = "show fan"
+    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
+        switch_password, switch_user, ipadd, switch_cmd)
+    try:
+        fan_status = subprocess.check_output(
+            cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+        fan_status = fan_status.decode('UTF-8').strip()
+        print(fan_status)
+    except subprocess.TimeoutExpired as exception:
+        info = (
+            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        sys.exit()
+    except subprocess.FileNotFoundError as exception:
+        info = (
+            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        sys.exit()
+    if "NO" in fan_status:
+        try:
+            chassis_id = re.findall(r"(.*?)/--         1       NO", fan_status)[0]
+            print(chassis_id)
+        except IndexError:
+            print("Index error in regex")
+            exit()
+    else:
+        print("Not found")
+        chassis_id="Unknown"
+
+    subject = (
+        "Preventive Maintenance Application - FAN issue detected on switch: {0}").format(ipadd)
+    action = ("The FAN Unit {0} is inoperable on OmniSwitch (Hostname: {1})").format(chassis_id,host)
+    result = "Find enclosed to this notification the log collection for further analysis"
+    category = "fan"
+    return filename_path, subject, action, result, category, chassis_id
+
+
 # Function to collect several command outputs related to Power Supply
-
-
 def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     """ 
     This function takes entries arguments the Power Supply ID. This function is called when an issue is observed on Power Supply hardware
@@ -1932,11 +2056,13 @@ if __name__ == "__main__":
     jid = "570e12872d768e9b52a8b975@openrainbow.com"
     switch_password = "switch"
     switch_user = "admin"
-    ipadd = "192.168.80.81"
+    ipadd = "10.130.7.247"
     cmd = "show system"
     host = "LAN-6860N-2"
     port = "1/1/4"
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+    filename_path, subject, action, result, category = collect_command_output_fan(switch_user, switch_password, host, ipadd)
+    send_file(filename_path, subject, action, result, category)
     filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
     send_file(filename_path, subject, action, result,category)
     filename_path, subject, action, result, category = collect_command_output_poe(
