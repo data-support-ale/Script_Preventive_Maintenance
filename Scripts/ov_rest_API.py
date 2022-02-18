@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3.7
+
 import requests
 import json
 import os

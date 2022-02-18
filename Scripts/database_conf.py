@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/bin/python3.7
 
 import os
 from influxdb_client import InfluxDBClient
