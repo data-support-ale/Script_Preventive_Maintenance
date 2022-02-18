@@ -4,9 +4,9 @@ import sys
 import os
 import re
 import json
-from support_tools_OmniSwitch import get_credentials, collect_command_output_fan,send_file
+from support_tools_OmniSwitch import get_credentials, collect_command_output_fan,send_file,check_save,add_new_save
 from time import strftime, localtime, sleep
-from support_send_notification import send_message
+from support_send_notification import send_message,send_message_request
 from database_conf import *
 
 # Script init
@@ -41,18 +41,45 @@ with open("/var/log/devices/lastlog_fan.json", "r", errors='ignore') as log_file
         print("Index error in regex")
         exit()
 
-if "Fan Failure" in msg:
+# always 1
+#never -1
+# ? 0
+save_resp = check_save(ip, "1", "fan")
+
+
+
+if save_resp == "0":
+    if "Fan Failure" in msg:
+        notif = "A FAN is inoperable on OmniSwitch " + host + ". Do you want to keep being notified? " + ip_server        #send_message(info, jid)
+        answer = send_message_request(notif, jid)
+        print(answer)
+        filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ip)
+        send_file(filename_path, subject, action, result, category)
+    if answer == "2":
+        add_new_save(ip, "1", "fan", choice="always")
+    elif answer == "0":
+        add_new_save(ip, "1", "fan", choice="never")
+elif save_resp == "-1":
+    try:
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "FAN_Unit_ID": " 1"}, "fields": {"count": 1}}])
+        sys.exit()   
+    except UnboundLocalError as error:
+       print(error)
+       sys.exit()
+
+elif save_resp == "1":
+    answer = '2'
+else:
+    answer = '1'
+
+if answer == '1':
+        filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ip)
+        send_file(filename_path, subject, action, result, category)
         try:
-            info = "A fan is inoperable on the OmniSwitch \"" + host + "\" IP: " + ip
-            send_message(info, jid)
-            filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ip)
-            send_file(filename_path, subject, action, result, category)
-            try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ip, "FAN_Unit_ID": chassis_id}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-                sys.exit()
+           write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "FAN_Unit_ID": chassis_id}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
         except UnboundLocalError as error:
             print(error)
             sys.exit()

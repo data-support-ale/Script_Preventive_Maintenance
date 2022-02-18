@@ -1870,6 +1870,7 @@ def check_save(ipadd, port, type):
     return '0'
 
 
+
 def add_new_save(ipadd, port, type, choice="never"):
     """ 
     This function saves the new instruction to be recorded given by the user on Rainbow.
