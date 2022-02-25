@@ -53,7 +53,8 @@ if save_resp == "0":
         notif = "Spanning Tree is running per-vlan mode and following VLAN: " + vlan + " is disabled on OmniSwitch " + host + ". Do you want to enable STP on this VLAN?" + ip_server        #send_message(info, jid)
         answer = send_message_request(notif, jid)
         print(answer)
-        filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, host, ip, vlan)
+        decision = "0"
+        filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ip, vlan)
         send_file(filename_path, subject, action, result, category)
     if answer == "2":
         add_new_save(ip, vlan, "stp", choice="always")
@@ -73,7 +74,8 @@ else:
     answer = '1'
 
 if answer == '1':
-        filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, host, ip, vlan)
+        decision = "1"
+        filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ip, vlan)
         send_file(filename_path, subject, action, result, category)
         try:
            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "VLAN": vlan}, "fields": {"count": 1}}])

@@ -1114,10 +1114,12 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
     return filename_path, subject, action, result, category
 
 # Function to collect/enable Spanning for specific VLAN
-def collect_command_output_stp(switch_user, switch_password, host, ipadd, vlan):
+def collect_command_output_stp(switch_user, switch_password, decision, host, ipadd, vlan):
     """ 
     This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
-
+    This function checks the decision received from Admin:
+       if decision is 1, Administrator selected Yes and script clears the violation
+       if decision is 0, Administrator selected No and we only provide command outputs
     :param str vlan:                  Switch VLAN Number where Spanning tree is detected as disabled
     :param str host:                  Switch Hostname
     :param str ipadd:                 Switch IP address
@@ -1131,6 +1133,8 @@ def collect_command_output_stp(switch_user, switch_password, host, ipadd, vlan):
     l_switch_cmd.append("show spantree mode")
     l_switch_cmd.append("show spantree vlan " + vlan)
     l_switch_cmd.append("show " + vlan)
+    if decision == "1":
+        l_switch_cmd.append("spantree vlan" + vlan + "admin-state enable")    
 
     for switch_cmd in l_switch_cmd:
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
@@ -1190,10 +1194,13 @@ def collect_command_output_stp(switch_user, switch_password, host, ipadd, vlan):
     f_logs.write(text)
     f_logs.close()
 
-    subject = (
-        "Preventive Maintenance Application - STP configuration issue detected on switch: {0}").format(ipadd)
-    action = ("The Spanning Tree on VLAN {0} is not enabled on OmniSwitch (Hostname: {1})").format(vlan,host)
-    result = "Find enclosed to this notification the log collection for further analysis"
+    subject = ("Preventive Maintenance Application - STP configuration issue detected on switch: {0}").format(ipadd)
+    if decision == "1":
+        action = ("Decision set to Yes. The Spanning Tree on VLAN {0} is enabled on OmniSwitch (Hostname: {1})").format(vlan,host)
+        result = "Find enclosed to this notification the log collection for further analysis"
+    else:
+        action = ("The Spanning Tree on VLAN {0} is not enabled on OmniSwitch (Hostname: {1})").format(vlan,host)
+        result = "Find enclosed to this notification the log collection for further analysis"       
     category = "stp"
     return filename_path, subject, action, result, category
 
