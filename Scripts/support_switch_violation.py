@@ -17,7 +17,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
-
+agg_id = "0"
 last = ""
 with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as log_file:
     for line in log_file:
@@ -38,42 +38,75 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
     except IndexError:
         print("Index error in regex")
         exit()
+    # Sample log
+    # swlogd portMgrNi main INFO: : [pmNiHandleNonUniqueViolation:779] Violation on Gport 0x60007 which is part of Lag 33554440 New Violation Set on Lag Port
+    if "New Violation Set on Lag Port" in msg:
+        try:
+            port, agg_id = re.findall(r"Violation on Gport (.*?) which is part of Lag (.*?) New Violation Set on Lag Port", msg)[0]
+            agg_id=int(agg_id)
+            reason = "LBD"
+            agg_id=hex(agg_id)
+            print(agg_id)
+            n = len(str(agg_id))
+            print(n)
+            dig = []
+            dig = list(agg_id for agg_id in str(agg_id))
+            if str(dig[7]) == "0":
+               agg_id = str(dig[8])
+            else:
+                agg_id = str(dig[7]) + str(dig[8])
+            print(agg_id)
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except IndexError:
+            print("Index error in regex")
+            exit()
+    
+    # Sample log
+    # swlogd portMgrCmm main EVENT: CUSTLOG CMM Port 2\/1\/46 in violation - source 10 reason Not a recovery reason"
+    elif "in violation" in msg:
+        try:
+            port, reason = re.findall(r"Port (.*?) in violation - source (.*?) reason", msg)[0]
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except IndexError:
+            print("Index error in regex")
+            exit()
 
-    try:
-        port, reason = re.findall(r"Port (.*?) in violation - source (.*?) reason", msg)[0]
-    except IndexError:
-        print("Index error in regex")
-        exit()
-        
-    if reason == "0":
-        reason = "Unknown"
-    elif reason == "1":
-        reason = "Access Guardian"
-    elif reason == "2":
-        reason = "QOS Policy"
-    elif reason == "3":
-        reason = "Net Sec"
-    elif reason == "4":
-        reason = "UDLD"
-    elif reason == "5":
-        reason = "NI supervision (Fabric Stability)"
-    elif reason == "6":
-        reason = "OAM"
-    elif reason == "8":
-        reason = "LFP"
-    elif reason == "9":
-        reason = "Link monitoring"
-    elif reason == "10":
-        reason = "LBD"
-    elif reason == "11":
-        reason = "SPB"
-    elif reason == "12":
-        reason = "ESM"
-    elif reason == "13":
-        reason = "ESM"
-    elif reason == "14":
-        reason = "LLDP"
+        if reason == "0":
+            reason = "Unknown"
+        elif reason == "1":
+            reason = "Access Guardian"
+        elif reason == "2":
+            reason = "QOS Policy"
+        elif reason == "3":
+            reason = "Net Sec"
+        elif reason == "4":
+            reason = "UDLD"
+        elif reason == "5":
+            reason = "NI supervision (Fabric Stability)"
+        elif reason == "6":
+            reason = "OAM"
+        elif reason == "8":
+            reason = "LFP"
+        elif reason == "9":
+            reason = "Link monitoring"
+        elif reason == "10":
+            reason = "LBD"
+        elif reason == "11":
+            reason = "SPB"
+        elif reason == "12":
+            reason = "ESM"
+        elif reason == "13":
+            reason = "ESM"
+        elif reason == "14":
+            reason = "LLDP"
 
+    else:
+        print("no pattern match - exiting script")
+        sys.exit()
 
 # always 1
 #never -1
@@ -81,14 +114,25 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
 save_resp = check_save(ip, port, "violation")
 
 if save_resp == "0":
-    notif = "A port violation occurs on OmniSwitch " + host + "port " + port + \
-        ", source: " + reason + ". Do you want to clear the violation? " + ip_server
-    answer = send_message_request(notif, jid)
-    print(answer)
-    if answer == "2":
-        add_new_save(ip, port, "violation", choice="always")
-    elif answer == "0":
-        add_new_save(ip, port, "violation", choice="never")
+    if agg_id == "0":
+        notif = "A port violation occurs on OmniSwitch " + host + " port " + port + \
+            ", source: " + reason + ". Do you want to clear the violation? " + ip_server
+        answer = send_message_request(notif, jid)
+        print(answer)
+        if answer == "2":
+            add_new_save(ip, port, "violation", choice="always")
+        elif answer == "0":
+            add_new_save(ip, port, "violation", choice="never")
+    else:
+        notif = "A port violation occurs on OmniSwitch " + host + " LinkAgg ID " + agg_id + \
+            ", source: " + reason + ". Do you want to clear the violation? " + ip_server
+        answer = send_message_request(notif, jid)
+        print(answer)
+        if answer == "2":
+            add_new_save(ip, port, "violation", choice="always")
+        elif answer == "0":
+            add_new_save(ip, port, "violation", choice="never")
+
 elif save_resp == "-1":
     try:
         print(port)

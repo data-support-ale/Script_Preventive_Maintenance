@@ -45,7 +45,7 @@ with open("/var/log/devices/lastlog_stp.json", "r", errors='ignore') as log_file
 # always 1
 #never -1
 # ? 0
-save_resp = check_save(ip, "1", "stp")
+save_resp = check_save(ip, vlan, "stp")
 
 
 if save_resp == "0":
@@ -56,9 +56,9 @@ if save_resp == "0":
         filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, host, ip, vlan)
         send_file(filename_path, subject, action, result, category)
     if answer == "2":
-        add_new_save(ip, "1", "stp", choice="always")
+        add_new_save(ip, vlan, "stp", choice="always")
     elif answer == "0":
-        add_new_save(ip, "1", "stp", choice="never")
+        add_new_save(ip, vlan, "stp", choice="never")
 elif save_resp == "-1":
     try:
         write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "VLAN": vlan}, "fields": {"count": 1}}])

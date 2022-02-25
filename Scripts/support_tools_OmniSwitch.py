@@ -1130,6 +1130,7 @@ def collect_command_output_stp(switch_user, switch_password, host, ipadd, vlan):
     l_switch_cmd.append("show system")
     l_switch_cmd.append("show spantree mode")
     l_switch_cmd.append("show spantree vlan " + vlan)
+    l_switch_cmd.append("show " + vlan)
 
     for switch_cmd in l_switch_cmd:
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
