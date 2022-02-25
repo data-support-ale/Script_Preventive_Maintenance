@@ -505,13 +505,37 @@ def extract_Policy():
                     os.system(
                         'logger -t montag -p user.info Policy List applied: ' + Policy)
     ### If Location Policy check fails ####
+    # Log sample [SSID-TEST-EGE @ ath01]: Loaction Policy [__SSID-TEST-EGE] check Failed, STA <00:1e:2a:c8:2f:e4> Disconnect
         if "check Failed" in element:
-            os.system(
-                'logger -t montag -p user.info Location Policy not authorized')
+            try:
+                pattern_Device_MAC = re.compile('.*\<(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\>.*')
+                device_mac = re.search(pattern_Device_MAC, str(f)).group(1)
+                print(device_mac)
+            except IndexError:
+                print("Index error in regex")
+                exit()
+            os.system('logger -t montag -p user.info Access to SSID not authorized as per Location Policy')
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Location Policy"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
     ### If Location Period check fails ####
+    # Log sample [SSID-TEST-EGE @ ath01]: check period policy ddddddedzdzedzedz, current time is not allowed to access, STA <00:1e:2a:c8:2f:e4> Disconect
         if "current time is not allowed to access" in element:
-            os.system(
-                'logger -t montag -p user.info Access to SSID not authorized as per Period Policy')
+            try:
+                pattern_Device_MAC = re.compile('.*\<(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\>.*')
+                device_mac = re.search(pattern_Device_MAC, str(f)).group(1)
+                print(device_mac)
+            except IndexError:
+                print("Index error in regex")
+                exit()
+            os.system('logger -t montag -p user.info Access to SSID not authorized as per Period Policy')
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Period Policy"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
     return Policy
 
 
