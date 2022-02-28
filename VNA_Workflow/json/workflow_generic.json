@@ -376,7 +376,7 @@
 					"value": "VAR(jid1)"
 				},
 				"cardPayload": {
-					"type": "adaptiveCard",
+					"type": "AdaptiveCard",
 					"value": "{\"$schema\":\"http://adaptivecards.io/schemas/adaptive-card.json\",\"body\":[{\"type\":\"TextBlock\",\"text\":\"Log: ${ParticipantInfoForm.log}\",\"size\":\"medium\",\"wrap\":true,\"weight\":\"bolder\"}],\"actions\":[{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[0].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[0].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"yes\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[1].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[1].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"no\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[2].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[2].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"save\"}}}}],\"version\":\"1.0\"}"
 				},
 				"value": {
