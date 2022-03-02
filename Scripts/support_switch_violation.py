@@ -39,12 +39,15 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
         print("Index error in regex")
         exit()
     # Sample log
-    # swlogd portMgrNi main INFO: : [pmNiHandleNonUniqueViolation:779] Violation on Gport 0x60007 which is part of Lag 33554440 New Violation Set on Lag Port
+    # swlogd portMgrNi main INFO: : [pmNiHandleNonUniqueViolation:779] Violation on Gport 0x20026 which is part of Lag 33554471 New Violation Set on Lag Port
+    # swlogd portMgrNi main INFO: : [pmNiHandleNonUniqueViolation:779] Violation on Gport 0x2 which is part of Lag 33554433 New Violation Set on Lag Port
+
     if "New Violation Set on Lag Port" in msg:
         try:
             port, agg_id = re.findall(r"Violation on Gport (.*?) which is part of Lag (.*?) New Violation Set on Lag Port", msg)[0]
             agg_id=int(agg_id)
             reason = "LBD"
+            # 
             agg_id=hex(agg_id)
             print(agg_id)
             n = len(str(agg_id))
@@ -54,7 +57,9 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
             if str(dig[7]) == "0":
                agg_id = str(dig[8])
             else:
-                agg_id = str(dig[7]) + str(dig[8])
+                agg_id = dig[7] + dig[8]
+                # if 2 digits we have to convert from hexa to decimal
+
             print(agg_id)
         except UnboundLocalError as error:
             print(error)

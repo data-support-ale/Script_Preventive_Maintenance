@@ -586,6 +586,20 @@ if \$msg contains ':authorize' or \$msg contains 'from MAC-Auth' or \$msg contai
      }
 }
 
+if \$msg contains 'current time is not allowed' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"devicelogpolicy\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_wlan_generic_policy\" binary=\"/opt/ALE_Script/support_wlan_generic.py policy\")
+     stop
+}
+
+if \$msg contains 'Loaction Policy' and \$msg contains 'check Failed' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"devicelogpolicy\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_wlan_generic_policy\" binary=\"/opt/ALE_Script/support_wlan_generic.py policy\")
+     stop
+}
+
 if \$msg contains '8021x-Auth' or \$msg contains 'RADIUS' or \$msg contains '8021x Authentication' then {
      \$RepeatedMsgReduction on
      if \$msg contains 'Retry attempts' or \$msg contains 'RADIUS Authentication server' then {
@@ -837,7 +851,7 @@ if \$msg contains 'slnHwlrnCbkHandler' and \$msg contains 'port' and \$msg conta
 }
 
 #### Rule Port Violation - LAN ####
-if \$msg contains 'Violation set' or \$msg contains 'in violation'  then {
+if \$msg contains 'Violation Set' or \$msg contains 'in violation'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogviolation\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")

@@ -516,6 +516,8 @@ def extract_Policy():
                 exit()
             os.system('logger -t montag -p user.info Access to SSID not authorized as per Location Policy')
             try:
+                info = "Access to SSID not authorized as per Location Policy"
+                send_message(info,jid)
                 write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Location Policy"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
@@ -532,6 +534,8 @@ def extract_Policy():
                 exit()
             os.system('logger -t montag -p user.info Access to SSID not authorized as per Period Policy')
             try:
+                info = "Access to SSID not authorized as per Period Policy"
+                send_message(info,jid)
                 write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Period Policy"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
