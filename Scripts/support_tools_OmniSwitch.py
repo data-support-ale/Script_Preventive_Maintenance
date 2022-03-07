@@ -858,6 +858,13 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     l_switch_cmd = []
     l_switch_cmd.append("show interfaces " + port + " status")
     l_switch_cmd.append("show interfaces " + port + " counters")
+    sleep(2)
+    l_switch_cmd.append("show interfaces " + port + " counters")
+    sleep(2)
+    l_switch_cmd.append("show interfaces " + port + " counters")   
+    sleep(2)
+    l_switch_cmd.append("show interfaces " + port + " counters")
+    l_switch_cmd.append("show health port " + port)   
     l_switch_cmd.append("show interfaces " + port + " flood-rate")
     if decision == "1" or decision == "2":
         l_switch_cmd.append("interfaces port " + port + " admin-state disable")
@@ -2154,7 +2161,7 @@ if __name__ == "__main__":
     host = "LAN-6860N-2"
     port = "1/1/4"
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-    filename_path, subject, action, result, category = collect_command_output_fan(switch_user, switch_password, host, ipadd)
+    filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ipadd)
     send_file(filename_path, subject, action, result, category)
     filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
     send_file(filename_path, subject, action, result,category)
