@@ -589,14 +589,21 @@ if \$msg contains ':authorize' or \$msg contains 'from MAC-Auth' or \$msg contai
 if \$msg contains 'current time is not allowed' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogpolicy\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_wlan_generic_policy\" binary=\"/opt/ALE_Script/support_wlan_generic.py policy\")
+     action(type=\"omprog\" name=\"support_wlan_generic_policy\" binary=\"/opt/ALE_Script/support_wlan_generic.py policy\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
 if \$msg contains 'Loaction Policy' and \$msg contains 'check Failed' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogpolicy\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_wlan_generic_policy\" binary=\"/opt/ALE_Script/support_wlan_generic.py policy\")
+     action(type=\"omprog\" name=\"support_wlan_generic_policy\" binary=\"/opt/ALE_Script/support_wlan_generic.py policy\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     stop
+}
+
+if \$msg contains 'MAC Authentication Reject' and \$msg contains 'Match Access Policy' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"devicelogpolicy\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_wlan_generic_policy\" binary=\"/opt/ALE_Script/support_wlan_generic.py policy\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 

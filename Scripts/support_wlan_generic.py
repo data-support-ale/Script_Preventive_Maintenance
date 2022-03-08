@@ -11,27 +11,16 @@ from time import strftime, localtime
 #import datetime
 import re
 from support_tools_OmniSwitch import get_credentials
-from support_send_notification import send_message, send_file, send_alert
+from support_send_notification import send_message, send_alert
 #from support_OV_get_wlan import OvHandler
 from database_conf import *
-
-script_name = sys.argv[0]
-argument = sys.argv[1]
-runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
-
-uname = os.system('uname -a')
-os.system('logger -t montag -p user.info Executing script ' +
-          script_name + ' argument: ' + argument)
-system_name = os.uname()[1].replace(" ", "_")
-
-# Init Timestamp in second
-timestamp = 300
-timestamp = (timestamp/60)*100
+#import psutil
+#print(psutil.cpu_percent())
 
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 
-def deassociation(ipadd, device_mac, timestamp, reason, reason_number):
+def deassociation(ipadd, device_mac, reason, reason_number):
     message = "WLAN Deassociation detected reason : {0} from Stellar AP {1}, client MAC Address {2}".format(
         reason, ipadd, device_mac)
     message_bis = "WLAN Deassociation detected reason : {0} from Stellar AP {1}".format(
@@ -39,7 +28,7 @@ def deassociation(ipadd, device_mac, timestamp, reason, reason_number):
     os.system('logger -t montag -p user.info ' + message_bis)
     subject_content = "[TS LAB] A deassociation is detected on Stellar AP!"
     message_content_1 = "WLAN Alert - There is a WLAN deassociation detected on server {0} from Stellar AP {1}, Device's MAC Address: {2} .".format(
-        system_name, ipadd, device_mac)
+        ip_server, ipadd, device_mac)
     print(message_content_1)
     message_content_2 = "Reason number: ".format(reason_number)
     send_alert(message, jid)
@@ -70,7 +59,7 @@ def reboot(ipadd):
     os.system('logger -t montag -p user.info reboot detected')
     subject_content = "[TS LAB] A reboot is detected on Stellar AP!"
     message_content_1 = "WLAN Alert - There is a Stellar reboot detected on server {0} from Stellar AP {1}".format(
-        system_name, ipadd)
+        ip_server, ipadd)
     message_content_2 = "sysreboot"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
@@ -84,7 +73,7 @@ def unexpected_reboot(ipadd):
     os.system('logger -t montag -p user.info reboot detected')
     subject_content = "[TS LAB] A reboot is detected on Stellar AP!"
     message_content_1 = "WLAN Alert - There is a Stellar unexpected reboot detected on server {0} from Stellar AP {1} - please check the LANPOWER is running fine on OmniSwitch and verify the capacitor-detection is disabled".format(
-        system_name, ipadd)
+        ip_server, ipadd)
     message_content_2 = "sysreboot"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
@@ -98,7 +87,7 @@ def upgrade(ipadd):
     os.system('logger -t montag -p user.info upgrade detected')
     subject_content = "[TS LAB] An upgrade is detected on Stellar AP!"
     message_content_1 = "WLAN Alert - There is a Stellar upgrade detected on server {0} from Stellar AP {1}".format(
-        system_name, ipadd)
+        ip_server, ipadd)
     message_content_2 = "sysupgrade"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
@@ -112,7 +101,7 @@ def exception(ipadd):
     os.system('logger -t montag -p user.info exception detected')
     subject_content = "[TS LAB] An exception (Fatal exception, Exception stack, Kernel Panic) is detected on Stellar AP!"
     message_content_1 = "WLAN Alert - There is a Stellar exception detected on server {0} from Stellar AP {1}".format(
-        system_name, ipadd)
+        ip_server, ipadd)
     message_content_2 = "Exception"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
@@ -126,7 +115,7 @@ def internal_error(ipadd):
     os.system('logger -t montag -p user.info internal error detected')
     subject_content = "[TS LAB] An Internal Error is detected on Stellar AP!"
     message_content_1 = "WLAN Alert - There is an Internal Error detected on server {0} from Stellar AP {1}".format(
-        system_name, ipadd)
+        ip_server, ipadd)
     message_content_2 = "Internal Error"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
@@ -140,7 +129,7 @@ def target_asserted(ipadd):
     os.system('logger -t montag -p user.info target asserted detected')
     subject_content = "[TS LAB] A Target Asserted Error is detected on Stellar AP!"
     message_content_1 = "WLAN Alert - There is a Target Asserted error detected on server {0} from Stellar AP {1}".format(
-        system_name, ipadd)
+        ip_server, ipadd)
     message_content_2 = "Target Asserted"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
@@ -155,7 +144,7 @@ def kernel_panic(ipadd):
     os.system('logger -t montag -p user.info Kernel Panic detected')
     subject_content = "[TS LAB] A Kernel Panic is detected on Stellar AP!"
     message_content_1 = "WLAN Alert - There is a Kernel Panic error detected on server {0} from Stellar AP {1}".format(
-        system_name, ipadd)
+        ip_server, ipadd)
     message_content_2 = "Kernel panic"
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
@@ -542,6 +531,25 @@ def extract_Policy():
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+    ### If Can't Match Access Policy ####
+    # Log sample [PORTAL CNP @ ath15]: MAC Authentication Reject for STA <7c:d6:61:b2:f9:43>, reply message is Can't Match Access Policy
+        if "Can't Match Access Policy" in element:
+            try:
+                pattern_Device_MAC = re.compile('.*\<(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\>.*')
+                device_mac = re.search(pattern_Device_MAC, str(f)).group(1)
+                print(device_mac)
+            except IndexError:
+                print("Index error in regex")
+                sys.exit()
+            os.system('logger -t montag -p user.info Access to SSID not authorized as no UPAM access policy match')
+            try:
+                info = "Access to SSID not authorized as there is no Access Policy matching with Radius Access-Request"
+                send_message(info,jid)
+                write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Can't Match Access Policy"}, "fields": {"count": 1}}])
+                sys.exit()
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()    
     return Policy
 
 
@@ -682,7 +690,7 @@ if sys.argv[1] == "auth_step1":
 
 ## if $msg contains ':authorize' or $msg contains 'from MAC-Auth' or $msg contains 'Access Role'##
 ##    if $msg contains 'Access Role(' ##
-if sys.argv[1] == "mac_auth":
+elif sys.argv[1] == "mac_auth":
     print("call function mac_authentication")
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
@@ -691,7 +699,7 @@ if sys.argv[1] == "mac_auth":
     sys.exit(0)
 
 ## if $msg contains '8021x-Auth' or $msg contains 'RADIUS' or $msg contains '8021x Authentication' ##
-if sys.argv[1] == "8021X":
+elif sys.argv[1] == "8021X":
     print("call function radius_authentication")
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
@@ -700,7 +708,7 @@ if sys.argv[1] == "8021X":
     sys.exit(0)
 
 # if $msg contains 'too many failed retransmit attempts' or $msg contains 'No response'
-if sys.argv[1] == "failover":
+elif sys.argv[1] == "failover":
     print("call function radius_failover")
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
@@ -710,15 +718,16 @@ if sys.argv[1] == "failover":
 ## if $msg contains ':authorize' or $msg contains 'from MAC-Auth' or $msg contains 'Access Role'##
 ##     if $msg contains 'Get PolicyList' ##
 ## OR if $msg contains 'check period policy' or $msg contains 'Loaction Policy' ##
-if sys.argv[1] == "policy":
+elif sys.argv[1] == "policy":
     print("call function policy")
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     extract_Policy()
     sys.exit(0)
 
+
 ## if $msg contains 'Found DHCPACK for STA'  or $msg contains 'Found dhcp ack for STA'##
-if sys.argv[1] == "dhcp":
+elif sys.argv[1] == "dhcp":
     print("call function dhcp_ack")
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
@@ -728,7 +737,7 @@ if sys.argv[1] == "dhcp":
     sys.exit(0)
 
 ## if $msg contains 'verdict:[NF_DROP]' #
-if sys.argv[1] == "wcf_block":
+elif sys.argv[1] == "wcf_block":
     print("call function wcf_block")
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
@@ -736,7 +745,7 @@ if sys.argv[1] == "wcf_block":
     sys.exit(0)
 
 ## if $msg contains 'Recv the  eag module  notify  data user' ##
-if sys.argv[1] == "auth_step2":
+elif sys.argv[1] == "auth_step2":
     print("call function authentication step2")
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
@@ -745,20 +754,20 @@ if sys.argv[1] == "auth_step2":
     sys.exit(0)
 
 ## if $msg contains 'Add black list mac' ##
-if sys.argv[1] == "wips":
+elif sys.argv[1] == "wips":
     print("call function wips")
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     device_mac, reason = extract_WIPS()
     sys.exit(0)
 
-if sys.argv[1] == "deauth":
+elif sys.argv[1] == "deauth":
     print("call function deassociation")
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     reason, device_mac, reason_number = extract_reason()
-    deassociation(ipadd, device_mac, timestamp, reason, reason_number)
+    deassociation(ipadd, device_mac, reason, reason_number)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason, "topic": "deauth"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
