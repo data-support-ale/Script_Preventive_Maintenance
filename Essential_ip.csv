@@ -1,0 +1,3 @@
+This document must contains all this essentials IP, on which preventive Maintenance will not be allowed to interfere. Format: {ip address}; {name or comment};
+10.130.7.17;UPAM;
+10.130.7.14;PREVENTIVE;

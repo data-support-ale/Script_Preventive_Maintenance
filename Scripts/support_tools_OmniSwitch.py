@@ -14,6 +14,7 @@ import re
 import pysftp
 import requests
 import paramiko
+import csv
 import threading
 from database_conf import *
 
@@ -183,12 +184,10 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         return output
 
 
-def get_file_sftp(switch_user, switch_password, ipadd, filename):
-    print(filename)
-    print(ipadd)
+def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFilePath):
     date = datetime.date.today()
-    remote_path = '/tftpboot/{0}_{1}_{2}'.format(date, ipadd, filename)
     ssh = paramiko.SSHClient()
+    print(remoteFilePath)
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         ssh.connect(ipadd, username=switch_user,
@@ -196,8 +195,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
         sftp = ssh.open_sftp()
         # In case of SFTP Get timeout thread is closed and going into Exception
         try:
-            th = threading.Thread(target=sftp.get, args=(
-                './{0}'.format(filename), remote_path))
+            th = threading.Thread(target=sftp.get, args=(remoteFilePath, localFilePath))
             th.start()
             th.join(60)
         except paramiko.ssh_exception.FileNotFoundError as error:
@@ -275,7 +273,6 @@ def get_file_sftp(switch_user, switch_password, ipadd, filename):
         ssh.close()
         sys.exit()
     ssh.close()
-    return remote_path
 
 
 def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
@@ -474,10 +471,11 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
             print("Tech Support file creation timeout")
             sys.exit(2)
 
-    f_filename = "tech_support_complete.tar"
+    filename = "tech_support_complete.tar"
+    remoteFilePath = "./tech_support_complete.tar"
+    localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ipadd,filename)
     #### SFTP GET tech support #####
-    filename_path = get_file_sftp(
-        switch_user, switch_password, ipadd, f_filename)
+    filename_path = get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFilePath)
 
     subject = (
         "Preventive Maintenance Application - Show Tech-Support Complete command executed on switch: {0}").format(ipadd)
@@ -2101,6 +2099,60 @@ def check_timestamp():
 
     return diff_time
 
+def isEssential(addr):
+    """
+    Check if IP addr is in Esssential_ip.csv file
+    return: True if addr is in file otherwise False
+    """
+    ips_address = list()
+    with open("/opt/ALE_Script/Essential_ip.csv") as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=';')
+            line = 0
+            for row in csv_reader:
+                if line == 0:
+                    line = 1
+                    continue
+                ips_address.append(str(row[0]))
+    print(ips_address)
+    for ip in ips_address:
+        if ip == addr:
+            return True
+    return False
+
+def isUpLink(port_number, ipadd):
+    
+
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh.connect(ipadd, 22, login_switch, pass_switch)
+    except paramiko.ssh_exception.AuthenticationException:
+        ssh.close()
+        pass
+    except paramiko.ssh_exception.NoValidConnectionsError:
+        ssh.close()
+        pass
+    except paramiko.ssh_exception.SSHException:
+        ssh.close()
+        pass
+
+    try:
+        switch_cmd = "show  vlan members port " + port_number
+        _, stdout, _ = ssh.exec_command(switch_cmd)
+        output = stdout.read().decode('utf-8')
+    except Exception:
+        pass
+
+    if re.search(r"ERROR", output):
+        return True
+    else:
+        qtagged = re.findall(r"qtagged", output)
+        if len(qtagged) > 1:
+            return True
+        else:
+            return False
+        
+
 
 def disable_port(user, password, ipadd, portnumber):
     """ 
@@ -2152,6 +2204,8 @@ def send_file(filename_path, subject, action, result, category):
 
 
 if __name__ == "__main__":
+    a = isUpLink("1/1/2", "10.130.7.247")
+    b = isEssential("10.120.7.14")
     login_switch, pass_switch, mails, rainbow_jid, ip_server_log, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
     jid = "570e12872d768e9b52a8b975@openrainbow.com"
     switch_password = "switch"

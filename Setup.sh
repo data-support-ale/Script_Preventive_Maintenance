@@ -488,13 +488,19 @@ template (name=\"devicelogfan\" type=\"string\"
 template (name=\"devicelogstp\" type=\"string\"
      string=\"/var/log/devices/lastlog_stp.json\")
 
+template (name=\"deviceloghighcpu\" type=\"string\"
+     string=\"/var/log/devices/lastlog_high_cpu.json\")
+
+template (name=\"deviceloghighmemory\" type=\"string\"
+     string=\"/var/log/devices/lastlog_high_memory.json\")
+
 template(name=\"json_syslog\"
   type=\"list\") {
     constant(value=\"{\")
     constant(value=\"\\"\"@timestamp\\"\":\\"\""\")       property(name=\"timereported\" dateFormat=\"rfc3339\")
       constant(value=\"\\\",\\"\""type\\\":\\"\""syslog_json\")
       constant(value=\"\\\",\\"\"""relayip\\\":\\"\""\"")       property(name=\"fromhost-ip\")
-      constant(value=\"\\\",\\"\"""hostname\\\":\\"\""\"")      property(name=\"hostname\" caseconversion=\"lower\")
+      constant(value=\"\\\",\\"\"""hostname\\\":\\"\""\"")      property(name=\"hostname\")
       constant(value=\"\\\",\\"\"""message\\\":\\"\""\"")       property(name=\"rawmsg\" format=\"json\")
       constant(value=\"\\\",\\"\"""end_msg\\\":\\"\""\"") 
     constant(value=\"\\"\"}\\\n\"")
@@ -995,6 +1001,24 @@ if \$msg contains 'radCli' and \$msg contains 'RADIUS' then {
        stop
 }
 
+#### High CPU - LAN ####
+if \$msg contains 'healthCmm' and \$msg contains 'rising above CPU' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghighcpu\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_high_cpu.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+#### High MEMORY - LAN ####
+if \$msg contains 'alert' and \$msg contains 'The top 20' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghighmemory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_high_memory.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
 #### Additionnal rules - LAN ####
 
 if \$msg contains 'failed handling msg from' then {
@@ -1091,15 +1115,6 @@ if \$msg contains 'ospf' and \$msg contains 'oversized LSA' then {
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"OSPF Oversized LSA received\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-
-if \$msg contains 'alert' and \$msg contains 'The top 20' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"High memory issue\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 

@@ -50,7 +50,7 @@ def send_message(info, jid):
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
     try:
-        response = requests.get(url, headers=headers, timeout=2)
+        response = requests.get(url, headers=headers, timeout=0.5)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
             os.system('logger -t montag -p user.info 200 OK')
@@ -118,7 +118,7 @@ def send_alert(info, jid):
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
     try:
-        response = requests.get(url, headers=headers, timeout=5)
+        response = requests.get(url, headers=headers, timeout=0.5)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
             os.system('logger -t montag -p user.info 200 OK')

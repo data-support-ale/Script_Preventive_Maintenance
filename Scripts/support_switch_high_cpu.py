@@ -21,14 +21,14 @@ date = datetime.date.today()
 date_hm = datetime.datetime.today()
 
 last = ""
-with open("/var/log/devices/lastlog_high_memory.json", "r", errors='ignore') as log_file:
+with open("/var/log/devices/lastlog_high_cpu.json", "r", errors='ignore') as log_file:
     for line in log_file:
         last = line
 
-with open("/var/log/devices/lastlog_high_memory.json", "w", errors='ignore') as log_file:
+with open("/var/log/devices/lastlog_high_cpu.json", "w", errors='ignore') as log_file:
     log_file.write(last)
 
-with open("/var/log/devices/lastlog_high_memory.json", "r", errors='ignore') as log_file:
+with open("/var/log/devices/lastlog_high_cpu.json", "r", errors='ignore') as log_file:
     try:
         log_json = json.load(log_file)
         ipadd = log_json["relayip"]
@@ -40,16 +40,15 @@ with open("/var/log/devices/lastlog_high_memory.json", "r", errors='ignore') as 
         message_reason = ''.join(l)
     except json.decoder.JSONDecodeError as error:
         print(error)
-        print("File /var/log/devices/lastlog_high_memory.json empty")
+        print("File /var/log/devices/lastlog_high_cpu.json empty")
         exit()
 
 print(ipadd)
 print(host)
 #{"@timestamp":"2021-11-22T21:57:06+01:00","type":"syslog_json","relayip":"10.130.7.243","hostname":"sw5-bcb","message":"<134>Nov 22 21:57:06 OS6860E_VC_Core swlogd healthCmm main EVENT: CUSTLOG CMM NI 1/1 rising above CPU threshold","end_msg":""}
-info = "A High Memory is noticed and we are collecting logs on Server {0} /tftpboot/ directory".format(ip_server)
+info = "A High CPU is noticed and we are collecting logs on Server {0} /tftpboot/ directory".format(ip_server)
 send_message(info,jid)
-
-cmd = "python3 /flash/python/get_logs_high_memory.py"
+cmd = "python3 /flash/python/get_logs_high_cpu.py"
 
 #### Old method ####
 #text = "More logs about the switch : {0} \n\n\n".format(ipadd)
@@ -88,7 +87,6 @@ if connection_status != 0:
         sys.exit(2)
 sleep(2)
 filename='{0}_logs.txt'.format(host)
-
 remoteFilePath = '/flash/python/{0}'.format(filename)
 localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ipadd,filename) 
 ### Old method for collecting logs by sftp
