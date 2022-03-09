@@ -2120,8 +2120,10 @@ def isEssential(addr):
     return False
 
 def isUpLink(port_number, ipadd):
-    
-
+    """
+    Check if port is an Uplink (linkagg or +2 qtagged vlans)
+    return: True if the port is concidered as Uplink otherwise False
+    """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:

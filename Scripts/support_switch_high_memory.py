@@ -90,8 +90,8 @@ sleep(2)
 filename='{0}_logs.txt'.format(host)
 
 remoteFilePath = '/flash/python/{0}'.format(filename)
-localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ipadd,filename) 
-### Old method for collecting logs by sftp
+localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}_high_memory".format(date,date_hm.hour,date_hm.minute,ipadd,filename) 
+### Old method for collecting logs with pysftp
 #cnopts = pysftp.CnOpts()
 #cnopts.hostkeys = None
 #with pysftp.Connection(host=ipadd, username="admin", password="switch",cnopts=cnopts) as sftp:
