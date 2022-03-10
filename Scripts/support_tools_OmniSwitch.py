@@ -1410,10 +1410,11 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - Power Supply issue detected on switch: {0}").format(ipadd)
-    action = ("The Power Supply unit {0} is down or running abnormal on OmniSwitch (Hostname: {1})").format(
-        psid, host)
+    subject = ("Preventive Maintenance Application - Power Supply issue detected on switch: {0}").format(ipadd)
+    if psid == "Unknown":
+        action = ("A Power Supply unit  is down or running abnormal \"Power Supply operational state changed to UNPOWERED\" on OmniSwitch (Hostname: {1})").format(psid, host)
+    else:
+        action = ("The Power Supply unit {0} is down or running abnormal on OmniSwitch (Hostname: {1})").format(psid, host)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "ps"
     return filename_path, subject, action, result, category
