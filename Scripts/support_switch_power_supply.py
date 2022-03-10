@@ -2,14 +2,10 @@
 
 import sys
 import os
-import getopt
 import json
-import logging
-import datetime
 from time import strftime, localtime
-from support_tools_OmniSwitch import get_credentials
-from support_send_notification import send_message, send_file
-import subprocess
+from support_tools_OmniSwitch import get_credentials, send_file, collect_command_output_ps
+from support_send_notification import send_message
 from database_conf import *
 import re
 
@@ -43,12 +39,10 @@ with open("/var/log/devices/lastlog_power_supply_down.json", "r", errors='ignore
     if "Removed" in msg:
         try:
             nb_power_supply = re.findall(r"Power Supply (.*?) Removed", msg)[0]
-            info = "Log of device : {0}".format(ipadd)
-            send_file(info, jid, ipadd)
-            info = "A default on Power supply {} from device {} has been detected".format(
-                nb_power_supply, ipadd)
-            print(info)
-            send_message(info, jid)
+            filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, nb_power_supply, host, ipadd)
+            send_file(filename_path, subject, action, result, category)
+#            info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply, ipadd)
+#            send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "PS_Unit": nb_power_supply}, "fields": {"count": 1}}])
@@ -65,17 +59,13 @@ with open("/var/log/devices/lastlog_power_supply_down.json", "r", errors='ignore
     # OS6860E swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM chassisTrapsAlert - Power supply is inoperable: PS 2
     elif "inoperable" in msg:
         try:
-            nb_power_supply = re.findall(
-                r"Power supply is inoperable: PS (.*)", msg)[0]
-            info = "Log of device : {0}".format(ipadd)
-            send_file(info, jid, ipadd)
-            info = "A default on Power supply {} from device {} has been detected".format(
-                nb_power_supply, ipadd)
-            print(info)
-            send_message(info, jid)
+            nb_power_supply = re.findall(r"Power supply is inoperable: PS (.*)", msg)[0]
+            filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, nb_power_supply, host, ipadd)
+            send_file(filename_path, subject, action, result, category)
+#            info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply, ipadd)
+#            send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ipadd, "PS_Unit": nb_power_supply}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "PS_Unit": nb_power_supply}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -89,15 +79,13 @@ with open("/var/log/devices/lastlog_power_supply_down.json", "r", errors='ignore
     # OS6860E swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM Device Power Supply operational state changed to UNPOWERED
     elif "UNPOWERED" in msg:
         try:
-            info = "Log of device : {0}".format(ipadd)
-            send_file(info, jid, ipadd)
-            info = "A default on Power supply \"Power Supply operational state changed to UNPOWERED\" from device {} has been detected".format(
-                ipadd)
-            print(info)
-            send_message(info, jid)
+            nb_power_supply = "Unknown"
+            filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, nb_power_supply, host, ipadd)
+            send_file(filename_path, subject, action, result, category)
+#            info = "A default on Power supply \"Power Supply operational state changed to UNPOWERED\" from device {} has been detected".format(ipadd)
+#            send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(
-                    __file__)), "tags": {"IP": ipadd, "PS_Unit": "All"}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename( __file__)), "tags": {"IP": ipadd, "PS_Unit": "All"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()

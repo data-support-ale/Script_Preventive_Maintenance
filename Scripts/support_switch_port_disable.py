@@ -2,10 +2,9 @@
 
 import sys
 import os
-import json
-from support_tools_OmniSwitch import get_credentials, detect_port_loop, ssh_connectivity_check, debugging, add_new_save, check_save, send_file, collect_command_output_network_loop
+from support_tools_OmniSwitch import get_credentials, detect_port_loop, isUpLink, ssh_connectivity_check, debugging, add_new_save, check_save, send_file, collect_command_output_network_loop
 from time import strftime, localtime, sleep
-import re  # Regex
+#import re  # Regex
 from support_send_notification import send_message, send_message_request
 from database_conf import *
 
@@ -54,8 +53,12 @@ if len(file_lines) != 0:
                         slot = "1"
                     elif slot == "4":
                         slot == "2"
-                    else:
+                    elif slot == "8":
                         slot == "3"
+                    elif slot == "12":
+                        slot == "4"
+                    else:
+                        slot == "5"
             # looking for chassis ID number:
                     # modify the format of the port number to suit the switch interface
                     port = "{0}/1/{1}".format(slot, port)
@@ -82,6 +85,12 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         info = "A loop has been detected on your network from the port {0} on device {1}. (if you click on Yes, the following action will be done: Port Admin Down - Server: {2})".format(
             port, ipadd, ip_server)
         answer = send_message_request(info, jid)
+
+        if isUpLink(port, ipadd):
+            answer = "0"
+            info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
+            send_message(info,jid)
+
         if answer == "2":
             add_new_save(ipadd, port, "port_disable", choice="always")
             answer = '1'

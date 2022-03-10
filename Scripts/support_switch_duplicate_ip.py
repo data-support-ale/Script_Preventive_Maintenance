@@ -1,12 +1,13 @@
 #!/usr/local/bin/python3.7
 
+from operator import contains
 import sys
 import os
 import re
 import json
 import paramiko
 import threading
-from support_tools_OmniSwitch import ssh_connectivity_check, file_setup_qos, format_mac, get_credentials, add_new_save, check_save
+from support_tools_OmniSwitch import isEssential, ssh_connectivity_check, file_setup_qos, format_mac, get_credentials, add_new_save, check_save
 from time import strftime, localtime
 from support_send_notification import send_message, send_file, send_message_request
 from database_conf import *
@@ -121,6 +122,17 @@ if save_resp == "0":
         ip + "(" + host + "). Do you want to blacklist mac : " + mac + " ?"
     answer = send_message_request(notif, jid)
     print(answer)
+
+    if isEssential(ip_dup):
+            answer = "0"
+            info = "An IP duplication has been detected on your network that involves essential IP Address {} therefore we do not proceed further".format(ip_dup)
+            send_message(info,jid)
+
+    if "e8:e7:32" in format_mac(mac):
+            answer = "0"
+            info = "An IP duplication has been detected on your network that involves an Alcatel OmniSwitch chassis/interfaces MAC-Address therefore we do not proceed further".format(ip_dup)
+            send_message(info,jid)
+
     if answer == "2":
         add_new_save(ip, port, "duplicate", choice="always")
         answer = '1'

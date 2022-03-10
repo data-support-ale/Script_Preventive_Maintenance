@@ -4,8 +4,7 @@ import sys
 import os
 import json
 import re
-import pysftp
-from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, file_setup_qos, add_new_save, check_save
+from support_tools_OmniSwitch import get_credentials, isEssential, ssh_connectivity_check, file_setup_qos, add_new_save, check_save
 from time import gmtime, strftime, localtime, sleep
 from support_send_notification import send_message, send_file, send_message_request
 from database_conf import *
@@ -120,6 +119,12 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         notif = "A port scan has been detected on your network by the IP Address {0}  on device {1}. (if you click on Yes, the following actions will be done: Policy action block)".format(
             ip_switch_ddos, ip_switch)
         answer = send_message_request(notif, jid)
+
+        if isEssential(ip_switch_ddos):
+                answer = "0"
+                info = "A port scan has been detected on your network however it involves essential ip {} so we did not proced further".format(ip_switch_ddos)
+                send_message(info,jid)
+
         if answer == "2":
             add_new_save(ip_switch, "0", "scan", choice="always")
             answer = '1'
@@ -127,7 +132,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
             add_new_save(ip_switch, "0", "scan", choice="never")
     elif save_resp == "-1":
         try:
-            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "DDOS": ipadd_ddos}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip_switch, "DDOS": ip_switch_ddos}, "fields": {"count": 1}}])
             sys.exit()   
         except UnboundLocalError as error:
             print(error)
@@ -148,7 +153,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
 
         cmd = "swlog appid ipv4 subapp all level info"
         # ssh session to start python script remotely
-        os.system('logger -t montag -p user.info debug3 for ddos  activation')
+        os.system('logger -t montag -p user.info disabling debugging')
         os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
             switch_password, switch_user, ip_switch, cmd))
         sleep(1)
