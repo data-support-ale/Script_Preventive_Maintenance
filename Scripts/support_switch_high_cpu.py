@@ -46,7 +46,7 @@ with open("/var/log/devices/lastlog_high_cpu.json", "r", errors='ignore') as log
 print(ipadd)
 print(host)
 #{"@timestamp":"2021-11-22T21:57:06+01:00","type":"syslog_json","relayip":"10.130.7.243","hostname":"sw5-bcb","message":"<134>Nov 22 21:57:06 OS6860E_VC_Core swlogd healthCmm main EVENT: CUSTLOG CMM NI 1/1 rising above CPU threshold","end_msg":""}
-info = "A High CPU is noticed and we are collecting logs on Server {0} /tftpboot/ directory".format(ip_server)
+info = "A High CPU is noticed on OmniSwitch {0}/{1}and we are collecting logs on Server {2} /tftpboot/ directory".format(host,ipadd,ip_server)
 send_message(info,jid)
 cmd = "python3 /flash/python/get_logs_high_cpu.py"
 

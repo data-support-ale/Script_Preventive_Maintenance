@@ -494,6 +494,10 @@ template (name=\"deviceloghighcpu\" type=\"string\"
 template (name=\"deviceloghighmemory\" type=\"string\"
      string=\"/var/log/devices/lastlog_high_memory.json\")
 
+template (name=\"deviceloglanpower\" type=\"string\"
+     string=\"/var/log/devices/lastlog_lanpower.json\")
+
+
 template(name=\"json_syslog\"
   type=\"list\") {
     constant(value=\"{\")
@@ -1019,6 +1023,39 @@ if \$msg contains 'alert' and \$msg contains 'The top 20' then {
        stop
 }
 
+#### LANPOWER - LAN ####
+if \$msg contains 'FAULT State change 1b to 24' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloglanpower\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_lanpower.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+if \$msg contains 'FAULT State change 1b to 25' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloglanpower\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_lanpower.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+if \$msg contains 'FAULT State change 1b to 1e' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloglanpower\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_lanpower.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+if \$msg contains 'FAULT State change 1b to 1c' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloglanpower\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_lanpower.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
 #### Additionnal rules - LAN ####
 
 if \$msg contains 'failed handling msg from' then {
@@ -1043,38 +1080,6 @@ if \$msg contains 'CMM chassisTrapsAlert - CMM Down' then {
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"CMM chassisTrapsAlert - CMM Down\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'FAULT State change 1b to 24' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"FAULT State change 1b to 24\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'FAULT State change 1b to 25' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"FAULT State change 1b to 25\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'FAULT State change 1b to 1e' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"FAULT State change 1b to 1e\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'FAULT State change 1b to 1c' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"FAULT State change 1b to 1c\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 

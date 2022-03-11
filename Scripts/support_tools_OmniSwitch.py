@@ -1594,10 +1594,13 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
 # Function to collect several command outputs related to PoE
 
 
-def collect_command_output_poe(switch_user, switch_password, host, ipadd):
+def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason):
     """ 
-    This function takes IP Address and Hostname as argument. This function is called when an issue is observed on Lanpower category
+    This function takes IP Address and Hostname, port number (without unit/slot) and faulty reason as argument. This function is called when an issue is observed on Lanpower category
     This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+    :param str port:                  Switch port without unit/slot
+    :param str reason:                LANPOWER faulty reason ex: Non-standard PD connected
+    :param str ipadd:                 Switch IP address
     :param str host:                  Switch Hostname
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
@@ -1612,27 +1615,27 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
     l_switch_cmd.append("show configuration snapshot lanpower")
     l_switch_cmd.append("show powersupply total")
     l_switch_cmd.append("show lanpower slot 1/1")
-    l_switch_cmd.append("show lanpower slot 2/1")
-    l_switch_cmd.append("show lanpower slot 3/1")
+#    l_switch_cmd.append("show lanpower slot 2/1")
+#    l_switch_cmd.append("show lanpower slot 3/1")
     l_switch_cmd.append("show lanpower power-rule")
     l_switch_cmd.append("show lanpower chassis 1 capacitor-detection")
-    l_switch_cmd.append("show lanpower chassis 2 capacitor-detection")
-    l_switch_cmd.append("show lanpower chassis 3 capacitor-detection")
+#    l_switch_cmd.append("show lanpower chassis 2 capacitor-detection")
+#    l_switch_cmd.append("show lanpower chassis 3 capacitor-detection")
     l_switch_cmd.append("show lanpower chassis 1 usage-threshold")
-    l_switch_cmd.append("show lanpower chassis 2 usage-threshold")
-    l_switch_cmd.append("show lanpower chassis 3 usage-threshold")
+#    l_switch_cmd.append("show lanpower chassis 2 usage-threshold")
+#    l_switch_cmd.append("show lanpower chassis 3 usage-threshold")
     l_switch_cmd.append("show lanpower chassis 1 ni-priority")
-    l_switch_cmd.append("show lanpower chassis 2 ni-priority")
-    l_switch_cmd.append("show lanpower chassis 3 ni-priority")
+#    l_switch_cmd.append("show lanpower chassis 2 ni-priority")
+#    l_switch_cmd.append("show lanpower chassis 3 ni-priority")
     l_switch_cmd.append("show lanpower slot 1/1 high-resistance-detection")
-    l_switch_cmd.append("show lanpower slot 2/1 high-resistance-detection")
-    l_switch_cmd.append("show lanpower slot 3/1 high-resistance-detection")
+#    l_switch_cmd.append("show lanpower slot 2/1 high-resistance-detection")
+#    l_switch_cmd.append("show lanpower slot 3/1 high-resistance-detection")
     l_switch_cmd.append("show lanpower slot 1/1 priority-disconnect")
-    l_switch_cmd.append("show lanpower slot 2/1 priority-disconnect")
-    l_switch_cmd.append("show lanpower slot 3/1 priority-disconnect")
+#    l_switch_cmd.append("show lanpower slot 2/1 priority-disconnect")
+#    l_switch_cmd.append("show lanpower slot 3/1 priority-disconnect")
     l_switch_cmd.append("show lanpower slot 1/1 class-detection")
-    l_switch_cmd.append("show lanpower slot 2/1 class-detection")
-    l_switch_cmd.append("show lanpower slot 3/1 class-detection")
+#    l_switch_cmd.append("show lanpower slot 2/1 class-detection")
+#    l_switch_cmd.append("show lanpower slot 3/1 class-detection")
 
     for switch_cmd in l_switch_cmd:
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
@@ -1736,12 +1739,12 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd):
     else:
         high_resistance_detection_status = "disabled"
     subject = (
-        "Preventive Maintenance Application - Lanpower issue detected on switch: {0}").format(ipadd)
+        "Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason {3}").format(host,ipadd,port,reason)
     action = ("A PoE issue has been detected in switch(Hostname : {0}) syslogs. Capacitor Detection is {1}, High Resistance Detection is {2}").format(
         host, capacitor_detection_status, high_resistance_detection_status)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "poe"
-    return filename_path, subject, action, result, category
+    return filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status
 
 # Function to collect OmniSwitch IP Service/AAA Authentication status based on protocol received as argument
 
