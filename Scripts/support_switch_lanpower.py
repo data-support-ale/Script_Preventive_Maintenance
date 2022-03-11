@@ -170,9 +170,10 @@ if save_resp == "0":
             elif answer == "0":
                 add_new_save(ipadd, port, "lanpower", choice="never")       
         else:
+            feature = "Reload PoE on port"
             notif = "A LANPOWER issue is detected on OmniSwitch " + host + " Port: 1/1/" + port + \
             ", reason: " + reason + ". Do you want to disable PoE on this port? " + ip_server
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_advanced(notif, jid, feature)
             print(answer)
             if answer == "2":
                 add_new_save(ipadd, port, "lanpower", choice="always")
@@ -228,6 +229,16 @@ elif answer == '3':
         info = "High-Resistance-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
         ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
         send_message(info, jid)
+    ### else it corresponds to PoE Reload
+    else:
+        l_switch_cmd = []
+        l_switch_cmd.append("lanpower port 1/1/" + port + " admin-state disable")
+        l_switch_cmd.append("sleep 2")
+        l_switch_cmd.append("lanpower port 1/1/" + port + " admin-state enable")
+        for switch_cmd in l_switch_cmd:
+            ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+        info = "PoE is reloaded on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
+        send_message(info, jid)        
 #    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
 
 
