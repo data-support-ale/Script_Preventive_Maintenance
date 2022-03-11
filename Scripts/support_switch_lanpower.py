@@ -5,7 +5,7 @@ import os
 import json
 from time import strftime, localtime, sleep
 from support_tools_OmniSwitch import get_credentials, send_file, collect_command_output_poe, check_save, add_new_save, ssh_connectivity_check
-from support_send_notification import send_message, send_message_request
+from support_send_notification import send_message, send_message_request, send_message_request_advanced
 from database_conf import *
 import re
 
@@ -156,14 +156,28 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
 save_resp = check_save(ipadd, port, "lanpower")
 
 if save_resp == "0":
-        notif = "A LANPOWER issue is detected on OmniSwitch " + host + " Port: 1/1/" + port + \
+        if capacitor_detection_status == "enabled" or high_resistance_detection_status == "enabled":
+            if capacitor_detection_status == "enabled":
+               feature = "Disable Capacitor-Detection"
+            elif high_resistance_detection_status == "enabled":
+                feature = "Disable High-Resistance-Detection"
+            notif = "A LANPOWER issue is detected on OmniSwitch " + host + " Port: 1/1/" + port + \
             ", reason: " + reason + ". Do you want to disable PoE on this port? " + ip_server
-        answer = send_message_request(notif, jid)
-        print(answer)
-        if answer == "2":
-            add_new_save(ipadd, port, "lanpower", choice="always")
-        elif answer == "0":
-            add_new_save(ipadd, port, "lanpower", choice="never")
+            answer = send_message_request_advanced(notif, jid,feature)
+            print(answer)
+            if answer == "2":
+                add_new_save(ipadd, port, "lanpower", choice="always")
+            elif answer == "0":
+                add_new_save(ipadd, port, "lanpower", choice="never")       
+        else:
+            notif = "A LANPOWER issue is detected on OmniSwitch " + host + " Port: 1/1/" + port + \
+            ", reason: " + reason + ". Do you want to disable PoE on this port? " + ip_server
+            answer = send_message_request(notif, jid)
+            print(answer)
+            if answer == "2":
+                add_new_save(ipadd, port, "lanpower", choice="always")
+            elif answer == "0":
+                add_new_save(ipadd, port, "lanpower", choice="never")
 
 elif save_resp == "-1":
     try:
@@ -199,6 +213,23 @@ elif answer == '2':
     cmd = "lanpower port 1/1/" + port + " admin-state disable"
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
 #    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
+
+## Value 3 when we return advanced value like Capacitor Detection or High Resistance Capacity
+elif answer == '3':
+    os.system('logger -t montag -p user.info Process terminated')
+    # DISABLE PoE on Port
+    if capacitor_detection_status == "enabled":
+        cmd = "lanpower slot 1/1 capacitor-detection disable"
+        ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+        info = "Capacitor-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
+        send_message(info, jid)
+    elif high_resistance_detection_status == "enabled":
+        cmd = "lanpower slot 1/1 high-resistance-detection disable"
+        info = "High-Resistance-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
+        ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+        send_message(info, jid)
+#    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
+
 
 else:
     print("Mail request set as no")

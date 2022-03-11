@@ -320,6 +320,92 @@ def send_message_request(info, jid):
             sys.exit()
     return value
 
+def send_message_request_advanced(info, jid, feature):
+    """ 
+    Send the message, with a URL requests  to a Rainbowbot. This bot will send this message and request to the jid in parameters
+
+    :param str info:                Message to send to the rainbow bot
+    :param str jid:                 Rainbow jid where the message will be send
+    :param str ip_server:           IP Adress of the server log , which is also a web server
+    :param str id_client:           Unique ID creates during the Setup.sh, to identifie the URL request to the good client
+    :param str id_case:             Unique ID creates during the response_handler , to identifie the URL request to the good case.
+    :return:                        None
+    """
+    if feature != "":
+        try:
+
+            company = get_credentials("company")
+            url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
+            headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
+                    'Card': '2', 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'advanced': '{0}'.format(feature)}
+            print(runtime)
+            response = requests.get(url, headers=headers, timeout=600)
+            print("Response from VNA")
+            print(runtime)
+            print(response)
+
+            code = re.findall(r"<Response \[(.*?)\]>", str(response))
+            if "200" in code:
+                os.system('logger -t montag -p user.info 200 OK')
+                print("Response  Text from VNA")
+                value = response.text
+                print(value)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes", "Decision": value}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                    sys.exit()
+                pass
+            else:
+                os.system('logger -t montag -p user.info REST API Timeout')
+                info = "No answer received from VNA/Rainbow application - Answer Yes set by default"
+                send_message(info, jid)
+                value = "1"
+        except requests.exceptions.ConnectionError as response:
+            print(response)
+            value = "1"
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+        except requests.exceptions.Timeout as response:
+            print("Request Timeout when calling URL: " + url)
+            print(response)
+            value = "1"
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+        except requests.exceptions.TooManyRedirects as response:
+            print("Too Many Redirects when calling URL: " + url)
+            print(response)
+            value = "1"
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+        except requests.exceptions.RequestException as response:
+            print("Request exception when calling URL: " + url)
+            print(response)
+            value = "1"
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "Yes"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+    else:
+        print("feature variable empty")
+        sys.exit()
+    return value
+
 
 def send_file(info, jid, ipadd, filename_path=''):
     """ 
@@ -343,7 +429,7 @@ def send_file(info, jid, ipadd, filename_path=''):
 
         try:
             response = requests.post(url, headers=headers,
-                                     data=payload, timeout=120)
+                                     data=payload, timeout=20)
             code = re.findall(r"<Response \[(.*?)\]>", str(response))
             if "200" in code:
                 os.system('logger -t montag -p user.info 200 OK')
