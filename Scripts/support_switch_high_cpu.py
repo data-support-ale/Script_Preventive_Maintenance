@@ -47,7 +47,12 @@ print(ipadd)
 print(host)
 #{"@timestamp":"2021-11-22T21:57:06+01:00","type":"syslog_json","relayip":"10.130.7.243","hostname":"sw5-bcb","message":"<134>Nov 22 21:57:06 OS6860E_VC_Core swlogd healthCmm main EVENT: CUSTLOG CMM NI 1/1 rising above CPU threshold","end_msg":""}
 info = "A High CPU is noticed on OmniSwitch {0}/{1}and we are collecting logs on Server {2} /tftpboot/ directory".format(host,ipadd,ip_server)
-send_message(info,jid)
+#send_message(info,jid)
+try:
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Result": "Init"}, "fields": {"count": 1}}])
+except UnboundLocalError as error:
+    print(error)
+    sys.exit()
 cmd = "python3 /flash/python/get_logs_high_cpu.py"
 
 #### Old method ####
@@ -86,6 +91,13 @@ if connection_status != 0:
         send_message(info,jid)
         sys.exit(2)
 sleep(2)
+
+try:
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Result": "Script executed on Switch"}, "fields": {"count": 1}}])
+except UnboundLocalError as error:
+    print(error)
+    sys.exit()
+
 filename='{0}_logs.txt'.format(host)
 remoteFilePath = '/flash/python/{0}'.format(filename)
 localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}_high_cpu".format(date,date_hm.hour,date_hm.minute,ipadd,filename) 
@@ -106,8 +118,8 @@ print(localFilePath)
 ### TECH-SUPPORT ENG COMPLETE ###
 get_tech_support_sftp(switch_user, switch_password, host, ipadd)
 
-jid1="j_9403700392@openrainbow.com"
-url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Test_EMEA"
-headers = {  'Content-type':"text/plain",'Content-Disposition': "attachment;filename=port_flapping.log", 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
-files = {'file': open(localFilePath,'r')}
-response = requests.post(url,files=files, headers=headers)
+try:
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Result": "Logs collected"}, "fields": {"count": 1}}])
+except UnboundLocalError as error:
+    print(error)
+    sys.exit()

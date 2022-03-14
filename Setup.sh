@@ -810,12 +810,12 @@ if \$msg contains 'PMD generated at' then {
 }
 
 #### LAN - Rules Port Flapping ######
-if \$msg contains 'pmnHALLinkStatusCallback:206' then {
+if \$msg contains 'pmnHALLinkStatusCallback:20' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogflapping\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
 #queue.size=\"1\" queue.discardmark=\"1\" queue.TimeoutActionCompletion=\"2000\")
-     action(type=\"omprog\" name=\"support_lan_generic_flapping\" binary=\"$dir/support_switch_port_flapping.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+     action(type=\"omprog\" name=\"support_lan_generic_flapping\" binary=\"/opt/ALE_Script/support_switch_port_flapping.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 

@@ -854,7 +854,9 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
+    l_switch_cmd.append("show interfaces " + port)
     l_switch_cmd.append("show interfaces " + port + " status")
+    l_switch_cmd.append("show violation")
     l_switch_cmd.append("show interfaces " + port + " counters")
     sleep(2)
     l_switch_cmd.append("show interfaces " + port + " counters")
@@ -862,6 +864,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     l_switch_cmd.append("show interfaces " + port + " counters")   
     sleep(2)
     l_switch_cmd.append("show interfaces " + port + " counters")
+    sleep(2)
     l_switch_cmd.append("show health port " + port)   
     l_switch_cmd.append("show interfaces " + port + " flood-rate")
     if decision == "1" or decision == "2":

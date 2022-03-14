@@ -1,4 +1,4 @@
-#!\/usr\/local\/bin\/python3.7
+#!/usr/local/bin/python3.7
 
 import sys
 import os
@@ -101,7 +101,6 @@ def detect_port_flapping():
                 if 'DOWN' in element:
                     # print for debug the script
                     print(current_time, last_time_first_IP, last_time_second_IP)
-                    print("coucou")
                     try:
                         write_api.write(bucket, org, [{"measurement": "support_switch_port_flapping.py", "tags": {
                                         "IP_Address": ipadd, "Port": portnumber}, "fields": {"count": 1}}])
