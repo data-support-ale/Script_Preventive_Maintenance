@@ -773,7 +773,7 @@ if \$msg contains 'PMD generated at' then {
 }
 
 #### LAN - Rules Port Flapping ######
-if \$msg contains 'pmnHALLinkStatusCallback:206' then {
+if \$msg contains 'pmnHALLinkStatusCallback:' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogflapping\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
