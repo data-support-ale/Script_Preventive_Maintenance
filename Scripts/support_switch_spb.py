@@ -81,3 +81,6 @@ try:
 except UnboundLocalError as error:
     print(error)
     sys.exit()
+except Exception as error:
+    print(error)
+    pass 

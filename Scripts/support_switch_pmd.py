@@ -46,6 +46,9 @@ def pmd_issue(ipadd, jid):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 
 def extract_ipadd():

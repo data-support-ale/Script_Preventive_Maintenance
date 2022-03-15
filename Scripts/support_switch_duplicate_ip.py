@@ -50,7 +50,10 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
                     "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
-            sys.exit()
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         except Exception:
             exception = "SFTP Get Timeout"
             info = (
@@ -63,7 +66,10 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
                     "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
-            sys.exit()
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass
     except paramiko.ssh_exception.AuthenticationException:
         exception = "SFTP Get Timeout"
         info = (
@@ -76,7 +82,10 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
-        sys.exit()
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
 
     cmd = "configuration apply ./working/configqos "
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
@@ -145,6 +154,9 @@ elif save_resp == "-1":
     except UnboundLocalError as error:
        print(error)
        sys.exit()
+    except Exception as error:
+        print(error)
+        sys.exit()
 else:
     answer = '1'
 
@@ -162,3 +174,6 @@ if answer == '1':
                 "IP": ip, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
+        except Exception as error:
+            print(error)
+            pass

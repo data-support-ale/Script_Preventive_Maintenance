@@ -43,6 +43,9 @@ with open("/var/log/devices/lastlog_radius_down.json", "r", errors='ignore') as 
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass 
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -62,6 +65,9 @@ with open("/var/log/devices/lastlog_radius_down.json", "r", errors='ignore') as 
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass 
         except UnboundLocalError as error:
             print(error)
             sys.exit()

@@ -66,6 +66,9 @@ try:
 except UnboundLocalError as error:
     print(error)
     sys.exit()
+except Exception as error:
+    print(error)
+    pass
 
 ##########################Get More LOGS########################################
 text = "########################################################################"
@@ -104,7 +107,10 @@ for switch_cmd in l_switch_cmd:
                     "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
-            sys.exit()
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass
     except subprocess.TimeoutExpired as exception:
         info = (
             "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
@@ -116,7 +122,10 @@ for switch_cmd in l_switch_cmd:
                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
-        sys.exit()
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except FileNotFoundError as exception:
         info = (
             "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
@@ -128,7 +137,10 @@ for switch_cmd in l_switch_cmd:
                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
-        sys.exit()
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
 
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
@@ -146,5 +158,5 @@ filename = '/opt/ALE_Script/{0}.txt'.format(filename)
 print(filename)
 
 if jid != '':
-    #         send_file(info,jid,ipadd,filename)
+    #send_file(info,jid,ipadd,filename)
     print("file attached in Rainbow bubble")

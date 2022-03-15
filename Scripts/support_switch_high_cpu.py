@@ -53,6 +53,10 @@ try:
 except UnboundLocalError as error:
     print(error)
     sys.exit()
+except Exception as error:
+    print(error)
+    pass 
+
 cmd = "python3 /flash/python/get_logs_high_cpu.py"
 
 #### Old method ####
@@ -97,6 +101,9 @@ try:
 except UnboundLocalError as error:
     print(error)
     sys.exit()
+except Exception as error:
+    print(error)
+    pass 
 
 filename='{0}_logs.txt'.format(host)
 remoteFilePath = '/flash/python/{0}'.format(filename)
@@ -123,3 +130,6 @@ try:
 except UnboundLocalError as error:
     print(error)
     sys.exit()
+except Exception as error:
+    print(error)
+    pass 

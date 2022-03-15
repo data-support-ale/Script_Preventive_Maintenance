@@ -75,6 +75,9 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
     # always 1
     #never -1
@@ -111,7 +114,10 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
             sys.exit()
         except UnboundLocalError as error:
             print(error)
-            sys.exit()       
+            sys.exit()
+        except Exception as error:
+            print(error)
+            sys.exit()        
     else:
         answer = '1'
         info = "A loop has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ipadd, ip_server)

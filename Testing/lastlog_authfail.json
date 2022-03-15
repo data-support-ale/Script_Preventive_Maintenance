@@ -1,0 +1,1 @@
+{"@timestamp":"2022-03-11T04:56:31+01:00","type":"syslog_json","relayip":"10.130.7.240","hostname":"0S6860-BEB-2","message":"<30>Mar 11 04:56:31 0S6860-BEB-2 swlogd SES AAA INFO: Login by admin from 10.130.7.14 through SSH Failed [in LoginAaaSession::handleLoginResult()]","end_msg":""}

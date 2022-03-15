@@ -66,6 +66,9 @@ elif save_resp == "-1":
     except UnboundLocalError as error:
        print(error)
        sys.exit()
+    except Exception as error:
+        print(error)
+        sys.exit() 
 
 elif save_resp == "1":
     answer = '2'
@@ -80,12 +83,12 @@ if answer == '1':
         except UnboundLocalError as error:
             print(error)
             sys.exit()
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
         except IndexError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass 
 else:
     print("no pattern match - exiting script")
     sys.exit()

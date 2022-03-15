@@ -1,0 +1,1 @@
+{"@timestamp":"2022-03-14T17:26:30+01:00","type":"syslog_json","relayip":"10.130.7.245","hostname":"OS6900_VC_Core","message":"<132>Mar 14 17:26:30 OS6900_VC_Core swlogd intfCmm Mgr WARN: cmmEsmCheckDDMThresholdViolations: SFP\/XFP Rx Power=-26.8 dBm on slot=1 port=9, crossed DDM threshold low alarm","end_msg":""}

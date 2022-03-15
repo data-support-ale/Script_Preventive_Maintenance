@@ -45,6 +45,9 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass 
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -66,6 +69,9 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass 
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -84,6 +90,9 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass 
     # Sample log
     # swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM The switch was restarted by the user
     # swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM The switch was restarted by a power cycle or due to some type of failure
@@ -100,6 +109,9 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass 
         except UnboundLocalError as error:
             print(error)
             sys.exit()

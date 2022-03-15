@@ -54,6 +54,9 @@ if jid != '':
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass
 
 # Enable debugging logs for getting IP Attacker's IP Address "swlog appid ipv4 subapp all level debug3"
 appid = "ipv4"

@@ -64,6 +64,9 @@ def send_message(info, jid):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
             pass
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
@@ -76,6 +79,9 @@ def send_message(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
         print(response)
@@ -85,6 +91,9 @@ def send_message(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
         print(response)
@@ -94,6 +103,9 @@ def send_message(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
         print(response)
@@ -103,6 +115,9 @@ def send_message(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
 
 
 def send_alert(info, jid):
@@ -132,6 +147,9 @@ def send_alert(info, jid):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
             pass
@@ -143,6 +161,9 @@ def send_alert(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
         print(response)
@@ -152,6 +173,9 @@ def send_alert(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
         print(response)
@@ -161,6 +185,9 @@ def send_alert(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
         print(response)
@@ -170,6 +197,9 @@ def send_alert(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
 
 
 def send_message_aijaz(subject, info, jid):
@@ -199,6 +229,9 @@ def send_message_aijaz(subject, info, jid):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
             pass
@@ -210,6 +243,9 @@ def send_message_aijaz(subject, info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
         print(response)
@@ -219,6 +255,9 @@ def send_message_aijaz(subject, info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
         print(response)
@@ -228,6 +267,9 @@ def send_message_aijaz(subject, info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
         print(response)
@@ -237,6 +279,9 @@ def send_message_aijaz(subject, info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
 
 
 def send_message_request(info, jid):
@@ -273,7 +318,9 @@ def send_message_request(info, jid):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
-            pass
+            except Exception as error:
+                print(error)
+            pass                
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
             info = "No answer received from VNA/Rainbow application - Answer Yes set by default"
@@ -288,6 +335,9 @@ def send_message_request(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
         print(response)
@@ -298,6 +348,9 @@ def send_message_request(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
         print(response)
@@ -308,6 +361,9 @@ def send_message_request(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
         print(response)
@@ -318,6 +374,9 @@ def send_message_request(info, jid):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     return value
 
 def send_message_request_advanced(info, jid, feature):
@@ -356,6 +415,8 @@ def send_message_request_advanced(info, jid, feature):
                 except UnboundLocalError as error:
                     print(error)
                     sys.exit()
+                except Exception as error:
+                    print(error)
                 pass
             else:
                 os.system('logger -t montag -p user.info REST API Timeout')
@@ -371,6 +432,9 @@ def send_message_request_advanced(info, jid, feature):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         except requests.exceptions.Timeout as response:
             print("Request Timeout when calling URL: " + url)
             print(response)
@@ -381,6 +445,9 @@ def send_message_request_advanced(info, jid, feature):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         except requests.exceptions.TooManyRedirects as response:
             print("Too Many Redirects when calling URL: " + url)
             print(response)
@@ -391,6 +458,9 @@ def send_message_request_advanced(info, jid, feature):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         except requests.exceptions.RequestException as response:
             print("Request exception when calling URL: " + url)
             print(response)
@@ -401,6 +471,9 @@ def send_message_request_advanced(info, jid, feature):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
     else:
         print("feature variable empty")
         sys.exit()
@@ -443,6 +516,9 @@ def send_file(info, jid, ipadd, filename_path=''):
                 except UnboundLocalError as error:
                     print(error)
                     sys.exit()
+                except Exception as error:
+                    print(error)
+                    pass
             else:
                 os.system('logger -t montag -p user.info REST API Timeout')
                 pass
@@ -454,6 +530,9 @@ def send_file(info, jid, ipadd, filename_path=''):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         except requests.exceptions.Timeout as response:
             print("Request Timeout when calling URL: " + url)
             print(response)
@@ -463,6 +542,9 @@ def send_file(info, jid, ipadd, filename_path=''):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         except requests.exceptions.TooManyRedirects as response:
             print("Too Many Redirects when calling URL: " + url)
             print(response)
@@ -472,6 +554,9 @@ def send_file(info, jid, ipadd, filename_path=''):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         except requests.exceptions.RequestException as response:
             print("Request exception when calling URL: " + url)
             print(response)
@@ -481,6 +566,9 @@ def send_file(info, jid, ipadd, filename_path=''):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
 
     info = "Log of device : {0}".format(ipadd)
 
@@ -535,6 +623,9 @@ def send_file(info, jid, ipadd, filename_path=''):
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         else:
             os.system('logger -t montag -p user.info REST API Timeout')
             pass
@@ -546,6 +637,9 @@ def send_file(info, jid, ipadd, filename_path=''):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.Timeout as response:
         print("Request Timeout when calling URL: " + url)
         print(response)
@@ -555,6 +649,9 @@ def send_file(info, jid, ipadd, filename_path=''):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.TooManyRedirects as response:
         print("Too Many Redirects when calling URL: " + url)
         print(response)
@@ -564,6 +661,9 @@ def send_file(info, jid, ipadd, filename_path=''):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     except requests.exceptions.RequestException as response:
         print("Request exception when calling URL: " + url)
         print(response)
@@ -573,4 +673,7 @@ def send_file(info, jid, ipadd, filename_path=''):
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            pass
     sleep(5)

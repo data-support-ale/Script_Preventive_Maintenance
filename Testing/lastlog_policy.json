@@ -1,0 +1,1 @@
+{"@timestamp":"2022-03-09T21:28:43+01:00","type":"syslog_json","relayip":"10.130.7.62","hostname":"10.130.7.62","message":"<150>Mar  9 21:28:43 : Wireless roam_trace[11983] <INFO> [AP DC:08:56:76:C0:C0@10.130.7.62] [TSDATA @ ath22]: check period policy Lab_jonathan_period_policy, current time is not allowed to access, STA <e4:5f:01:2d:0b:97> Disconect","end_msg":""}

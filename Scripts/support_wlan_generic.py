@@ -38,6 +38,9 @@ def deassociation(ipadd, device_mac, reason, reason_number):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
     # REST-API for login on OV
     #ovrest = OvHandler()
@@ -68,6 +71,9 @@ def reboot(ipadd):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 def unexpected_reboot(ipadd):
     os.system('logger -t montag -p user.info reboot detected')
@@ -82,6 +88,9 @@ def unexpected_reboot(ipadd):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 def upgrade(ipadd):
     os.system('logger -t montag -p user.info upgrade detected')
@@ -96,6 +105,9 @@ def upgrade(ipadd):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 def exception(ipadd):
     os.system('logger -t montag -p user.info exception detected')
@@ -110,6 +122,9 @@ def exception(ipadd):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 def internal_error(ipadd):
     os.system('logger -t montag -p user.info internal error detected')
@@ -124,6 +139,9 @@ def internal_error(ipadd):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 def target_asserted(ipadd):
     os.system('logger -t montag -p user.info target asserted detected')
@@ -138,6 +156,9 @@ def target_asserted(ipadd):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 
 def kernel_panic(ipadd):
@@ -153,6 +174,9 @@ def kernel_panic(ipadd):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 
 def limit_reached(ipadd):
@@ -168,6 +192,9 @@ def limit_reached(ipadd):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 def authentication_step1(ipadd, device_mac, auth_type, ssid, deassociation):
     try:
@@ -175,6 +202,9 @@ def authentication_step1(ipadd, device_mac, auth_type, ssid, deassociation):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
     if "0" in deassociation:
         message = "[{0}] WLAN deassociation detected from client {1} on Stellar AP {2} with Authentication type {3}".format(
             ssid, device_mac, ipadd, auth_type)
@@ -187,6 +217,9 @@ def authentication_step2(ipadd, user_name, ssid):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
     message = "[{0}] WLAN authentication on Captive Portal from User: {1} on Stellar AP {2}".format(
         ssid, user_name, ipadd)
     os.system('logger -t montag -p user.info ' + message)
@@ -198,6 +231,9 @@ def mac_authentication(device_mac_auth, ARP, source, reason):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
     if "failed" in reason:
         message = "WLAN Authentication failed from client {0} assigned to {1} from {2}".format(
             device_mac_auth, ARP, source)
@@ -218,6 +254,9 @@ def radius_authentication(auth_result, device_mac, accounting_status):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
     if "Failed" in auth_result:
         message = "WLAN 802.1x Authentication {0} for client {1}".format(
             auth_result, device_mac)
@@ -241,6 +280,9 @@ def dhcp_ack(ipadd, device_mac):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
     message = "DHCP Ack received with IP Address {0} for client {1}".format(
         ip_dhcp, device_mac)
     os.system('logger -t montag -p user.info ' + message)
@@ -417,7 +459,9 @@ def extract_WCF():
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
-
+            except Exception as error:
+                print(error)
+                pass 
 
 def extract_ARP():
     # open the file lastlog_mac_authentication.json  and and get the Access Role Profile + result + source
@@ -512,6 +556,9 @@ def extract_Policy():
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass 
     ### If Location Period check fails ####
     # Log sample [SSID-TEST-EGE @ ath01]: check period policy ddddddedzdzedzedz, current time is not allowed to access, STA <00:1e:2a:c8:2f:e4> Disconect
         if "current time is not allowed to access" in element:
@@ -531,6 +578,9 @@ def extract_Policy():
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
+            except Exception as error:
+                print(error)
+                pass 
     ### If Can't Match Access Policy ####
     # Log sample [PORTAL CNP @ ath15]: MAC Authentication Reject for STA <7c:d6:61:b2:f9:43>, reply message is Can't Match Access Policy
         if "Can't Match Access Policy" in element:
@@ -550,6 +600,9 @@ def extract_Policy():
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()    
+            except Exception as error:
+                print(error)
+                pass 
     return Policy
 
 
@@ -660,6 +713,9 @@ def extract_WIPS():
                 except UnboundLocalError as error:
                    print(error)
                    sys.exit()
+                except Exception as error:
+                   print(error)
+                   pass 
             if "status 37" in element:
                 device_mac = re.findall(
                     r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
@@ -676,6 +732,9 @@ def extract_WIPS():
                 except UnboundLocalError as error:
                    print(error)
                    sys.exit()
+                except Exception as error:
+                   print(error)
+                   pass 
     return device_mac, reason
 
 
@@ -773,6 +832,9 @@ elif sys.argv[1] == "deauth":
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
     os.system('logger -t montag -p user.info Sending email')
     os.system('logger -t montag -p user.info Process terminated')
     sys.exit(0)
@@ -788,6 +850,9 @@ elif sys.argv[1] == "roaming":
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
     sys.exit(0)
 
 elif sys.argv[1] == "leaving":
@@ -801,6 +866,9 @@ elif sys.argv[1] == "leaving":
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
     sys.exit(0)
 
 elif sys.argv[1] == "reboot":

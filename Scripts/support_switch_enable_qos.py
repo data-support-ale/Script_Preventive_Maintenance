@@ -41,7 +41,10 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
                     "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
-            sys.exit()
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass
         except Exception:
             exception = "SFTP Get Timeout"
             info = (
@@ -54,7 +57,10 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
                     "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
-            sys.exit()
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass
     except paramiko.ssh_exception.AuthenticationException:
         exception = "SFTP Get Timeout"
         info = (
@@ -67,7 +73,10 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
-        sys.exit()  
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass  
         
     cmd = "configuration apply ./working/configqos "
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
@@ -76,6 +85,9 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
     except UnboundLocalError as error:
         print(error)
         sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 
 # Script init
@@ -113,16 +125,16 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
     # always 1
     #never -1
     # ? 0
-    save_resp = check_save(ip_switch, "0", "scan")
+    save_resp = check_save(ip_switch_ddos, "0", "scan")
 
     if save_resp == "0":
-        notif = "A port scan has been detected on your network by the IP Address {0}  on device {1}. (if you click on Yes, the following actions will be done: Policy action block)".format(
-            ip_switch_ddos, ip_switch)
+        notif = "A port scan has been detected on your network - Source IP Address {0}  on OmniSwitch {1}/{2}. (if you click on Yes, the following actions will be done: Policy action block)".format(
+            ip_switch_ddos, host, ip_switch)
         answer = send_message_request(notif, jid)
 
         if isEssential(ip_switch_ddos):
                 answer = "0"
-                info = "A port scan has been detected on your network however it involves essential ip {} so we did not proced further".format(ip_switch_ddos)
+                info = "A port scan has been detected on your network however it involves essential IP Address {} we do not proceed further".format(ip_switch_ddos)
                 send_message(info,jid)
 
         if answer == "2":
@@ -137,6 +149,9 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         except UnboundLocalError as error:
             print(error)
             sys.exit()
+        except Exception as error:
+            print(error)
+            sys.exit() 
     else:
         answer = '1'
 
@@ -147,8 +162,8 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         if jid != '':
             info = "Log of device : {0}".format(ip_switch)
             send_file(info, jid, ip_switch)
-            info = "A port scan has been detected on your network and QOS policy has been applied to prevent access for the IP Address {0} to device {1}".format(
-                ip_switch_ddos, ip_switch)
+            info = "A port scan has been detected on your network and QOS policy has been applied to prevent access for the IP Address {0} to access OmniSwitch {1}/{2}".format(
+                ip_switch_ddos, host, ip_switch)
             send_message(info, jid)
 
         cmd = "swlog appid ipv4 subapp all level info"

@@ -107,6 +107,9 @@ def detect_port_flapping():
                     except UnboundLocalError as error:
                         print(error)
                         sys.exit()
+                    except Exception as error:
+                        print(error)
+                        pass 
                     if ipadd == first_IP:
                         # ten seconds for the demo, we simulate a flapping . For the real usecase we can down to 1 seconds
                         if (int(current_time)-int(last_time_first_IP)) < 10:

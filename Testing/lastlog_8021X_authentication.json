@@ -1,0 +1,1 @@
+{"@timestamp":"2022-03-08T15:14:49+01:00","type":"syslog_json","relayip":"192.168.0.60","hostname":"192.168.0.60","message":"<150>Mar  8 15:14:49 : Wireless roam_trace[5739] <INFO> [AP DC:08:56:0A:31:50@] RADIUS packet send to 143.209.0.2:1812","end_msg":""}

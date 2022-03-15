@@ -1,0 +1,1 @@
+{"@timestamp":"2022-03-15T17:14:28+01:00","type":"syslog_json","relayip":"10.130.7.62","hostname":"10.130.7.62","message":"<150>Mar 15 17:14:28 : Wireless roam_trace[12455] <INFO> [AP DC:08:56:76:C0:C0@10.130.7.62] [TSDATA @ ath22]: dhcp_snoop: Found dhcp ack for STA <98:09:cf:65:46:c5> @ IPv4 address 10.130.7.61\/24","end_msg":""}
