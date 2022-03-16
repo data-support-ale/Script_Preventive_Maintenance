@@ -479,6 +479,89 @@ def send_message_request_advanced(info, jid, feature):
         sys.exit()
     return value
 
+def send_alert_advanced(subject, action, result, jid):
+    """
+    This function takes as argument the notification subject, notification action and result. 
+    :param str subject:                        Notification subject
+    :param str action:                         Preventive Action done
+    :param str result:                         Preventive Result
+    :param int Card:                           Set to 0 for sending notification without card
+    :param int Email:                          0 if email is disabled, 1 if email is enabled
+    :return:                                   None
+    """
+    company = get_credentials("company")
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_"+company
+    headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
+               'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject), 'toto': '{0}'.format(action), 'tutu': '{0}'.format(result), 'Card': '0', 'Email': '0'}
+    try:
+        response = requests.get(url, headers=headers, timeout=0.5)
+        code = re.findall(r"<Response \[(.*?)\]>", str(response))
+        if "200" in code:
+            os.system('logger -t montag -p user.info 200 OK')
+            print("Response  Text from VNA")
+            value = response.text
+            print(value)
+            print(code)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": "Success"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass
+        else:
+            os.system('logger -t montag -p user.info REST API Timeout')
+            pass
+    except requests.exceptions.ConnectionError as response:
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+    except requests.exceptions.Timeout as response:
+        print("Request Timeout when calling URL: " + url)
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+    except requests.exceptions.TooManyRedirects as response:
+        print("Too Many Redirects when calling URL: " + url)
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+    except requests.exceptions.RequestException as response:
+        print("Request exception when calling URL: " + url)
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+
 
 def send_file(info, jid, ipadd, filename_path=''):
     """ 

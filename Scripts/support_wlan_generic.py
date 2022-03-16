@@ -10,8 +10,9 @@ from time import strftime, localtime
 #import requests
 #import datetime
 import re
-from support_tools_OmniSwitch import get_credentials
-from support_send_notification import send_message, send_alert
+from unicodedata import category
+from support_tools_Stellar import get_credentials, sta_limit_reached, send_file
+from support_send_notification import send_message, send_alert, send_alert_advanced
 #from support_OV_get_wlan import OvHandler
 from database_conf import *
 #import psutil
@@ -77,11 +78,12 @@ def reboot(ipadd):
 
 def unexpected_reboot(ipadd):
     os.system('logger -t montag -p user.info reboot detected')
-    subject_content = "[TS LAB] A reboot is detected on Stellar AP!"
-    message_content_1 = "WLAN Alert - There is a Stellar unexpected reboot detected on server {0} from Stellar AP {1} - please check the LANPOWER is running fine on OmniSwitch and verify the capacitor-detection is disabled".format(
-        ip_server, ipadd)
-    message_content_2 = "sysreboot"
-    send_alert(message_content_1, jid)
+#    subject_content = "[TS LAB] A reboot is detected on Stellar AP!"
+#    message_content_1 = "WLAN Alert - There is a Stellar unexpected reboot detected on server {0} from Stellar AP {1} - please check the LANPOWER is running fine on OmniSwitch and verify the capacitor-detection is disabled".format(ip_server, ipadd)
+    subject = ("Preventive Maintenance Application - There is a Stellar unexpected reboot detected on server {0} from Stellar AP {1}").format(ip_server, ipadd)
+    action = "Please check the LANPOWER is running fine on OmniSwitch and verify the capacitor-detection is disabled"
+    result = "More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000066402"
+    send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "unexpected_reboot"}, "fields": {"count": 1}}])
@@ -111,11 +113,12 @@ def upgrade(ipadd):
 
 def exception(ipadd):
     os.system('logger -t montag -p user.info exception detected')
-    subject_content = "[TS LAB] An exception (Fatal exception, Exception stack, Kernel Panic) is detected on Stellar AP!"
-    message_content_1 = "WLAN Alert - There is a Stellar exception detected on server {0} from Stellar AP {1}".format(
-        ip_server, ipadd)
-    message_content_2 = "Exception"
-    send_alert(message_content_1, jid)
+#    subject_content = "[TS LAB] An exception (Fatal exception, Exception stack, Kernel Panic) is detected on Stellar AP!"
+#    message_content_1 = "WLAN Alert - There is a Stellar exception detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
+    subject = ("Preventive Maintenance Application - There is a Fatal exception detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
+    action = "There is high probability that Stellar AP is rebooting following this exception"
+    result = "If Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6 and others, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737  and https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058376. If Stellar AP is running AWOS 4.0.0 there is a known issue related to Voice and Video awareness fixed in AWOS 4.0.1, more details here https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000061233  "
+    send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "exception"}, "fields": {"count": 1}}])
@@ -128,11 +131,12 @@ def exception(ipadd):
 
 def internal_error(ipadd):
     os.system('logger -t montag -p user.info internal error detected')
-    subject_content = "[TS LAB] An Internal Error is detected on Stellar AP!"
-    message_content_1 = "WLAN Alert - There is an Internal Error detected on server {0} from Stellar AP {1}".format(
-        ip_server, ipadd)
-    message_content_2 = "Internal Error"
-    send_alert(message_content_1, jid)
+#    subject_content = "[TS LAB] An Internal Error is detected on Stellar AP!"
+#    message_content_1 = "WLAN Alert - There is an Internal Error detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
+    subject = ("Preventive Maintenance Application - There is an Internal Error detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
+    action = "There is high probability that Stellar AP is rebooting following this exception"
+    result = "If Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737"
+    send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "internal error"}, "fields": {"count": 1}}])
@@ -145,11 +149,13 @@ def internal_error(ipadd):
 
 def target_asserted(ipadd):
     os.system('logger -t montag -p user.info target asserted detected')
-    subject_content = "[TS LAB] A Target Asserted Error is detected on Stellar AP!"
-    message_content_1 = "WLAN Alert - There is a Target Asserted error detected on server {0} from Stellar AP {1}".format(
-        ip_server, ipadd)
-    message_content_2 = "Target Asserted"
-    send_alert(message_content_1, jid)
+#    subject_content = "[TS LAB] A Target Asserted Error is detected on Stellar AP!"
+#    message_content_1 = "WLAN Alert - There is a Target Asserted error detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
+#    message_content_2 = "Target Asserted"
+    subject = ("Preventive Maintenance Application - There is a Target Asserted error detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
+    action = "There is high probability that Stellar AP is rebooting following this exception"
+    result = "This is a known issue fixed in AWOS 4.0.0 MR-3, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058976"
+    send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "target asserted"}, "fields": {"count": 1}}])
@@ -163,11 +169,12 @@ def target_asserted(ipadd):
 
 def kernel_panic(ipadd):
     os.system('logger -t montag -p user.info Kernel Panic detected')
-    subject_content = "[TS LAB] A Kernel Panic is detected on Stellar AP!"
-    message_content_1 = "WLAN Alert - There is a Kernel Panic error detected on server {0} from Stellar AP {1}".format(
-        ip_server, ipadd)
-    message_content_2 = "Kernel panic"
-    send_alert(message_content_1, jid)
+#    subject_content = "[TS LAB] A Kernel Panic is detected on Stellar AP!"
+#    message_content_1 = "WLAN Alert - There is a Kernel Panic error detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
+    subject = ("Preventive Maintenance Application - There is a Kernel Panic error detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
+    action = "There is high probability that Stellar AP is rebooting following this exception"
+    result = "This is a known issue fixed in AWOS 3.0.7 MR-2, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058276"
+    send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "kernel panic"}, "fields": {"count": 1}}])
@@ -179,13 +186,10 @@ def kernel_panic(ipadd):
         pass 
 
 
-def limit_reached(ipadd):
+def limit_reached(ipadd, login_AP, pass_AP):
     os.system('logger -t montag -p user.info Associated STA Limit Reached!')
-    subject_content = "[TS LAB] Associated STA Limit Reached!"
-    message_content_1 = "WLAN Alert - The Stellar AP {0} has reached the limit of WLAN Client association!".format(
-        ipadd)
-    message_content_2 = "Associated STA limit reached"
-    send_alert(message_content_1, jid)
+    filename_path, subject, action, result, category = sta_limit_reached(login_AP, pass_AP, ipadd)
+    send_file(filename_path, subject, action, result, category)
     send_message(message_reason, jid)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "STA limit reached"}, "fields": {"count": 1}}])
@@ -946,7 +950,7 @@ elif sys.argv[1] == "limit_reached":
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
-    limit_reached(ipadd)
+    limit_reached(ipadd, login_AP, pass_AP)
     os.system('logger -t montag -p user.info Sending email')
     os.system('logger -t montag -p user.info Process terminated')
     sys.exit(0)
