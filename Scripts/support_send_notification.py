@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3.7
 
 from cProfile import run
+from email import header
 import sys
 import requests
 from time import sleep, strftime, localtime
@@ -396,7 +397,10 @@ def send_message_request_advanced(info, jid, feature):
             company = get_credentials("company")
             url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
             headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-                    'Card': '2', 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'advanced': '{0}'.format(feature)}
+                    'Card': '2', 
+                    'jid1': '{0}'.format(jid), 
+                    'toto': '{0}'.format(info), 
+                    'advanced': '{0}'.format(feature)}
             print(runtime)
             response = requests.get(url, headers=headers, timeout=600)
             print("Response from VNA")
@@ -492,7 +496,16 @@ def send_alert_advanced(subject, action, result, jid):
     company = get_credentials("company")
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_"+company
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-               'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject), 'toto': '{0}'.format(action), 'tutu': '{0}'.format(result), 'Card': '0', 'Email': '0'}
+               'jid1': '{0}'.format(jid),
+                'jid2': '{0}'.format(jid),
+                'jid3': '{0}'.format(jid),              
+                'tata': '{0}'.format(subject),
+                'toto': '{0}'.format(action),
+                'tutu': '{0}'.format(result),
+                'Card': '0',
+                'Email': '0',
+                'Advanced': '0'}
+    print(headers)
     try:
         response = requests.get(url, headers=headers, timeout=0.5)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
