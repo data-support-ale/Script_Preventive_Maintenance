@@ -624,15 +624,14 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
 
 
 # Function to collect several command outputs related to Cloud-Agent (OV Cirrus) failure
-def collect_command_output_ovc(switch_user, switch_password, decision, host, ipadd):
+def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, host, ipadd):
     """ 
     This function takes entries arguments the OmniSwitch IP Address where cloud-agent is enabled
-    This function checks the decision received from Admin:
-       if decision is 1, Administrator selected Yes and script disables the Cloud-Agent feature
-       if decision is 0, Administrator selected No and we only provide command outputs  
+    This function checks the VPN IP address and failure reason received from Admin: 
     This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
 
-    :param int desicion:              Administrator decision (1: 'Yes', 0: 'No')
+    :param str vpn_ip:                OVC VPN Far End IP Address
+    :param str reason:                OPENVPN or OVCMM failure reason
     :param str host:                  Switch Hostname
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
@@ -640,10 +639,14 @@ def collect_command_output_ovc(switch_user, switch_password, decision, host, ipa
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show cloud-agent status")
-    if decision == "1":
-        l_switch_cmd.append("cloud-agent admin-state disable force")
-        l_switch_cmd.append("show cloud-agent status")
+    l_switch_cmd.append("show system")
+    l_switch_cmd.append("show cloud-agent status")   
+    l_switch_cmd.append("show cloud-agent vpn status")
+    l_switch_cmd.append("show ntp server status")
+    if vpn_ip != "0":
+        l_switch_cmd.append("ping " + vpn_ip)
+        l_switch_cmd.append("traceroute " + vpn_ip + " max-hop 3")
+    l_switch_cmd.append("cat libcurl_log")
 
     for switch_cmd in l_switch_cmd:
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
@@ -696,15 +699,17 @@ def collect_command_output_ovc(switch_user, switch_password, decision, host, ipa
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - Cloud-Agent module is into Invalid Status on OmniSwitch {0}").format(host)
-    if decision == "1":
-        action = (
-            "The Cloud Agent feature is administratively disabled on OmniSwitch (Hostname: {0})").format(host)
-        result = "Find enclosed to this notification the log collection of actions done"
-    else:
-        action = (
-            "No action done on OmniSwitch (Hostname: {0}), please ensure the Serial Number is added in the OV Cirrus Device Catalog").format(host)
+    if reason == "Cannot resolve host address":
+        subject = ("Preventive Maintenance Application - OVC Activation Server is unreachable from OmniSwitch {0} therefore VPN is DOWN").format(host)
+        action = ("Please verify OmniSwitch {0} can do name resolution - add commands ip name server x.x.x.x and ip domain-lookup").format(host)
+        result = "Find enclosed to this notification the log collection"          
+    elif reason == "S_errno_EHOSTUNREACH" or reason == "S_errno_ETIMEDOUT":
+        subject = ("Preventive Maintenance Application - OVC Activation Server is unreachable from OmniSwitch {0} therefore VPN is DOWN").format(host)
+        action = ("Please verify OVC Activation Server activation.myovcloud.com is reachable - this FQDN must be resolved by DNS set on OmniSwitch {0} and accessible from outside").format(host)
+        result = "Find enclosed to this notification the log collection"   
+    elif reason == "Invalid process status":
+        subject = ("Preventive Maintenance Application - Cloud-Agent module is into Invalid Status on OmniSwitch {0}").format(host)
+        action = ("No action done on OmniSwitch (Hostname: {0}), please ensure the Serial Number is added in the OV Cirrus Device Catalog").format(host)
         result = "Find enclosed to this notification the log collection"
     category = "ovc"
     return filename_path, subject, action, result, category

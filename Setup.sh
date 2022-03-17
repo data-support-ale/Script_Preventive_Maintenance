@@ -497,6 +497,9 @@ template (name=\"deviceloghighmemory\" type=\"string\"
 template (name=\"deviceloglanpower\" type=\"string\"
      string=\"/var/log/devices/lastlog_lanpower.json\")
 
+template (name=\"devicelogovc\" type=\"string\"
+     string=\"/var/log/devices/lastlog_ovc.json\")
+
 
 template(name=\"json_syslog\"
   type=\"list\") {
@@ -1064,6 +1067,40 @@ if \$msg contains 'FAULT State change 1b to 1c' then {
        stop
 }
 
+#### OV Cirrus and OpenVPN - LAN ####
+
+if \$msg contains 'openvpn' and \$msg contains 'Cannot resolve host address' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogovc\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_ovc.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+if \$msg contains 'ovcmm' and \$msg contains 'Invalid process status' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogovc\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_ovc.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+if \$msg contains 'OPENVPN' and \$msg contains 'EHOSTUNREACH' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogovc\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_ovc.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+if \$msg contains 'OPENVPN' and \$msg contains 'ETIMEDOUT' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogovc\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_ovc.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
 #### Additionnal rules - LAN ####
 
 if \$msg contains 'failed handling msg from' then {
@@ -1104,22 +1141,6 @@ if \$msg contains 'Unable to connect' and \$msg contains 'mqttd' then {
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"mqttd Unable to connect\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'openvpn' and \$msg contains 'Cannot resolve host address' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"cloud agent not able to resolve tenant address\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-if \$msg contains 'ovcmm' and \$msg contains 'Invalid process status' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"cloud agent SN not created on Device Catalog\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
