@@ -740,7 +740,7 @@ if \$msg contains 'Unable to handle kernel'  then {
 if \$msg contains 'STA limit reached' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_wlan_generic_limit_reached\" binary=\"/opt/ALE_Script/support_wlan_generic.py limit_reached\")
+     action(type=\"omprog\" name=\"support_wlan_generic_limit_reached\" binary=\"/opt/ALE_Script/support_wlan_generic.py sta_limit_reached\")
      stop
 }
 
@@ -748,6 +748,14 @@ if \$msg contains 'incremented iv_sta_assoc' or \$msg contains 'decremented iv_s
   \$RepeatedMsgReduction on
   action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
   stop
+}
+
+##### Rules WLAN if we reached the limit of Associated WLAN Clients ########
+if \$msg contains 'The vlan counts reach the maximum' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_wlan_generic_limit_reached\" binary=\"/opt/ALE_Script/support_wlan_generic.py vlan_limit_reached\")
+     stop
 }
 
 ##### WLAN Rules for WIPS ########

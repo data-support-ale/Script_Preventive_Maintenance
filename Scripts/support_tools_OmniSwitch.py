@@ -158,7 +158,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             sys.exit()
         except Exception as error:
             print(error)
-            sys.exit() 
+        sys.exit() 
     exception = stderr.readlines()
     exception = str(exception)
     connection_status = stdout.channel.recv_exit_status()

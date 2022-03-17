@@ -61,6 +61,7 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             except Exception as error:
                 print(error)
                 pass
+            sys.exit()
     except paramiko.ssh_exception.AuthenticationException:
         exception = "SFTP Get Timeout"
         info = (

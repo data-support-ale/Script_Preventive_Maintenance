@@ -86,6 +86,22 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         p.connect(ipadd, port=22, username=login_AP,
                   password=pass_AP, timeout=60.0, banner_timeout=200)
+    except ConnectionError as exception:
+        print(exception)
+        print("SSH not allowed when establishing SSH Session")
+        info = (
+            "SSH Connection fails when establishing SSH Session to Stellar AP {0}, please verify if SSH is enabled on the AP Group").format(ipadd)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                        "Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(0)
+        except Exception as error:
+            print(error)
+            pass
     except TimeoutError as exception:
         print(exception)
         print("Timeout when establishing SSH Session")
@@ -101,7 +117,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
             sys.exit(0)
         except Exception as error:
             print(error)
-            pass 
+            pass  
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
         print("Authentication failed enter valid user name and password")
@@ -124,7 +140,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         exception = str(exception)
         print("Device unreachable")
         logging.info(' SSH session does not establish on Stellar AP ' + ipadd)
-        info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
+        info = ("Stellar AP {0} is unreachable, we cannot collect logs").format(ipadd)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
@@ -136,7 +152,22 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
             sys.exit(0)
         except Exception as error:
             print(error)
-            pass 
+            pass
+    except:
+        logging.info(' SSH session does not establish on Stellar AP, please verify SSH is enabled on the AP Group ' + ipadd)
+        info = ("Stellar AP {0} is unreachable, please verify SSH is enabled on the AP Group").format(ipadd)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                        "Reason": "SSH_disabled_on_AP_Group", "IP_Address": ipadd}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(0)
+        except Exception as error:
+            print(error)
+            pass
     try:
         stdin, stdout, stderr = p.exec_command(cmd, timeout=120)
         #stdin, stdout, stderr = threading.Thread(target=p.exec_command,args=(cmd,))
@@ -157,7 +188,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
             sys.exit()
         except Exception as error:
             print(error)
-            sys.exit() 
+        sys.exit() 
     exception = stderr.readlines()
     exception = str(exception)
     connection_status = stdout.channel.recv_exit_status()
@@ -197,7 +228,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         return output
 
 
-def sta_limit_reached(login_AP, pass_AP, ipadd):
+def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
     """ 
     This function returns file path containing the tech_support command outputs and the notification subject, body used when calling VNA API
 
@@ -268,6 +299,79 @@ def sta_limit_reached(login_AP, pass_AP, ipadd):
     category = "sta_limit"
     return filename_path, subject, action, result, category
 
+def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
+    """ 
+    This function returns file path containing the tech_support command outputs and the notification subject, body used when calling VNA API
+
+    :param str login_AP:                   Stellar AP support login
+    :param str pass_AP:                    Stellar AP support password
+    :param str ipadd:                      Switch IP address
+    :return:                               filename_path,subject,action,result,category
+    """
+    text = "More logs about the Stellar AP : {0} \n\n\n".format(ipadd)
+
+    l_stellar_cmd = []
+    l_stellar_cmd.append("ssudo tech_support_command 1")
+    l_stellar_cmd.append("ssudo tech_support_command 2")
+    l_stellar_cmd.append("ssudo tech_support_command 16")
+    l_stellar_cmd.append("ssudo tech_support_command 21")
+    l_stellar_cmd.append("ssudo tech_support_command 27")
+    l_stellar_cmd.append("cat /var/config/access_role.conf")
+    l_stellar_cmd.append("ssudo tech_support_command 12 " + ip_server)
+    for stellar_cmd in l_stellar_cmd:
+        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, ipadd, stellar_cmd)
+        try:
+            output = ssh_connectivity_check(login_AP, pass_AP, ipadd, stellar_cmd)
+            output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
+            if output != None:
+                output = output.decode('UTF-8').strip()
+                text = "{0}{1}: \n{2}\n\n".format(text, stellar_cmd, output)
+            else:
+                exception = "Timeout"
+                info = (
+                    "Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = (
+                "The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+    date = datetime.date.today()
+    date_hm = datetime.datetime.today()
+
+    filename = "{0}_{1}-{2}_{3}_vlan_limit_reached_logs".format(
+        date, date_hm.hour, date_hm.minute, ipadd)
+    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    f_logs = open(filename_path, 'w')
+    f_logs.write(text)
+    f_logs.close()
+    subject = ("Preventive Maintenance Application - The number of created VLAN reached the limit on Stellar AP {0}").format(ipadd)
+    action = "Depending of the Stellar AP model, the VLAN count differs. AP1101/AP1201H(L) (4 VLANs), AP1201 (16 VLANs), others models (32 VLANs)"
+    result = ("Stellar AP snapshot logs are collected and stored on /tftpboot/ directory on server {0}. If you observe disprecancies between the number of VLAN created versus number of VLAN allowed on your Stellar AP model, please contact ALE Customer Support").format(ip_server)
+    category = "vlan_limit"
+    return filename_path, subject, action, result, category
+
 def send_file(filename_path, subject, action, result, category):
     """ 
     This function takes as argument the file containins command outputs, the notification subject, notification action and result. 
@@ -301,10 +405,12 @@ if __name__ == "__main__":
     jid = "570e12872d768e9b52a8b975@openrainbow.com"
     pass_AP = "Letacla01*"
     login_AP = "support"
-    ipadd = "10.130.7.184"
+    ipadd = "10.130.7.70"
     cmd = "/usr/sbin/showsysinfo"
     host = "10.130.7.76"
     pass_root = ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd)
 #    get_snapshot_tftp(pass_root, ipadd)
-    filename_path, subject, action, result, category = sta_limit_reached(login_AP, pass_AP, ipadd)
+    filename_path, subject, action, result, category = sta_limit_reached_tools(login_AP, pass_AP, ipadd)
+    send_file(filename_path, subject, action, result, category)
+    filename_path, subject, action, result, category = vlan_limit_reached_tools(login_AP, pass_AP, ipadd)
     send_file(filename_path, subject, action, result, category)

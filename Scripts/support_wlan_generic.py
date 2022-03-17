@@ -11,7 +11,7 @@ from time import strftime, localtime
 #import datetime
 import re
 from unicodedata import category
-from support_tools_Stellar import get_credentials, sta_limit_reached, send_file
+from support_tools_Stellar import get_credentials, vlan_limit_reached_tools, sta_limit_reached_tools, send_file
 from support_send_notification import send_message, send_alert, send_alert_advanced
 #from support_OV_get_wlan import OvHandler
 from database_conf import *
@@ -186,9 +186,9 @@ def kernel_panic(ipadd):
         pass 
 
 
-def limit_reached(ipadd, login_AP, pass_AP):
+def sta_limit_reached(ipadd, login_AP, pass_AP):
     os.system('logger -t montag -p user.info Associated STA Limit Reached!')
-    filename_path, subject, action, result, category = sta_limit_reached(login_AP, pass_AP, ipadd)
+    filename_path, subject, action, result, category = sta_limit_reached_tools(login_AP, pass_AP, ipadd)
     send_file(filename_path, subject, action, result, category)
     send_message(message_reason, jid)
     try:
@@ -198,7 +198,21 @@ def limit_reached(ipadd, login_AP, pass_AP):
         sys.exit()
     except Exception as error:
         print(error)
-        pass 
+        pass
+
+def vlan_limit_reached(ipadd, login_AP, pass_AP):
+    os.system('logger -t montag -p user.info Associated VLAN Limit Reached!')
+    filename_path, subject, action, result, category = vlan_limit_reached_tools(login_AP, pass_AP, ipadd)
+    send_file(filename_path, subject, action, result, category)
+    send_message(message_reason, jid)
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "VLAN limit reached"}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except Exception as error:
+        print(error)
+        pass  
 
 def authentication_step1(ipadd, device_mac, auth_type, ssid, deassociation):
     try:
@@ -945,12 +959,22 @@ elif sys.argv[1] == "kernel_panic":
     os.system('logger -t montag -p user.info Process terminated')
     sys.exit(0)
 
-elif sys.argv[1] == "limit_reached":
+elif sys.argv[1] == "sta_limit_reached":
     print("call function Associated STA limit reached")
     os.system(
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
-    limit_reached(ipadd, login_AP, pass_AP)
+    sta_limit_reached(ipadd, login_AP, pass_AP)
+    os.system('logger -t montag -p user.info Sending email')
+    os.system('logger -t montag -p user.info Process terminated')
+    sys.exit(0)
+
+elif sys.argv[1] == "vlan_limit_reached":
+    print("call function Associated VLAN limit reached")
+    os.system(
+        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    ipadd, message_reason = extract_ipadd()
+    vlan_limit_reached(ipadd, login_AP, pass_AP)
     os.system('logger -t montag -p user.info Sending email')
     os.system('logger -t montag -p user.info Process terminated')
     sys.exit(0)
