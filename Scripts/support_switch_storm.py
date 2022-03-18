@@ -4,8 +4,9 @@ import sys
 import os
 import re
 import json
-from support_tools_OmniSwitch import get_credentials, collect_command_output_storm, send_file, script_has_run_recently
+from support_tools_OmniSwitch import get_credentials, collect_command_output_storm, send_file, script_has_run_recently, get_file_sftp
 from time import sleep
+import datetime
 from support_send_notification import send_message_request, send_message
 from database_conf import *
 from support_tools_OmniSwitch import add_new_save, check_save
@@ -18,6 +19,9 @@ os.system('logger -t montag -p user.info Executing script ' + script_name)
 
 # Get informations from logs.
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+
+date = datetime.date.today()
+date_hm = datetime.datetime.today()
 
 last = ""
 with open("/var/log/devices/lastlog_storm.json", "r", errors='ignore') as log_file:
@@ -41,12 +45,6 @@ with open("/var/log/devices/lastlog_storm.json", "r", errors='ignore') as log_fi
         exit()
  
  
-    function = "storm"
-    if script_has_run_recently(300,ip,function):
-        print('you need to wait before you can run this again')
-        os.system('logger -t montag -p user.info Executing script exit because executed within 5 minutes time period')
-        exit()
-
     ## Sample Log
     ## swlogd intfCmm Mgr EVENT: CUSTLOG CMM Port 1\/1\/52 Storm Threshold violation - ingress traffic exceeds configured value 1
     ## On log if "ingress traffic exceeds configured value x" it does correspond to:
@@ -72,12 +70,26 @@ with open("/var/log/devices/lastlog_storm.json", "r", errors='ignore') as log_fi
 # ? 0
 save_resp = check_save(ip, port, "storm")
 
+function = "storm"
+if script_has_run_recently(300,ip,function):
+    print('you need to wait before you can run this again')
+    os.system('logger -t montag -p user.info Executing script exit because executed within 5 minutes time period')
+    exit()
 
 
 if save_resp == "0":
-    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? " + ip_server
+    answer = "0"
+    filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ip)
+    send_file(filename_path, subject, action, result, category)
+    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? On Server " + ip_server + " directory /tftpboot/ is stored the port monitoring capture of port."
     answer = send_message_request(notif, jid)
     print(answer)
+    sleep(2)
+    #### Download port monitoring capture ###
+    filename= '{0}_pmonitor_storm.enc'.format(host)
+    remoteFilePath = '/flash/pmonitor.enc'
+    localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}_storm_capture".format(date,date_hm.hour,date_hm.minute,ip,filename) 
+    get_file_sftp(switch_user, switch_password, ip, remoteFilePath, localFilePath)
     if answer == "2":
         add_new_save(ip, port, "storm", choice="always")
     elif answer == "0":
@@ -109,14 +121,13 @@ else:
 if answer == '1':
     os.system('logger -t montag -p user.info Process terminated')
     # CLEAR VIOLATION
-    if jid != '':
-        filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ip)
-        #cmd = "clear violation port " + port
-        #os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, cmd))
+    filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ip)
+    #cmd = "clear violation port " + port
+    #os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, cmd))
     
-        send_file(filename_path, subject, action, result, category)
-        #info = "A port Storm violation has been cleared up on device {}".format(ip)
-        #send_message(info, jid)
+    send_file(filename_path, subject, action, result, category)
+    #info = "A port Storm violation has been cleared up on device {}".format(ip)
+    #send_message(info, jid)
 
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')
