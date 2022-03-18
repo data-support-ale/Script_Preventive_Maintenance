@@ -6,6 +6,7 @@ import sys
 import os
 import logging
 import datetime
+import time
 from time import sleep
 from unicodedata import name
 
@@ -555,13 +556,14 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show system")
+    l_switch_cmd.append("show system")      
     l_switch_cmd.append("show chassis")
     l_switch_cmd.append("show interfaces " + port + " status")
     l_switch_cmd.append("show mac-learning port " + port)
     l_switch_cmd.append("show vlan members port " + port)
 
     for switch_cmd in l_switch_cmd:
+        os.system('logger -t montag -p user.info SSH session for show chassis')
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
             switch_password, switch_user, ipadd, switch_cmd)
         try:
@@ -2029,6 +2031,49 @@ def add_new_save(ipadd, port, type, choice="never"):
         print("Permission error when creating file /opt/ALE_Script/decisions_save.conf")
         sys.exit()
 
+def script_has_run_recently(seconds,ip,function):
+    filename = ('/opt/ALE_Script/last-runtime_{0}.txt').format(function)
+    current_time = int(time.time())
+    text = "{0},{1},{2}\n".format(str(current_time),ip, function)
+    try:
+        content = open("/opt/ALE_Script/last-runtime_{0}.txt".format(function), "r", errors='ignore')
+ #       with open(filename, 'rt') as f:
+        file_lines = content.readlines()
+        file_lines = file_lines[0]
+        file_lines = file_lines.split(',')
+        content.close()
+        last_run = int(file_lines[0])
+#            last_run = int(f.read().strip())
+    except (IOError, ValueError) as e:
+        last_run = 0
+    if last_run + seconds > current_time:
+        if check_timestamp_and_function(ip, function) == 2:
+           print("IP Address and function found in last-runtime + last run less than 5 minutes")
+           return True
+        if check_timestamp_and_function(ip, function) == 1:
+            with open(filename, 'w') as f:
+               f.write(text)
+    else:
+        with open(filename, 'wt') as f:
+            f.write(text)
+        return False
+
+def check_timestamp_and_function(ip, function):
+    content = open("/opt/ALE_Script/last-runtime_{0}.txt".format(function), "r", errors='ignore')
+    file_lines = content.readlines()
+    content.close()
+
+    for line in file_lines:
+        print(line)
+        if "{0},{1}".format(ip, function) in line:
+            print("IP Address and function found in last-runtime")
+            return 2
+        else:
+            print("value 1")
+            return 1
+
+    return '0'
+
 
 def detect_port_loop():
     """ 
@@ -2267,44 +2312,37 @@ if __name__ == "__main__":
     cmd = "show system"
     host = "LAN-6860N-2"
     port = "1/1/4"
-    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-    filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ipadd)
-    send_file(filename_path, subject, action, result, category)
+#    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+#    filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ipadd)
+#    send_file(filename_path, subject, action, result, category)
     filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
     send_file(filename_path, subject, action, result,category)
     reason="Fail due to out-of-range capacitor value"
     port="34"
-    filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-    send_file(filename_path, subject, action, result,category)
+#    filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+#    send_file(filename_path, subject, action, result,category)
     agg = "6"
-    filename_path, subject, action, result, category = collect_command_output_linkagg(
-        switch_user, switch_password, agg, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+#    filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
+#    send_file(filename_path, subject, action, result,category)
     vcid = "2"
-    filename_path, subject, action, result, category = collect_command_output_vc(
-        switch_user, switch_password, vcid, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+#    filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
+#    send_file(filename_path, subject, action, result,category)
     psid = "2"
-    filename_path, subject, action, result, category = collect_command_output_ps(
-        switch_user, switch_password, psid, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+#    filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
+#    send_file(filename_path, subject, action, result,category)
     source = "Access Guardian"
 
     decision = "0"
-    filename_path, subject, action, result, category = collect_command_output_violation(
-        switch_user, switch_password, port, source, decision, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
-    filename_path, subject, action, result, category = collect_command_output_storm(
-        switch_user, switch_password, port, source, decision, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+#    filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
+#    send_file(filename_path, subject, action, result,category)
+#    filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
+#    send_file(filename_path, subject, action, result,category)
     protocol = "HTTPS"
     user = "toto"
     source_ip = "10.130.7.17"
-    service_status, aaa_status = collect_command_output_aaa(
-        switch_user, switch_password, protocol, ipadd)
-    filename_path, subject, action, result, category = authentication_failure(
-        switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+#    service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
+#    filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
+#    send_file(filename_path, subject, action, result,category)
 
 else:
     print("Support_Tools_OmniSwitch Script called by another script")

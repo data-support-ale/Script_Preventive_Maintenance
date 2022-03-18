@@ -2,7 +2,7 @@
 
 import sys
 import os
-from support_tools_OmniSwitch import get_credentials, detect_port_loop, isUpLink, ssh_connectivity_check, debugging, add_new_save, check_save, send_file, collect_command_output_network_loop
+from support_tools_OmniSwitch import get_credentials, detect_port_loop, isUpLink, ssh_connectivity_check, debugging, add_new_save, check_save, send_file, collect_command_output_network_loop, script_has_run_recently
 from time import strftime, localtime, sleep
 #import re  # Regex
 from support_send_notification import send_message, send_message_request
@@ -63,6 +63,11 @@ if len(file_lines) != 0:
                     # modify the format of the port number to suit the switch interface
                     port = "{0}/1/{1}".format(slot, port)
 
+function = "loop"
+if script_has_run_recently(300,ipadd,function):
+    print('you need to wait before you can run this again')
+    os.system('logger -t montag -p user.info Executing script exit because executed within 5 minutes time period')
+    exit()
 
 # if check_timestamp()>15: # if the last log has been received less than 10 seconds ago :
 if detect_port_loop():  # if there is more than 10 log with less of 2 seconds apart:
@@ -125,8 +130,8 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
 
     if answer == '1':
         cmd = "interfaces port {0} admin-state disable".format(port)
-        os.system(
-            'logger -t montag -p user.info Calling ssh_connectivity_check script')
+        os.system('logger -t montag -p user.info Calling ssh_connectivity_check script')
+        os.system('logger -t montag -p user.info SSH session for disabling port')
         ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
         # disable_port(switch_user,switch_password,ipadd,port)
         os.system('logger -t montag -p user.info Port disabled')
@@ -142,9 +147,10 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         level = "info"
         # Call debugging function from support_tools_OmniSwitch
         print("call function enable debugging")
+        os.system('logger -t montag -p user.info SSH session for disabling logs')
         debugging(switch_user, switch_password, ipadd, appid, subapp, level)
         # clear lastlog file
-        sleep(1)
+        sleep(10)
         open('/var/log/devices/lastlog_loop.json', 'w').close()
     else:
         print("Mail request set as no")

@@ -4,8 +4,8 @@ import sys
 import os
 import re
 import json
-from support_tools_OmniSwitch import get_credentials, collect_command_output_storm, send_file
-from time import strftime, localtime, sleep
+from support_tools_OmniSwitch import get_credentials, collect_command_output_storm, send_file, script_has_run_recently
+from time import sleep
 from support_send_notification import send_message_request, send_message
 from database_conf import *
 from support_tools_OmniSwitch import add_new_save, check_save
@@ -13,7 +13,8 @@ from support_tools_OmniSwitch import add_new_save, check_save
 # Script init
 script_name = sys.argv[0]
 os.system('logger -t montag -p user.info Executing script ' + script_name)
-runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+#runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+
 
 # Get informations from logs.
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
@@ -37,6 +38,13 @@ with open("/var/log/devices/lastlog_storm.json", "r", errors='ignore') as log_fi
         exit()
     except IndexError:
         print("Index error in regex")
+        exit()
+ 
+ 
+    function = "storm"
+    if script_has_run_recently(300,ip,function):
+        print('you need to wait before you can run this again')
+        os.system('logger -t montag -p user.info Executing script exit because executed within 5 minutes time period')
         exit()
 
     ## Sample Log
@@ -63,6 +71,8 @@ with open("/var/log/devices/lastlog_storm.json", "r", errors='ignore') as log_fi
 #never -1
 # ? 0
 save_resp = check_save(ip, port, "storm")
+
+
 
 if save_resp == "0":
     notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? " + ip_server

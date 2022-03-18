@@ -93,7 +93,15 @@ connection_status = stdout.channel.recv_exit_status()
 if connection_status != 0:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
         send_message(info,jid)
-        sys.exit(2)
+        try:
+            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Result": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass 
+        sys.exit()
 sleep(2)
 
 try:

@@ -7,7 +7,7 @@ import re
 import json
 import paramiko
 import threading
-from support_tools_OmniSwitch import isEssential, ssh_connectivity_check, file_setup_qos, format_mac, get_credentials, add_new_save, check_save
+from support_tools_OmniSwitch import isEssential, ssh_connectivity_check, file_setup_qos, format_mac, get_credentials, add_new_save, check_save, script_has_run_recently
 from time import strftime, localtime
 from support_send_notification import send_message, send_file, send_message_request
 from database_conf import *
@@ -121,6 +121,12 @@ with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_fi
         print("Index error in regex")
         exit()   
     mac = format_mac(mac)
+
+function = "duplicate_ip"
+if script_has_run_recently(300,ip,function):
+    print('you need to wait before you can run this again')
+    os.system('logger -t montag -p user.info Executing script exit because executed within 5 minutes time period')
+    exit()
 
 # always 1
 #never -1

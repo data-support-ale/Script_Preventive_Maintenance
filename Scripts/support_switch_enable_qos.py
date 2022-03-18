@@ -4,7 +4,7 @@ import sys
 import os
 import json
 import re
-from support_tools_OmniSwitch import get_credentials, isEssential, ssh_connectivity_check, file_setup_qos, add_new_save, check_save
+from support_tools_OmniSwitch import get_credentials, isEssential, ssh_connectivity_check, file_setup_qos, add_new_save, check_save, script_has_run_recently
 from time import gmtime, strftime, localtime, sleep
 from support_send_notification import send_message, send_file, send_message_request
 from database_conf import *
@@ -123,6 +123,11 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
 
     subject = "A port scan has been detected on your network "
 
+    function = "ddos"
+    if script_has_run_recently(300,ip_switch,function):
+        print('you need to wait before you can run this again')
+        os.system('logger -t montag -p user.info Executing script exit because executed within 5 minutes time period')
+        exit()
     # always 1
     #never -1
     # ? 0
