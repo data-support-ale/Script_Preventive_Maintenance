@@ -6,9 +6,9 @@ import re
 import json
 from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
-from support_send_notification import send_message, send_file, send_message_request
+from support_send_notification import send_message_request
 from database_conf import *
-from support_tools_OmniSwitch import add_new_save, check_save
+from support_tools_OmniSwitch import add_new_save, check_save, send_file
 
 # Script init
 script_name = sys.argv[0]
@@ -120,8 +120,7 @@ save_resp = check_save(ip, port, "violation")
 
 if save_resp == "0":
     if agg_id == "0":
-        notif = "A port violation occurs on OmniSwitch " + host + " port " + port + \
-            ", source: " + reason + ". Do you want to clear the violation? " + ip_server
+        notif = "A port violation occurs on OmniSwitch " + host + " port " + port + ", source: " + reason + ". Do you want to clear the violation? " + ip_server
         answer = send_message_request(notif, jid)
         print(answer)
         if answer == "2":
@@ -129,8 +128,7 @@ if save_resp == "0":
         elif answer == "0":
             add_new_save(ip, port, "violation", choice="never")
     else:
-        notif = "A port violation occurs on OmniSwitch " + host + " LinkAgg ID " + agg_id + \
-            ", source: " + reason + ". Do you want to clear the violation? " + ip_server
+        notif = "A port violation occurs on OmniSwitch " + host + " LinkAgg ID " + agg_id + ", source: " + reason + ". Do you want to clear the violation? " + ip_server
         answer = send_message_request(notif, jid)
         print(answer)
         if answer == "2":
@@ -161,13 +159,15 @@ if answer == '1':
     os.system('logger -t montag -p user.info Process terminated')
     # CLEAR VIOLATION
     cmd = "clear violation port " + port
-    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-        switch_password, switch_user, ip, cmd))
-    if jid != '':
-        info = "Log of device : {0}".format(ip)
-        send_file(info, jid, ip)
-        info = "A port violation has been cleared up on device {}".format(ip)
-        send_message(info, jid)
+    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, cmd))
+    ## 2 seconds delay for getting port violation logs
+    sleep(2)
+    filename_path = "/var/log/devices/" + host + "/syslog.log"
+    category = "port_violation"
+    subject = "A port violation is detected:".format(host, ip)
+    action = "Violation on OmniSwitch {0}, port {1} has been cleared up".format(host, port)
+    result = "Find enclosed to this notification the log collection"
+    send_file(filename_path, subject, action, result, category)
 
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')

@@ -4,9 +4,9 @@ import sys
 import os
 import json
 import re
-from support_tools_OmniSwitch import get_credentials, isEssential, ssh_connectivity_check, file_setup_qos, add_new_save, check_save, script_has_run_recently
+from support_tools_OmniSwitch import get_credentials, isEssential, ssh_connectivity_check, file_setup_qos, add_new_save, check_save, script_has_run_recently, send_file
 from time import gmtime, strftime, localtime, sleep
-from support_send_notification import send_message, send_file, send_message_request
+from support_send_notification import send_message, send_message_request
 from database_conf import *
 import paramiko
 import threading
@@ -123,18 +123,13 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
 
     subject = "A port scan has been detected on your network "
 
-    function = "ddos"
-    if script_has_run_recently(300,ip_switch,function):
-        print('you need to wait before you can run this again')
-        os.system('logger -t montag -p user.info Executing script exit because executed within 5 minutes time period')
-        exit()
     # always 1
     #never -1
     # ? 0
     save_resp = check_save(ip_switch_ddos, "0", "scan")
 
     if save_resp == "0":
-        notif = "A port scan has been detected on your network - Source IP Address {0}  on OmniSwitch {1}/{2}. (if you click on Yes, the following actions will be done: Policy action block)".format(
+        notif = "A port scan has been detected on your network - Source IP Address {0}  on OmniSwitch {1} / {2}. (if you click on Yes, the following actions will be done: Policy action block)".format(
             ip_switch_ddos, host, ip_switch)
         answer = send_message_request(notif, jid)
 
@@ -166,11 +161,12 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
                         ip_switch, ip_switch_ddos)
         os.system('logger -t montag -p user.info Process terminated')
         if jid != '':
-            info = "Log of device : {0}".format(ip_switch)
-            send_file(info, jid, ip_switch)
-            info = "A port scan has been detected on your network and QOS policy has been applied to prevent access for the IP Address {0} to access OmniSwitch {1}/{2}".format(
-                ip_switch_ddos, host, ip_switch)
-            send_message(info, jid)
+            filename_path = "/var/log/devices/" + host + "/syslog.log"
+            category = "port_scan"
+            subject = "A port scan is detected:".format(host, ip_switch)
+            action = "A port scan is detected on your network and QOS policy is applied to prevent access for the IP Address {0} to access OmniSwitch {1} / {2}".format(ip_switch_ddos, host, ip_switch)
+            result = "Find enclosed to this notification the log collection"
+            send_file(filename_path, subject, action, result, category)
 
         cmd = "swlog appid ipv4 subapp all level info"
         # ssh session to start python script remotely

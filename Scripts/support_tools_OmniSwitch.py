@@ -879,12 +879,12 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     subject = (
         "Preventive Maintenance Application - Unexpected traffic (storm) detected on switch: {0}, reason {1}").format(ipadd, source)
     if decision == "1" or decision == "2":
-        action = ("The Port {0} is administratively disabled on OmniSwitch (Hostname: {1})").format(
+        action = ("The Interface {0} is administratively disabled on OmniSwitch (Hostname: {1})").format(
             port, host)
         result = "Find enclosed to this notification the log collection of actions done"
     else:
         action = ("No action done on OmniSwitch (Hostname: {0})").format(host)
-        result = "Find enclosed to this notification the log collection"
+        result = "Find enclosed to this notification the interface's status/statistics"
     category = "storm"
     return filename_path, subject, action, result, category
 
@@ -2295,7 +2295,7 @@ def send_file(filename_path, subject, action, result, category):
     :param int Email:                          0 if email is disabled, 1 if email is enabled
     :return:                                   None
     """
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_EMEA"
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_"+company
     request_debug = "Call VNA REST API Method POST path %s" % url
     print(request_debug)
     os.system('logger -t montag -p user.info Call VNA REST API Method POST')
@@ -2309,7 +2309,7 @@ def send_file(filename_path, subject, action, result, category):
     'Email': '0'}
     files = {'file': open(filename_path, 'r')}
     try:
-        response = requests.post(url, files=files, headers=headers, timeout=5)
+        response = requests.post(url, files=files, headers=headers, timeout=10)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
             os.system('logger -t montag -p user.info 200 OK')

@@ -53,12 +53,12 @@ if save_resp == "0":
         notif = "A FAN is inoperable on OmniSwitch " + host + ". Do you want to keep being notified? " + ip_server        #send_message(info, jid)
         answer = send_message_request(notif, jid)
         print(answer)
+        if answer == "2":
+            add_new_save(ip, "1", "fan", choice="always")
+        elif answer == "0":
+            add_new_save(ip, "1", "fan", choice="never")
         filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ip)
         send_file(filename_path, subject, action, result, category)
-    if answer == "2":
-        add_new_save(ip, "1", "fan", choice="always")
-    elif answer == "0":
-        add_new_save(ip, "1", "fan", choice="never")
 elif save_resp == "-1":
     try:
         write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "FAN_Unit_ID": " 1"}, "fields": {"count": 1}}])

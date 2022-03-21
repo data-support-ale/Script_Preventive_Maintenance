@@ -301,10 +301,8 @@ def send_message_request(info, jid):
         url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
         headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
                    'Card': '1', 'jid1': '{0}'.format(jid), 'toto': '{0}.'.format(info)}
-        print(runtime)
         response = requests.get(url, headers=headers, timeout=600)
         print("Response from VNA")
-        print(runtime)
         print(response)
 
         code = re.findall(r"<Response \[(.*?)\]>", str(response))

@@ -83,7 +83,7 @@ if save_resp == "0":
     port_monitoring(switch_user, switch_password, port, ip)
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ip)
     send_file(filename_path, subject, action, result, category)
-    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? On Server " + ip_server + " directory /tftpboot/ is available the port monitoring capture of port " + port + " ."
+    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
     answer = send_message_request(notif, jid)
     print(answer)
     sleep(2)
