@@ -4,12 +4,13 @@ import sys
 import os
 import re
 import json
-from support_tools_OmniSwitch import get_credentials, collect_command_output_storm, send_file, script_has_run_recently, get_file_sftp
+from support_tools_OmniSwitch import get_credentials, collect_command_output_storm, send_file, script_has_run_recently, get_file_sftp, port_monitoring
 from time import sleep
 import datetime
 from support_send_notification import send_message_request, send_message
 from database_conf import *
 from support_tools_OmniSwitch import add_new_save, check_save
+import requests
 
 # Script init
 script_name = sys.argv[0]
@@ -79,17 +80,21 @@ if script_has_run_recently(300,ip,function):
 
 if save_resp == "0":
     answer = "0"
+    port_monitoring(switch_user, switch_password, port, ip)
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ip)
     send_file(filename_path, subject, action, result, category)
-    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? On Server " + ip_server + " directory /tftpboot/ is stored the port monitoring capture of port."
+    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? On Server " + ip_server + " directory /tftpboot/ is available the port monitoring capture of port " + port + " ."
     answer = send_message_request(notif, jid)
     print(answer)
     sleep(2)
     #### Download port monitoring capture ###
     filename= '{0}_pmonitor_storm.enc'.format(host)
     remoteFilePath = '/flash/pmonitor.enc'
-    localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}_storm_capture".format(date,date_hm.hour,date_hm.minute,ip,filename) 
-    get_file_sftp(switch_user, switch_password, ip, remoteFilePath, localFilePath)
+    localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ip,filename)
+    try: 
+       get_file_sftp(switch_user, switch_password, ip, remoteFilePath, localFilePath)
+    except:
+        pass
     if answer == "2":
         add_new_save(ip, port, "storm", choice="always")
     elif answer == "0":

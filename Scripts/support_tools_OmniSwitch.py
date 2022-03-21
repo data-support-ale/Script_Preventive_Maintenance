@@ -2,13 +2,15 @@
 
 from asyncio.subprocess import PIPE
 from copy import error
+#from operator import sub
 import sys
 import os
 import logging
 import datetime
 import time
 from time import sleep
-from unicodedata import name
+#from turtle import done
+#from unicodedata import name
 
 from paramiko import SSHException
 from support_send_notification import send_message, send_file
@@ -812,35 +814,25 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    ## Log collection of additionnal command outputs
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
+    l_switch_cmd.append("show health port " + port)
     l_switch_cmd.append("show interfaces " + port)
-    l_switch_cmd.append("show interfaces " + port + " status")
-    l_switch_cmd.append("show violation")
-    l_switch_cmd.append("show interfaces " + port + " counters")
     sleep(2)
-    l_switch_cmd.append("show interfaces " + port + " counters")
+    l_switch_cmd.append("show interfaces " + port)
     sleep(2)
-    l_switch_cmd.append("show interfaces " + port + " counters")   
-    sleep(2)
-    l_switch_cmd.append("show interfaces " + port + " counters")
-    sleep(2)
-    l_switch_cmd.append("show health port " + port)   
+    l_switch_cmd.append("show interfaces " + port)
     l_switch_cmd.append("show interfaces " + port + " flood-rate")
     if decision == "1" or decision == "2":
         l_switch_cmd.append("interfaces port " + port + " admin-state disable")
-    l_switch_cmd.append("clear violation port " + port)
-    l_switch_cmd.append("show violation")
-    l_switch_cmd.append("show violation port " + port)
     for switch_cmd in l_switch_cmd:
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
             switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            # output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
             if output != None:
                 output = output.decode('UTF-8').strip()
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
@@ -2270,6 +2262,26 @@ def disable_port(user, password, ipadd, portnumber):
     os.system(
         'logger -t montag -p user.info Following port is administratively disabled: ' + portnumber)
 
+def port_monitoring(switch_user, switch_password, port, ipadd):
+    """ 
+    This function launches a port monitoring on port received in argument  
+    This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+
+    :param str port:                  Switch Interface/Port ID <chasis>/<slot>/>port>
+    :param str host:                  Switch Hostname
+    :param str ipadd:                 Switch IP address
+    :return:                          filename_path,subject,action,result,category
+    """
+   ## Launch port monitoring on port
+    switch_cmd = ("port-monitoring 1 source port " + port + " file /flash/pmonitor.enc size 1 timeout 30 inport capture-type full enable")
+    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
+    try:
+        output = subprocess.call(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+        print(output)
+        return True
+    except subprocess.SubprocessError:
+        print("Issue when executing command")
+
 
 def send_file(filename_path, subject, action, result, category):
     """ 
@@ -2287,18 +2299,84 @@ def send_file(filename_path, subject, action, result, category):
     request_debug = "Call VNA REST API Method POST path %s" % url
     print(request_debug)
     os.system('logger -t montag -p user.info Call VNA REST API Method POST')
-    headers = {'Content-type': "text/plain", 'Content-Disposition': ("attachment;filename={0}_troubleshooting.log").format(category), 'jid1': '{0}'.format(
-        jid), 'tata': '{0}'.format(subject), 'toto': '{0}'.format(action), 'tutu': '{0}'.format(result), 'Card': '0', 'Email': '0'}
+    headers = {'Content-type': "text/plain", 
+    'Content-Disposition': ("attachment;filename={0}_troubleshooting.log").format(category),
+    'jid1': '{0}'.format(jid),
+    'tata': '{0}'.format(subject),
+    'toto': '{0}'.format(action),
+    'tutu': '{0}'.format(result),
+    'Card': '0',
+    'Email': '0'}
     files = {'file': open(filename_path, 'r')}
-    response = requests.post(url, files=files, headers=headers)
-    print(response)
-    response = str(response)
-    #response = "<Response [408]>"
-    response = re.findall(r"<Response \[(.*?)\]>", response)
-    if "200" in response:
-        os.system('logger -t montag -p user.info 200 OK')
-    else:
-        os.system('logger -t montag -p user.info REST API Call Failure')
+    try:
+        response = requests.post(url, files=files, headers=headers, timeout=5)
+        code = re.findall(r"<Response \[(.*?)\]>", str(response))
+        if "200" in code:
+            os.system('logger -t montag -p user.info 200 OK')
+            print("Response  Text from VNA")
+            value = response.text
+            print(value)
+            print(code)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": "Success"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass
+        else:
+            os.system('logger -t montag -p user.info REST API Timeout')
+            pass
+    except requests.exceptions.ConnectionError as response:
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+    except requests.exceptions.Timeout as response:
+        print("Request Timeout when calling URL: " + url)
+        print(response)
+        try:
+           write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+    except requests.exceptions.TooManyRedirects as response:
+        print("Too Many Redirects when calling URL: " + url)
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+    except requests.exceptions.RequestException as response:
+        print("Request exception when calling URL: " + url)
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+
 
 
 if __name__ == "__main__":
@@ -2311,11 +2389,15 @@ if __name__ == "__main__":
     ipadd = "10.130.7.247"
     cmd = "show system"
     host = "LAN-6860N-2"
-    port = "1/1/4"
+    port = "1/1/52"
+    source = "Unknown Unicast"
+    decision = 0
 #    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
 #    filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ipadd)
 #    send_file(filename_path, subject, action, result, category)
-    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
+#    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
+#    send_file(filename_path, subject, action, result,category)
+    filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
     send_file(filename_path, subject, action, result,category)
     reason="Fail due to out-of-range capacitor value"
     port="34"
