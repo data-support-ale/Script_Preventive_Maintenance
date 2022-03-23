@@ -667,6 +667,7 @@ if \$msg contains 'verdict:[NF_DROP]' then {
 if \$msg contains 'Send deauth, reason 1' or \$msg contains 'deauth reason 1' or \$msg contains 'Send deauth from wam, reason 36' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omprog\" name=\"support_wlan_generic_roaming\" binary=\"/opt/ALE_Script/support_wlan_generic.py roaming\")
      stop
 }
@@ -682,6 +683,7 @@ if \$msg contains 'Send deauth, reason' or \$msg contains 'Send deauth from wam,
 if \$msg contains 'Received deauth' then {
     \$RepeatedMsgReduction on
     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
     action(type=\"omprog\" name=\"support_wlan_generic_leaving\" binary=\"/opt/ALE_Script/support_wlan_generic.py leaving\")
     stop
 }
