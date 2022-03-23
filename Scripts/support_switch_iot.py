@@ -68,7 +68,7 @@ with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file
     elif "Unable to connect" in msg:
         try:
             ov_ip = re.findall(r"Unable to connect (.*?):1883", msg)[0]
-            info = ("IoT Profiling module is enabled but OmniSwitch {0} / {1} cannot reach OmniVista IP Address {2} port 1883 - please note that Device Profiling feature is not VRF-Aware").format(ipadd, host, ov_ip)
+            info = ("IoT Profiling module is enabled but OmniSwitch {0} / {1} cannot reach OmniVista IP Address {2} port 1883 - please ensure OmniVista is reachable from default-VRF (Device Profiling feature is not VRF-Aware)").format(ipadd, host, ov_ip)
             send_message(info,jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "MQTT Status": "Unable to connect"}, "fields": {"count": 1}}])
