@@ -139,10 +139,10 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
                 send_message(info,jid)
 
         if answer == "2":
-            add_new_save(ip_switch, "0", "scan", choice="always")
+            add_new_save(ip_switch_ddos, "0", "scan", choice="always")
             answer = '1'
         elif answer == "0":
-            add_new_save(ip_switch, "0", "scan", choice="never")
+            add_new_save(ip_switch_ddos, "0", "scan", choice="never")
     elif save_resp == "-1":
         try:
             write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip_switch, "DDOS": ip_switch_ddos}, "fields": {"count": 1}}])
