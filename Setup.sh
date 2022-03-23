@@ -500,6 +500,8 @@ template (name=\"deviceloglanpower\" type=\"string\"
 template (name=\"devicelogovc\" type=\"string\"
      string=\"/var/log/devices/lastlog_ovc.json\")
 
+template (name=\"devicelogiot\" type=\"string\"
+     string=\"/var/log/devices/lastlog_iot.json\")
 
 template(name=\"json_syslog\"
   type=\"list\") {
@@ -1103,6 +1105,23 @@ if \$msg contains 'OPENVPN' and \$msg contains 'ETIMEDOUT' then {
        stop
 }
 
+#### IoT Profiling - LAN ####
+if \$msg contains 'Unable to connect' and \$msg contains 'mqttd' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogiot\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_iot.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+if \$msg contains 'report mqtt disconnect or is empty' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogiot\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_wlan_iot.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
 #### Additionnal rules - LAN ####
 
 if \$msg contains 'failed handling msg from' then {
@@ -1138,13 +1157,7 @@ if \$msg contains 'lpStartNi' and \$msg contains 'Starting' then {
        stop
 }
 
-if \$msg contains 'Unable to connect' and \$msg contains 'mqttd' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"mqttd Unable to connect\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
+
 
 if \$msg contains 'ospf' and \$msg contains 'oversized LSA' then {
        \$RepeatedMsgReduction on
