@@ -146,6 +146,8 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         #stdin, stdout, stderr = threading.Thread(target=p.exec_command,args=(cmd,))
         # stdout.start()
         # stdout.join(1200)
+        print(stdout)
+        print(stderr)
     except Exception:
         exception = "SSH Timeout"
         info = (
@@ -488,16 +490,17 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
     l_switch_cmd.append("show tcam utilization detail")
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
+        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -566,16 +569,17 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
 
     for switch_cmd in l_switch_cmd:
         os.system('logger -t montag -p user.info SSH session for show chassis')
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
+        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+           # output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -653,16 +657,17 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
     l_switch_cmd.append("cat libcurl_log")
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
+        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -738,16 +743,17 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
     l_switch_cmd.append("show appmgr iot-profiler")
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
+        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -828,14 +834,17 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     if decision == "1" or decision == "2":
         l_switch_cmd.append("interfaces port " + port + " admin-state disable")
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
+        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
-            # output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -916,16 +925,17 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
     l_switch_cmd.append("show violation port " + port)
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
+        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -998,16 +1008,17 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
     l_switch_cmd.append("show spb isis interface")
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
+        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -1083,13 +1094,15 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
             switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -1163,13 +1176,17 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
             switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            print(output)
+            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            print(output)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -1227,11 +1244,9 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
     f_logs.close()
 
     switch_cmd = "show fan"
-    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-        switch_password, switch_user, ipadd, switch_cmd)
+    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
     try:
-        fan_status = subprocess.check_output(
-            cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+        fan_status = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
         fan_status = fan_status.decode('UTF-8').strip()
         print(fan_status)
     except subprocess.TimeoutExpired as exception:
@@ -1304,23 +1319,24 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
             switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=subprocess.PIPE, timeout=40, shell=True)
+            print(output)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -1328,35 +1344,19 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
                 print(error)
                 pass 
             sys.exit()
-        except subprocess.SubprocessError as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
-            os.system('logger -t montag -p user.info ' + info)
-            send_message(info, jid)
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-            except Exception as error:
-                print(error)
-                pass 
-            sys.exit()
+
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -1397,16 +1397,17 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
     l_switch_cmd.append("debug show virtual-chassis topology")
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
+        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -1492,16 +1493,17 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
     l_switch_cmd.append("show linkagg agg " + agg + " port")
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
+        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -1893,16 +1895,17 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
     l_switch_cmd.append("show aaa authentication")
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
+        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
-            output = ssh_connectivity_check(
-                switch_user, switch_password, ipadd, switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                #output_decode = output.decode('UTF-8').strip()
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
                 info = (
@@ -2309,7 +2312,7 @@ def send_file(filename_path, subject, action, result, category):
     'Email': '0'}
     files = {'file': open(filename_path, 'r')}
     try:
-        response = requests.post(url, files=files, headers=headers, timeout=10)
+        response = requests.post(url, files=files, headers=headers, timeout=20)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
             os.system('logger -t montag -p user.info 200 OK')
@@ -2386,45 +2389,45 @@ if __name__ == "__main__":
     jid = "570e12872d768e9b52a8b975@openrainbow.com"
     switch_password = "switch"
     switch_user = "admin"
-    ipadd = "10.130.7.247"
+    ipadd = "10.130.7.246"
     cmd = "show system"
     host = "LAN-6860N-2"
     port = "1/1/52"
     source = "Unknown Unicast"
     decision = 0
-#    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-#    filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ipadd)
-#    send_file(filename_path, subject, action, result, category)
-#    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
-#    send_file(filename_path, subject, action, result,category)
+    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+    filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ipadd)
+    send_file(filename_path, subject, action, result, category)
+    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
+    send_file(filename_path, subject, action, result,category)
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
     send_file(filename_path, subject, action, result,category)
     reason="Fail due to out-of-range capacitor value"
     port="34"
-#    filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-#    send_file(filename_path, subject, action, result,category)
+    filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+    send_file(filename_path, subject, action, result,category)
     agg = "6"
-#    filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
-#    send_file(filename_path, subject, action, result,category)
+    filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
+    send_file(filename_path, subject, action, result,category)
     vcid = "2"
-#    filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
-#    send_file(filename_path, subject, action, result,category)
+    filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
+    send_file(filename_path, subject, action, result,category)
     psid = "2"
-#    filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
-#    send_file(filename_path, subject, action, result,category)
+    filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
+    send_file(filename_path, subject, action, result,category)
     source = "Access Guardian"
 
     decision = "0"
-#    filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
-#    send_file(filename_path, subject, action, result,category)
-#    filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
-#    send_file(filename_path, subject, action, result,category)
+    filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
+    send_file(filename_path, subject, action, result,category)
+    filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
+    send_file(filename_path, subject, action, result,category)
     protocol = "HTTPS"
     user = "toto"
     source_ip = "10.130.7.17"
-#    service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
-#    filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
-#    send_file(filename_path, subject, action, result,category)
+    service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
+    filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
+    send_file(filename_path, subject, action, result,category)
 
 else:
     print("Support_Tools_OmniSwitch Script called by another script")
