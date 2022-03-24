@@ -47,7 +47,7 @@ with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file
             else:
                 service_status = "Enabled"
 
-            info = ("IoT Profiling module disconnected on the Stellar AP {0} - IoT Service is {1}").format(ipadd, service_status)
+            info = ("IoT Profiling module disconnected on the Stellar AP {0} - IoT Service is {1} enabled on AP").format(ipadd, service_status)
             send_message(info,jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "MQTT Status": "mqtt disconnect or is empty"}, "fields": {"count": 1}}])
