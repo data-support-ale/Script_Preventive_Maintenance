@@ -79,26 +79,23 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     This function takes entry the command to push remotely on OmniSwitch by SSH with Python Paramiko module
     Paramiko exceptions are handled for notifying Network Administrator if the SSH Session does not establish
 
-    :param str ipadd                  Command pushed by SSH on OmnISwitch
-    :param str cmd                    Switch IP address
-    :return:  stdout, stderr          If exceptions is returned on stderr a notification is sent to Network Administrator, else we log the session was established
+    :param str ipadd                     Command pushed by SSH on OmnISwitch
+    :param str cmd                       Switch IP address
+    :return:  stdout, stderr, output     If exceptions is returned on stderr a notification is sent to Network Administrator, else we log the session was established and retour CLI command outputs
     """
-    print(cmd)
+    print("Function ssh_connectivity_check - we execute command " + cmd)
     try:
         p = paramiko.SSHClient()
         p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        p.connect(ipadd, port=22, username=switch_user,
-                  password=switch_password, timeout=60.0, banner_timeout=200)
+        p.connect(ipadd, port=22, username=switch_user,password=switch_password, timeout=60.0, banner_timeout=200)
     except TimeoutError as exception:
-        print(exception)
-        print("Timeout when establishing SSH Session")
-        info = (
-            "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+        print("Function ssh_connectivity_check - Exception: " + exception)
+        print("Function ssh_connectivity_check - Timeout when establishing SSH Session")
+        info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -107,14 +104,12 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             pass 
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
-        print("Authentication failed enter valid user name and password")
-        info = (
-            "SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+        print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
+        info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -122,19 +117,17 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             print(error)
             pass 
     except paramiko.SSHException as error:
-        print(error)
+        print("Function ssh_connectivity_check - " + error)
         exception = error.readlines()
         exception = str(exception)
-        print("Device unreachable")
+        print("Function ssh_connectivity_check - Device unreachable")
         logging.info(' SSH session does not establish on OmniSwitch ' + ipadd)
-        info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(
-            ipadd)
+        info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -149,15 +142,14 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         print(stdout)
         print(stderr)
     except Exception:
-        exception = "SSH Timeout"
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        exception = "SSH Exception"
+        print("Function ssh_connectivity_check - " + exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -170,8 +162,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     print(connection_status)
     print(exception)
     if connection_status != 0:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         send_message(info, jid)
         os.system('logger -t montag -p user.info ' + info)
         try:
@@ -184,12 +175,10 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             print(error)
             pass 
     else:
-        info = ("SSH Session established successfully on OmniSwitch {0}").format(
-            ipadd)
+        info = ("SSH Session established successfully on OmniSwitch {0}").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_success", "tags": {
-                        "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_success", "tags": {"IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -202,13 +191,21 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
 
 
 def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFilePath):
+    """ 
+    This function takes entry the local and remote files path for downloading with sftp Paramiko client
+    Paramiko exceptions are handled for notifying Network Administrator if the SSH Session does not establish
+    :param str remoteFilePath            File usually located in the /flash/ directory or in /flash/python when python script executed remotely
+    :param str localFilePath             Local file path usually the /tftpboot/ directory
+    :param str ipadd                     Command pushed by SSH on OmnISwitch
+    :param str cmd                       Switch IP address
+    :return:  exception                  
+    """
     date = datetime.date.today()
     ssh = paramiko.SSHClient()
     print(remoteFilePath)
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(ipadd, username=switch_user,
-                    password=switch_password, timeout=10.0)
+        ssh.connect(ipadd, username=switch_user,password=switch_password, timeout=10.0)
         sftp = ssh.open_sftp()
         # In case of SFTP Get timeout thread is closed and going into Exception
         try:
@@ -225,8 +222,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -237,14 +233,12 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         print(error)
         exception = error.readlines()
         exception = str(exception)
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                    "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
                print(error)
         except Exception as error:
@@ -255,6 +249,15 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
 
 
 def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
+    """ 
+    This function is called when a Core Dump is generated on OmniSwitch
+    We extract from syslog message the pmd file path and we download with python sftp client
+    :param str remoteFilePath            File  located in the /flash/pmd/ directory
+    :param str localFilePath             Local file path downloaded in /tftpboot/ directory
+    :param str ipadd                     Command pushed by SSH on OmnISwitch
+    :param str cmd                       Switch IP address
+    :return:  remote_path                  
+    """
     print(filename)
     print(ipadd)
     date = datetime.date.today()
@@ -263,18 +266,15 @@ def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
     try:
         with pysftp.Connection(host=ipadd, username=switch_user, password=switch_password) as sftp:
             # get a remote file
-            sftp.get('{0}'.format(filename),
-                     '/tftpboot/{0}_{1}_{2}'.format(date, ipadd, pmd_file))
+            sftp.get('{0}'.format(filename),'/tftpboot/{0}_{1}_{2}'.format(date, ipadd, pmd_file))
     except FileNotFoundError as exception:
         print(exception)
-        info = ("The download of PMD file {0} on OmniSwitch {1} failed - {2}").format(
-            filename, ipadd, exception)
+        info = ("The download of PMD file {0} on OmniSwitch {1} failed - {2}").format(filename, ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -287,6 +287,12 @@ def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
 
 
 def format_mac(mac):
+    """ 
+    This function for removing delimiters and convert MAC Address into lower case
+    We extract from syslog message the pmd file path and we download with python sftp client
+    :param str mac            Attacker's MAC Address
+    :return:  mac                  
+    """
     # remove delimiters and convert to lower case
     mac = re.sub('[.:-]', '', mac).lower()
     mac = ''.join(mac.split())  # remove whitespaces
@@ -298,6 +304,11 @@ def format_mac(mac):
 
 
 def file_setup_qos(addr):
+    """ 
+    This function takes as argument the IP or MAC Address of the Attacker and fil-in the configqos file for applying the Policy Rule to prevent access to the network
+    We extract from syslog message the pmd file path and we download with python sftp client
+    :param str addr            IP or MAC Address of the Attacker
+    """
     content_variable = open('/opt/ALE_Script/configqos', 'w')
     if re.search(r"\:", addr):  # mac
         setup_config = "policy condition scanner_{0} source mac {0}\npolicy action block_mac disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_mac\nqos apply\nqos enable\n".format(
@@ -308,12 +319,10 @@ def file_setup_qos(addr):
     content_variable.write(setup_config)
     content_variable.close()
 
-# Function debug
-
-
+# Function debug enable or disable
 def debugging(switch_user, switch_password, ipadd, appid, subapp, level):
     """ 
-    This function takes entries arguments the appid, subapp and level to apply on switch for enabling or disabling debug logs
+    This function takes entries arguments the appid, subapp and level to apply on switch for enabling (level debug1, debug2) or disabling debug logs (level info)
 
     :param str appid_1:               swlog appid function (ipv4,bcmd)
     :param str subapp_1:              swlog subapp component (all)
@@ -328,7 +337,7 @@ def debugging(switch_user, switch_password, ipadd, appid, subapp, level):
 
 def enable_port(user, password, ipadd, portnumber):
     """ 
-    This function enables the port where there is a loop  on the switch put in arguments.
+    This function enables the port where there is a loop detected on the OmniSwitch put in arguments.
     :param str user:                Switch user login
     :param str password:            Switch user password
     :param str ipadd:               Switch IP Address
@@ -342,9 +351,8 @@ def enable_port(user, password, ipadd, portnumber):
         "sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(password, user, ipadd, cmd))
     os.system(
         'logger -t montag -p user.info Following port is administratively enabled: ' + portnumber)
+
 # Function to collect tech_support_complete.tar file by SFTP
-
-
 def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
     """ 
     This function takes entries arguments the OmniSwitch IP Address
@@ -364,13 +372,11 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
         print("Authentication failed enter valid user name and password")
-        info = (
-            "SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+        info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -381,13 +387,11 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         exception = error.readlines()
         exception = str(exception)
         print("Timeout when establishing SSH Session on OmniSwitch " + ipadd)
-        info = (
-            "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+        info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timeout", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -400,13 +404,11 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
     exception = str(exception)
     connection_status = stdout.channel.recv_exit_status()
     if connection_status != 0:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         send_message(info, jid)
         os.system('logger -t montag -p user.info ' + info)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -419,13 +421,11 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
     exception = str(exception)
     connection_status = stdout.channel.recv_exit_status()
     if connection_status != 0:
-        info = (
-            "\"The show tech support eng complete\" command on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("\"The show tech support eng complete\" command on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         send_message(info, jid)
         os.system('logger -t montag -p user.info ' + info)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -458,19 +458,15 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
     remoteFilePath = "./tech_support_complete.tar"
     localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ipadd,filename)
     #### SFTP GET tech support #####
-    filename_path = get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFilePath)
-
-    subject = (
-        "Preventive Maintenance Application - Show Tech-Support Complete command executed on switch: {0}").format(ipadd)
-    action = (
-        "The Show Tech-Support Complete file {0} is collected from OmniSwitch (Hostname: {1})").format(filename_path, host)
+    get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFilePath)
+    print(localFilePath) #/tftpboot/2022-03-24_18-41_10.130.7.246_tech_support_complete.tar
+    subject = ("Preventive Maintenance Application - Show Tech-Support Complete command executed on switch: {0}").format(ipadd)
+    action = ("The Show Tech-Support Complete file {0} is collected from OmniSwitch (Hostname: {1})").format(localFilePath, host)
     result = "Find enclosed to this notification the tech_support_complete.tar file"
     category = "tech_support_complete"
-    return filename_path, subject, action, result, category
+    return localFilePath, subject, action, result, category
 
 # Function to collect several command outputs related to TCAM failure
-
-
 def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
     """ 
     This function takes entries arguments the OmniSwitch IP Address where TCAM (QOS) failure is noticed.
@@ -490,27 +486,23 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
     l_switch_cmd.append("show tcam utilization detail")
 
     for switch_cmd in l_switch_cmd:
-        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -518,14 +510,12 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ( "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -535,20 +525,18 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_tcam_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_tcam_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - A TCAM failure (QOS) is noticed on switch: {0}, reason {1}").format(ipadd, source)
-    action = (
-        "A TCAM failure (QOS) is noticed on OmniSwitch (Hostname: {0})").format(host)
+    subject = ("Preventive Maintenance Application - A TCAM failure (QOS) is noticed on switch: {0}, reason {1}").format(ipadd, source)
+    action = ("A TCAM failure (QOS) is noticed on OmniSwitch (Hostname: {0})").format(host)
     result = "Find enclosed to this notification the log collection of command outputs"
     category = "qos"
     return filename_path, subject, action, result, category
 
+# Function to collect several command outputs related to Network Loop
 def collect_command_output_network_loop(switch_user, switch_password, ipadd, port):
     """ 
     This function takes entries arguments the OmniSwitch IP Address where Network Loop is noticed.
@@ -569,27 +557,23 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
 
     for switch_cmd in l_switch_cmd:
         os.system('logger -t montag -p user.info SSH session for show chassis')
-        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-           # output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -597,14 +581,12 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -614,22 +596,16 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_network_loop_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_network_loop_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - A loop has been detected on your network and the port {0} is administratively disabled on device {1}").format(port,ipadd)
-    action = (
-        "A Network Loop is noticed on OmniSwitch: {0} and we have deactivated the interface administratively").format(ipadd)
+    subject = ("Preventive Maintenance Application - A loop has been detected on your network and the port {0} is administratively disabled on device {1}").format(port,ipadd)
+    action = ("A Network Loop is noticed on OmniSwitch: {0} and we have deactivated the interface administratively").format(ipadd)
     result = ("Find enclosed to this notification the log collection of last 5 minutes and interface port {0} status").format(port)
     category = "network_loop"
     return filename_path, subject, action, result, category
-
-
-
 
 # Function to collect several command outputs related to Cloud-Agent (OV Cirrus) failure
 def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, host, ipadd):
@@ -657,27 +633,23 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
     l_switch_cmd.append("cat libcurl_log")
 
     for switch_cmd in l_switch_cmd:
-        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -685,14 +657,12 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -702,8 +672,7 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_ovc_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_ovc_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
@@ -723,9 +692,8 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
     category = "ovc"
     return filename_path, subject, action, result, category
 
+
 # Function to collect several command outputs related to MQTT failure
-
-
 def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd):
     """ 
     This function takes entries arguments the OmniVista IP Address used for Device Profiling  
@@ -743,27 +711,23 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
     l_switch_cmd.append("show appmgr iot-profiler")
 
     for switch_cmd in l_switch_cmd:
-        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -771,14 +735,12 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -788,23 +750,19 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_mqtt_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_mqtt_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - Device Profiling (aka IoT Profiling)  module is enabled on OmniSwitch {0} but unable to connect to OmniVista IP Address: {1}").format(host, ovip)
-    action = (
-        "No action done on OmniSwitch (Hostname: {0}), please check the IP connectivity with OmniVista, note that Device Profiling is not a VRF-aware feature").format(host)
+    subject = ("Preventive Maintenance Application - Device Profiling (aka IoT Profiling)  module is enabled on OmniSwitch {0} but unable to connect to OmniVista IP Address: {1}").format(host, ovip)
+    action = ("No action done on OmniSwitch (Hostname: {0}), please check the IP connectivity with OmniVista, note that Device Profiling is not a VRF-aware feature").format(host)
     result = "Find enclosed to this notification the log collection"
     category = "mqtt"
     return filename_path, subject, action, result, category
 
+
 # Function to collect several command outputs related to Unexpected traffic (storm) detected
-
-
 def collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd):
     """ 
     This function takes entries arguments the Interface/Port where storm occurs and the type of traffic. 
@@ -834,27 +792,23 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     if decision == "1" or decision == "2":
         l_switch_cmd.append("interfaces port " + port + " admin-state disable")
     for switch_cmd in l_switch_cmd:
-        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -862,14 +816,12 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -879,17 +831,14 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_storm_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_storm_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - Unexpected traffic (storm) detected on switch: {0}, reason {1}").format(ipadd, source)
+    subject = ("Preventive Maintenance Application - Unexpected traffic (storm) detected on switch: {0}, reason {1}").format(ipadd, source)
     if decision == "1" or decision == "2":
-        action = ("The Interface {0} is administratively disabled on OmniSwitch (Hostname: {1})").format(
-            port, host)
+        action = ("The Interface {0} is administratively disabled on OmniSwitch (Hostname: {1})").format(port, host)
         result = "Find enclosed to this notification the log collection of actions done"
     else:
         action = ("No action done on OmniSwitch (Hostname: {0})").format(host)
@@ -897,9 +846,8 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     category = "storm"
     return filename_path, subject, action, result, category
 
+
 # Function to collect several command outputs related to Port Violation
-
-
 def collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd):
     """ 
     This function takes entries arguments the Interface/Port where violation occurs. 
@@ -925,27 +873,23 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
     l_switch_cmd.append("show violation port " + port)
 
     for switch_cmd in l_switch_cmd:
-        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -953,14 +897,12 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -970,17 +912,14 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_violation_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_violation_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - Port violation noticed on switch: {0}, reason {1}").format(ipadd, source)
+    subject = ("Preventive Maintenance Application - Port violation noticed on switch: {0}, reason {1}").format(ipadd, source)
     if decision == "1":
-        action = ("The Port {0} is cleared from violation table on OmniSwitch (Hostname: {1})").format(
-            port, host)
+        action = ("The Port {0} is cleared from violation table on OmniSwitch (Hostname: {1})").format(port, host)
         result = "Find enclosed to this notification the log collection of actions done"
     else:
         action = ("No action done on OmniSwitch (Hostname: {0})").format(host)
@@ -990,8 +929,6 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
     return filename_path, subject, action, result, category
 
 # Function to collect several command outputs related to SPB issue
-
-
 def collect_command_output_spb(switch_user, switch_password, host, ipadd):
     """ 
     This function takes entries arguments the OmniSwitch IP Address
@@ -1008,27 +945,23 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
     l_switch_cmd.append("show spb isis interface")
 
     for switch_cmd in l_switch_cmd:
-        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -1036,14 +969,12 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1053,16 +984,13 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_spb_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_spb_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - SPB Adjacency issue detected on switch: {0}").format(ipadd)
-    action = (
-        "A SPB adjacency is down on OmniSwitch (Hostname: {0})").format(host)
+    subject = ("Preventive Maintenance Application - SPB Adjacency issue detected on switch: {0}").format(ipadd)
+    action = ("A SPB adjacency is down on OmniSwitch (Hostname: {0})").format(host)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "spb"
     return filename_path, subject, action, result, category
@@ -1091,28 +1019,23 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
         l_switch_cmd.append("spantree vlan" + vlan + "admin-state enable")    
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -1120,14 +1043,12 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1137,8 +1058,7 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_stp_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_stp_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
@@ -1162,7 +1082,7 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
 
     :param str host:                  Switch Hostname
     :param str ipadd:                 Switch IP address
-    :return:                          filename_path,subject,action,result,category
+    :return:                          filename_path,subject,action,result,category, chassis_id
     """
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
@@ -1173,30 +1093,23 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
     l_switch_cmd.append("show temperature")
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            print(output)
-            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
-            print(output)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -1204,14 +1117,12 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1219,14 +1130,12 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
                 pass 
             sys.exit()
         except subprocess.SubprocessError as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1236,28 +1145,31 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_fan_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_fan_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-
+    
+    ### We are looking for fan chassis_ID
     switch_cmd = "show fan"
-    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
     try:
-        fan_status = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
-        fan_status = fan_status.decode('UTF-8').strip()
-        print(fan_status)
+        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+        print(output)
+        if output != None:
+            output = str(output)
+            fan_status = bytes(output, "utf-8").decode("unicode_escape")
+            fan_status = fan_status.replace("', '","")
+            fan_status = fan_status.replace("']","")
+            fan_status = fan_status.replace("['","")
+            print(fan_status)
     except subprocess.TimeoutExpired as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -1265,14 +1177,12 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
             pass 
         sys.exit()
     except subprocess.SubprocessError as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -1287,11 +1197,10 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
             print("Index error in regex")
             exit()
     else:
-        print("Not found")
+        print("FAN Chassis ID Not found we set value Unknown")
         chassis_id="Unknown"
 
-    subject = (
-        "Preventive Maintenance Application - FAN issue detected on switch: {0}").format(ipadd)
+    subject = ("Preventive Maintenance Application - FAN issue detected on switch: {0}").format(ipadd)
     action = ("The FAN Unit {0} is inoperable on OmniSwitch (Hostname: {1})").format(chassis_id,host)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "fan"
@@ -1316,18 +1225,15 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     l_switch_cmd.append("show powersupply total")
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=subprocess.PIPE, timeout=40, shell=True)
             print(output)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
@@ -1360,8 +1266,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_ps_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_ps_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
@@ -1376,8 +1281,6 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     return filename_path, subject, action, result, category
 
 # Function to collect several command outputs related to Virtual Chassis
-
-
 def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
     """ 
     This function takes entries arguments the Virtual Chassis ID and the Switch System Name. This function is called when an issue is observed on Virtual Chassis category
@@ -1397,27 +1300,23 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
     l_switch_cmd.append("debug show virtual-chassis topology")
 
     for switch_cmd in l_switch_cmd:
-        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -1425,14 +1324,12 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1440,14 +1337,12 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
                 pass 
             sys.exit()
         except subprocess.SubprocessError as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1457,23 +1352,18 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_vcmm_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_vcmm_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - Virtual Chassis issue detected on switch: {0}").format(ipadd)
-    action = ("The VC CMM {0} is down on VC (Hostname: {1}) syslogs").format(
-        vcid, host)
+    subject = ("Preventive Maintenance Application - Virtual Chassis issue detected on switch: {0}").format(ipadd)
+    action = ("The VC CMM {0} is down on VC (Hostname: {1}) syslogs").format(vcid, host)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "vcmm"
     return filename_path, subject, action, result, category
 
 # Function to collect several command outputs related to Linkagg
-
-
 def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd):
     """ 
     This function takes entries arguments the Link Aggregation ID. This function is called when an issue is observed on Linkagg category
@@ -1493,27 +1383,23 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
     l_switch_cmd.append("show linkagg agg " + agg + " port")
 
     for switch_cmd in l_switch_cmd:
-        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -1521,14 +1407,12 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1536,14 +1420,12 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
                 pass 
             sys.exit()
         except subprocess.SubprocessError as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1553,23 +1435,20 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_linkagg_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_linkagg_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - Linkagg issue detected on switch: {0}").format(ipadd)
-    action = ("A Linkagg issue has been detected in switch(Hostname: {0}) Aggregate {1}").format(
-        host, agg)
+    subject = ("Preventive Maintenance Application - Linkagg issue detected on switch: {0}").format(ipadd)
+    action = ("A Linkagg issue has been detected in switch(Hostname: {0}) Aggregate {1}").format(host, agg)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "linkagg"
     return filename_path, subject, action, result, category
 
+
+
 # Function to collect several command outputs related to PoE
-
-
 def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason):
     """ 
     This function takes IP Address and Hostname, port number (without unit/slot) and faulty reason as argument. This function is called when an issue is observed on Lanpower category
@@ -1614,26 +1493,23 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
 #    l_switch_cmd.append("show lanpower slot 3/1 class-detection")
 
     for switch_cmd in l_switch_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-            switch_password, switch_user, ipadd, switch_cmd)
         try:
-            print(switch_cmd)
-            output = subprocess.check_output(
-                cmd, stderr=PIPE, timeout=40, shell=True)
-            print(sys.stderr)
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
-                output = output.decode('UTF-8').strip()
-                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+                output = str(output)
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -1641,14 +1517,12 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1656,14 +1530,12 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
                 pass 
             sys.exit()
         except subprocess.SubprocessError as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1673,31 +1545,32 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_poe_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_poe_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
     lanpower_settings_status = 0
     switch_cmd = "show configuration snapshot lanpower"
-    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-        switch_password, switch_user, ipadd, switch_cmd)
     try:
-        lanpower_settings_status = subprocess.check_output(
-            cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
-        lanpower_settings_status = lanpower_settings_status.decode(
-            'UTF-8').strip()
-        print(lanpower_settings_status)
+        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+        print(output)
+        if output != None:
+            output = str(output)
+            output_decode = bytes(output, "utf-8").decode("unicode_escape")
+            output_decode = output_decode.replace("', '","")
+            output_decode = output_decode.replace("']","")
+            lanpower_settings_status = output_decode.replace("['","")
+            #lanpower_settings_status = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+            #lanpower_settings_status = lanpower_settings_status.decode('UTF-8').strip()
+            print(lanpower_settings_status)
     except subprocess.TimeoutExpired as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -1705,14 +1578,12 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
             pass 
         sys.exit()
     except subprocess.SubprocessError as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -1737,9 +1608,8 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
     category = "poe"
     return filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status
 
+
 # Function to collect OmniSwitch IP Service/AAA Authentication status based on protocol received as argument
-
-
 def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
     """ 
     This function takes IP Address and protocol as argument. This function is called when an authentication failure is noticed for specified protocol
@@ -1753,13 +1623,15 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
     if protocol == "HTTPS":
         protocol_a == "http"
     switch_cmd = "show ip service | grep {0}".format(protocol_a)
-    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-        switch_password, switch_user, ipadd, switch_cmd)
     try:
-        service_status = subprocess.check_output(
-            cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
-        service_status = service_status.decode('UTF-8').strip()
-        print(service_status)
+        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+        print(output)
+        if output != None:
+            output = str(output)
+            output_decode = bytes(output, "utf-8").decode("unicode_escape")
+            output_decode = output_decode.replace("', '","")
+            output_decode = output_decode.replace("']","")
+            service_status = output_decode.replace("['","")
     except subprocess.TimeoutExpired as exception:
         info = (
             "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
@@ -1767,8 +1639,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -1776,14 +1647,12 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
             pass 
         sys.exit()
     except AttributeError as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -1791,14 +1660,12 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
             pass 
         sys.exit()
     except FileNotFoundError as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -1816,21 +1683,24 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
         switch_password, switch_user, ipadd, switch_cmd)
     try:
-        aaa_status = subprocess.check_output(
-            cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
-        aaa_status = aaa_status.decode('UTF-8').strip()
-        print(aaa_status)
+        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+        print(output)
+        if output != None:
+            output = str(output)
+            output_decode = bytes(output, "utf-8").decode("unicode_escape")
+            output_decode = output_decode.replace("', '","")
+            output_decode = output_decode.replace("']","")
+            aaa_status = output_decode.replace("['","")
+            print(aaa_status)
         if "aaa authentication" in aaa_status:
             aaa_status = "enabled"
     except subprocess.TimeoutExpired as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -1840,14 +1710,12 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
     except subprocess.CalledProcessError as e:
         aaa_status = "disabled"
     except AttributeError as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -1855,21 +1723,18 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
             pass 
         sys.exit()
     except FileNotFoundError as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
             print(error)
             pass 
         sys.exit()
-
     print(aaa_status)
     return service_status, aaa_status
 
@@ -1895,27 +1760,23 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
     l_switch_cmd.append("show aaa authentication")
 
     for switch_cmd in l_switch_cmd:
-        #cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            #output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
             if output != None:
                 output = str(output)
-                #output_decode = output.decode('UTF-8').strip()
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -1923,14 +1784,12 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1938,14 +1797,12 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
                 pass 
             sys.exit()
         except subprocess.SubprocessError as exception:
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -1955,23 +1812,27 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_authentication_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_authentication_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = (
-        "Preventive Maintenance Application - Authentication failure noticed on switch: {0}").format(ipadd)
-    action = ("An Authentication failure has been detected in switch( Hostname: {0} ) from User: {1} - source IP Address: {2} - protocol: {3}").format(
-        host, user, source_ip, protocol)
-    result = ("As per configuration, this service protocol is {0} and aaa authentication is {1}").format(
-        service_status, aaa_status)
+    subject = ("Preventive Maintenance Application - Authentication failure noticed on switch: {0}").format(ipadd)
+    action = ("An Authentication failure has been detected in switch( Hostname: {0} ) from User: {1} - source IP Address: {2} - protocol: {3}").format(host, user, source_ip, protocol)
+    result = ("As per configuration, this service protocol is {0} and aaa authentication is {1}").format(service_status, aaa_status)
     category = "authentication"
     return filename_path, subject, action, result, category
 
 
 def check_save(ipadd, port, type):
+    """ 
+    This function takes entries OmniSwitch IP Address, port and type (corresponds to use case)
+
+    :param str type:                       Use case (duplicate if duplicate IP, fan if fan failure ....)
+    :param str port:                       Switch Hostname
+    :param str ipadd:                      Switch IP address
+    :return int:                           Return 1 if always, -1 if never else 0 if no entry
+    """
     if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
         open('/opt/ALE_Script/decisions_save.conf', 'w', errors='ignore').close()
         return "0"
@@ -1993,22 +1854,20 @@ def check_save(ipadd, port, type):
 
 def add_new_save(ipadd, port, type, choice="never"):
     """ 
-    This function saves the new instruction to be recorded given by the user on Rainbow.
+    This function saves the new instruction received when Administrator clicks on a Rainbow Adaptive card button (Yes, No, Yes and remember, other)
     :param str ipadd:              Switch IP Address
-    :param str portnumber:        Switch port number
-    :param str type:              What use case is it? can take : loop, flapping
-    :return:                        None
+    :param str portnumber:         Switch port number
+    :param str type:               Which use case: loop, flapping
+    :return:                       None
     """
 
     if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
         try:
             open('/opt/ALE_Script/decisions_save.conf', 'w').close()
-            subprocess.call(
-                ['chmod', '0755', '/opt/ALE_Script/decisions_save.conf'])
+            subprocess.call(['chmod', '0755', '/opt/ALE_Script/decisions_save.conf'])
         except OSError as error:
             print(error)
-            print(
-                "Permission error when creating file /opt/ALE_Script/decisions_save.conf")
+            print("Permission error when creating file /opt/ALE_Script/decisions_save.conf")
             sys.exit()
 
     fileR = open("/opt/ALE_Script/decisions_save.conf", "r", errors='ignore')
@@ -2017,8 +1876,7 @@ def add_new_save(ipadd, port, type, choice="never"):
 
     textInsert = "{0},{1},{2},{3}\n".format(ipadd, port, type, choice)
     try:
-        fileW = open("/opt/ALE_Script/decisions_save.conf",
-                     "w", errors='ignore')
+        fileW = open("/opt/ALE_Script/decisions_save.conf", "w", errors='ignore')
         fileW.write(textInsert + text)
         fileW.close()
     except OSError as error:
@@ -2027,6 +1885,13 @@ def add_new_save(ipadd, port, type, choice="never"):
         sys.exit()
 
 def script_has_run_recently(seconds,ip,function):
+    """ 
+    This function is called on scenario when we prevent to run the script again and again because we receive remanent logs or further logs after 1st notification was sent
+    :param str seconds:              Runtime
+    :param str ip:                   Switch IP Address
+    :param str function:             Which use case: loop, flapping
+    :return:                         True (if runtime less than 5 minutes) or False
+    """
     filename = ('/opt/ALE_Script/last-runtime_{0}.txt').format(function)
     current_time = int(time.time())
     text = "{0},{1},{2}\n".format(str(current_time),ip, function)
@@ -2054,6 +1919,12 @@ def script_has_run_recently(seconds,ip,function):
         return False
 
 def check_timestamp_and_function(ip, function):
+    """ 
+    This function is called by function script_has_run_recently
+    :param str ip:                   Switch IP Address
+    :param str function:             Which use case: loop, flapping
+    :return:                         2  (if runtime + function found) else 1
+    """   
     content = open("/opt/ALE_Script/last-runtime_{0}.txt".format(function), "r", errors='ignore')
     file_lines = content.readlines()
     content.close()
@@ -2075,7 +1946,7 @@ def detect_port_loop():
     This function detectes if there is a loop in the network ( more than 10 log in 2 seconds)
 
     :param:                         None
-    :return int :                  If the int is equal to 1 we have detected a loop, if not the int equals 0
+    :return int :                   If the int is equal to 1 we have detected a loop, if not the int equals 0
     """
 
     content_variable = open('/var/log/devices/lastlog_loop.json', 'r')
@@ -2168,7 +2039,7 @@ def check_timestamp():
 def isEssential(addr):
     """
     Check if IP addr is in Esssential_ip.csv file
-    return: True if addr is in file otherwise False
+    return: True if addr is in file else False
     """
     ips_address = list()
     with open("/opt/ALE_Script/Essential_ip.csv") as csv_file:
@@ -2187,8 +2058,8 @@ def isEssential(addr):
 
 def isUpLink(port_number, ipadd):
     """
-    Check if port is an Uplink (linkagg or +2 qtagged vlans)
-    return: True if the port is concidered as Uplink otherwise False
+    Check if port is an Uplink (linkagg or more than 2 VLAN tagged)
+    return: True if the port is considered as Uplink else False
     """
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -2202,8 +2073,7 @@ def isUpLink(port_number, ipadd):
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -2215,13 +2085,11 @@ def isUpLink(port_number, ipadd):
         exception = error.readlines()
         exception = str(exception)
         print("Authentication failed enter valid user name and password")
-        info = (
-            "SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+        info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -2235,18 +2103,17 @@ def isUpLink(port_number, ipadd):
         output = stdout.read().decode('utf-8')
     except Exception:
         pass
-
+    ## if port is member of a linkagg ERROR is displayed in output
     if re.search(r"ERROR", output):
         return True
     else:
+        ## if port is member of more than 2 VLAN tagged
         qtagged = re.findall(r"qtagged", output)
         if len(qtagged) > 1:
             return True
         else:
             return False
         
-
-
 def disable_port(user, password, ipadd, portnumber):
     """ 
     This function disables the port where there is a loop  on the switch put in arguments.
@@ -2267,7 +2134,7 @@ def disable_port(user, password, ipadd, portnumber):
 
 def port_monitoring(switch_user, switch_password, port, ipadd):
     """ 
-    This function launches a port monitoring on port received in argument  
+    This function executes a port monitoring (packet capture) on port received in argument  
     This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
 
     :param str port:                  Switch Interface/Port ID <chasis>/<slot>/>port>
@@ -2275,7 +2142,7 @@ def port_monitoring(switch_user, switch_password, port, ipadd):
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
-   ## Launch port monitoring on port
+   ## Execute port monitoring on port with subprocess.call as we are not expecting output
     switch_cmd = ("port-monitoring 1 source port " + port + " file /flash/pmonitor.enc size 1 timeout 30 inport capture-type full enable")
     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
     try:
@@ -2396,6 +2263,7 @@ if __name__ == "__main__":
     source = "Unknown Unicast"
     decision = 0
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+    filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
     filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ipadd)
     send_file(filename_path, subject, action, result, category)
     filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
