@@ -1153,6 +1153,7 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
     
     ### We are looking for fan chassis_ID
     switch_cmd = "show fan"
+    fan_status=0
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
         print(output)
@@ -1628,6 +1629,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         print(output)
         if output != None:
             output = str(output)
+            service_status=0
             output_decode = bytes(output, "utf-8").decode("unicode_escape")
             output_decode = output_decode.replace("', '","")
             output_decode = output_decode.replace("']","")
@@ -1678,10 +1680,8 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
     else:
         service_status = "disabled"
 
-    switch_cmd = "show configuration snapshot aaa | grep \"aaa authentication {0}\"".format(
-        protocol)
-    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-        switch_password, switch_user, ipadd, switch_cmd)
+    switch_cmd = "show configuration snapshot aaa | grep \"aaa authentication {0}\"".format(protocol)
+    aaa_status=0
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
         print(output)
