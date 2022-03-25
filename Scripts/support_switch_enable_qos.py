@@ -174,13 +174,12 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         enable_qos_ddos(switch_user, switch_password,
                         ip_switch, ip_switch_ddos)
         os.system('logger -t montag -p user.info Process terminated')
-        if jid != '':
-            filename_path = "/var/log/devices/" + host + "/syslog.log"
-            category = "port_scan"
-            subject = "A port scan is detected:".format(host, ip_switch)
-            action = "A port scan is detected on your network and QOS policy is applied to prevent access for the IP Address {0} to access OmniSwitch {1} / {2}".format(ip_switch_ddos, host, ip_switch)
-            result = "Find enclosed to this notification the log collection"
-            send_file(filename_path, subject, action, result, category)
+        filename_path = "/var/log/devices/" + host + "/syslog.log"
+        category = "port_scan"
+        subject = "A port scan is detected:".format(host, ip_switch)
+        action = "A port scan is detected on your network and QOS policy is applied to prevent access for the IP Address {0} to access OmniSwitch {1} / {2}".format(ip_switch_ddos, host, ip_switch)
+        result = "Find enclosed to this notification the log collection"
+        send_file(filename_path, subject, action, result, category)
         
         # We disable debugging logs
         cmd = "swlog appid ipv4 subapp all level info"
@@ -198,8 +197,12 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         # DISABLE Port
         cmd = "interfaces port " + port + "admin-state disable"
         ssh_connectivity_check(switch_user, switch_password, ip_switch, cmd)
-        info = "Interface port {0} is administratively disabled on OmniSwitch: {1}/{2}".format(port,host,ip_switch)
-        send_message(info, jid)
+        filename_path = "/var/log/devices/" + host + "/syslog.log"
+        category = "port_scan"
+        subject = "A DDOS Attack of type invalid-ip is detected:".format(host, ip_switch)
+        action = "DDOS Attack is detected on your network and interface port {0} is disabled to prevent access to OmniSwitch {2} / {3}".format(port,ip_switch_ddos, host, ip_switch)
+        result = "Find enclosed to this notification the log collection"
+        send_file(filename_path, subject, action, result, category)
         # We disable debugging logs
         cmd = "swlog appid ipv4 subapp all level info"
         ssh_connectivity_check(switch_user, switch_password, ip_switch, cmd)
