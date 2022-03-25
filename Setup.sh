@@ -835,14 +835,14 @@ if \$msg contains 'pmnHALLinkStatusCallback:20' then {
 }
 
 #### LAN - Rules DDOS #####
-if \$msg contains 'Denial of Service attack detected: <port-scan>' then {
+if \$msg contains 'Denial of Service attack detected' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogddosdebug\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omprog\" name=\"support_lan_generic_ddos\" binary=\"/opt/ALE_Script/support_switch_debugging_ddos.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
      stop
 }
 
-if \$msg contains 'ALV4 event: PSCAN' then {
+if \$msg contains 'ALV4 event: PSCAN' or \$msg contains 'invalid ip from' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogddosip\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omprog\" name=\"support_lan_generic_ddos\" binary=\"/opt/ALE_Script/support_switch_enable_qos.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")

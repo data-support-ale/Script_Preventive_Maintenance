@@ -116,6 +116,8 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         print(msg)
         ip_switch_ddos = re.findall(r" ([.0-9]*)$", msg)[0]
         try:
+            # Log sample if DDOS Attack of type invalid-ip
+            # OS6860E-P24-VC-ACAT swlogd ipni dos WARN: VRF 0: DoS type invalid ip from 158.42.253.193/e8:e7:32:fb:47:4b on port 1/1/22
             ip_switch_ddos, mac_switch_ddos, port = re.findall(r"from (.*?)/(.*?) on port (.*)", msg)[0]
             print(port)
         except:
