@@ -67,7 +67,7 @@ class IPThread(threading.Thread):
         if ip == "10.130.7.240":
             IPThread.port = 22
             IPThread.username = switch_user
-            IPThread.password = "Switch01"
+            IPThread.password = "switch"
         else:
             IPThread.port = 22
             IPThread.username = switch_user
