@@ -6,7 +6,7 @@ import json
 import re
 from support_tools_OmniSwitch import get_credentials, isEssential, ssh_connectivity_check, file_setup_qos, add_new_save, check_save, script_has_run_recently, send_file
 from time import gmtime, strftime, localtime, sleep
-from support_send_notification import send_message, send_message_request
+from support_send_notification import send_message, send_message_request, send_message_request_advanced
 from database_conf import *
 import paramiko
 import threading
@@ -108,12 +108,19 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "w", errors='ignore') as log_
 
 with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_file:
     try:
+        port = 0
         log_json = json.load(log_file)
         ip_switch = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
         ip_switch_ddos = re.findall(r" ([.0-9]*)$", msg)[0]
-        print()
+        try:
+            ip_switch_ddos, mac_switch_ddos, port = re.findall(r"from (.*?)/(.*?) on port (.*)", msg)[0]
+            print(port)
+        except:
+            pass 
+        print(ip_switch_ddos)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_ddos_ip.json empty")
         exit()
@@ -129,13 +136,18 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
     save_resp = check_save(ip_switch_ddos, "0", "scan")
 
     if save_resp == "0":
-        notif = "A port scan has been detected on your network - Source IP Address {0}  on OmniSwitch {1} / {2}. (if you click on Yes, the following actions will be done: Policy action block)".format(
-            ip_switch_ddos, host, ip_switch)
-        answer = send_message_request(notif, jid)
+
+        if port != 0:
+            notif = "A DDOS Attack has been detected on your network - Source IP Address {0}  on OmniSwitch {1} / {2} port {3}. (if you click on Yes, the following actions will be done: Policy action block)".format(ip_switch_ddos, host, ip_switch, port)
+            feature = "Disable port " + port
+            answer = send_message_request_advanced(notif, jid,feature)
+        else:
+            notif = "A DDOS Attack has been detected on your network - Source IP Address {0}  on OmniSwitch {1} / {2}. (if you click on Yes, the following actions will be done: Policy action block)".format(ip_switch_ddos, host, ip_switch)
+            answer = send_message_request(notif, jid)
 
         if isEssential(ip_switch_ddos):
                 answer = "0"
-                info = "A port scan has been detected on your network however it involves essential IP Address {} we do not proceed further".format(ip_switch_ddos)
+                info = "A DDOS Attack has been detected on your network however it involves essential IP Address {} we do not proceed further".format(ip_switch_ddos)
                 send_message(info,jid)
 
         if answer == "2":
@@ -167,15 +179,29 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
             action = "A port scan is detected on your network and QOS policy is applied to prevent access for the IP Address {0} to access OmniSwitch {1} / {2}".format(ip_switch_ddos, host, ip_switch)
             result = "Find enclosed to this notification the log collection"
             send_file(filename_path, subject, action, result, category)
-
+        
+        # We disable debugging logs
         cmd = "swlog appid ipv4 subapp all level info"
-        # ssh session to start python script remotely
+        ssh_connectivity_check(switch_user, switch_password, ip_switch, cmd)
         os.system('logger -t montag -p user.info disabling debugging')
         os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
             switch_password, switch_user, ip_switch, cmd))
         sleep(1)
        # clear lastlog file
         open('/var/log/devices/lastlog_ddos_ip.json', 'w').close
+
+    ## Value 3 when we return advanced value like Disable port x/x/x
+    elif answer == '3':
+        os.system('logger -t montag -p user.info Process terminated')
+        # DISABLE Port
+        cmd = "interfaces port " + port + "admin-state disable"
+        ssh_connectivity_check(switch_user, switch_password, ip_switch, cmd)
+        info = "Interface port {0} is administratively disabled on OmniSwitch: {1}/{2}".format(port,host,ip_switch)
+        send_message(info, jid)
+        # We disable debugging logs
+        cmd = "swlog appid ipv4 subapp all level info"
+        ssh_connectivity_check(switch_user, switch_password, ip_switch, cmd)
+
     else:
         print("Mail request set as no")
         os.system('logger -t montag -p user.info Mail request set as no')
