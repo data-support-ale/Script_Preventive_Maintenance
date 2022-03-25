@@ -32,6 +32,7 @@ if len(file_lines) != 0:
             ipadd = ipadd_quot[-len(ipadd_quot)+1:-1]
             print(ipadd)
             port = 0
+            slot = 0
           # For each element, look if port is present. If yes,  we take the next element which is the port number
         if "port" in element:
             element_split = element.split()
@@ -48,20 +49,22 @@ if len(file_lines) != 0:
                         # clear lastlog file
                         open('/var/log/devices/lastlog_loop.json', 'w').close()
                         sys.exit()
-                    slot = element_split[i+3]
-                    if slot == "0":
-                        slot = "1"
-                    elif slot == "4":
-                        slot == "2"
-                    elif slot == "8":
-                        slot == "3"
-                    elif slot == "12":
-                        slot == "4"
+                    slot_in_element = element_split[i+3]
+                    print(slot_in_element)
+                    if slot_in_element == "0":
+                        slot = slot + 1
+                    elif slot_in_element == "4":
+                        slot = slot + 2
+                    elif slot_in_element == "8":
+                        slot = slot + 3
+                    elif slot_in_element == "12":
+                        slot = slot + 4
                     else:
-                        slot == "5"
+                        slot = slot + 5
             # looking for chassis ID number:
                     # modify the format of the port number to suit the switch interface
                     port = "{0}/1/{1}".format(slot, port)
+                    print(port)
 
 function = "loop"
 if script_has_run_recently(300,ipadd,function):
@@ -75,8 +78,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
     subject = "A loop was detected on your OmniSwitch!"
 
     try:
-        write_api.write(bucket, org, [{"measurement": str(os.path.basename(
-            __file__)), "tags": {"IP": ipadd, "Port": port}, "fields": {"count": 1}}])
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "State": "Loop Detected"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
         print(error)
         sys.exit()
@@ -94,7 +96,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
             port, ipadd, ip_server)
         answer = send_message_request(info, jid)
 
-        if isUpLink(port, ipadd):
+        if isUpLink(switch_user, switch_password, port, ipadd):
             answer = "0"
             info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
             send_message(info,jid)
@@ -115,7 +117,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         print("call function enable debugging")
         debugging(switch_user, switch_password, ipadd, appid, subapp, level)
         try:
-            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "State": "Debugging disabled"}, "fields": {"count": 1}}])
             sys.exit()
         except UnboundLocalError as error:
             print(error)
@@ -133,13 +135,19 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         os.system('logger -t montag -p user.info Calling ssh_connectivity_check script')
         os.system('logger -t montag -p user.info SSH session for disabling port')
         ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+        try:
+           write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "State": "Loop Resolved"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+           print(error)
+           sys.exit()
+        except Exception as error:
+           print(error)
+           pass 
         # disable_port(switch_user,switch_password,ipadd,port)
         os.system('logger -t montag -p user.info Port disabled')
-        if jid != '':
-            info = "A loop has been detected on your network and the port {0} is administratively disabled on device {1}".format(
-                port, ipadd)
-            filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
-            send_file(filename_path, subject, action, result, category)
+        info = "A loop has been detected on your network and the port {0} is administratively disabled on device {1}".format(port, ipadd)
+        filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
+        send_file(filename_path, subject, action, result, category)
         sleep(5)
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
         appid = "bcmd"
@@ -152,6 +160,15 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         # clear lastlog file
         sleep(10)
         open('/var/log/devices/lastlog_loop.json', 'w').close()
+        try:
+            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "State": "Debugging disabled"}, "fields": {"count": 1}}])
+            sys.exit()
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            sys.exit()  
     else:
         print("Mail request set as no")
         os.system('logger -t montag -p user.info Mail request set as no')

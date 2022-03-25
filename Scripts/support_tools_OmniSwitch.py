@@ -87,8 +87,10 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     try:
         p = paramiko.SSHClient()
         p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        p.connect(ipadd, port=22, username=switch_user,password=switch_password, timeout=60.0, banner_timeout=200)
+        p.connect(ipadd, port=22, username=switch_user,password=switch_password, timeout=10.0, banner_timeout=100)
     except TimeoutError as exception:
+        exception = error.readlines()
+        exception = str(exception)
         print("Function ssh_connectivity_check - Exception: " + exception)
         print("Function ssh_connectivity_check - Timeout when establishing SSH Session")
         info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
@@ -105,7 +107,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
         print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
-        info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+        info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -1694,6 +1696,8 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
             print(aaa_status)
         if "aaa authentication" in aaa_status:
             aaa_status = "enabled"
+        else:
+            aaa_status = "disabled"
     except subprocess.TimeoutExpired as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
@@ -2056,63 +2060,74 @@ def isEssential(addr):
             return True
     return False
 
-def isUpLink(port_number, ipadd):
+def isUpLink(switch_user, switch_password, port_number, ipadd):
     """
     Check if port is an Uplink (linkagg or more than 2 VLAN tagged)
     return: True if the port is considered as Uplink else False
     """
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    try:
-        ssh.connect(ipadd, 22, login_switch, pass_switch)
-    except paramiko.AuthenticationException:
-        exception = "AuthenticationException"
-        print("Authentication failed enter valid user name and password")
-        info = (
-            "SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit(0)
-        except Exception as error:
-            print(error)
-            pass 
-    except paramiko.SSHException as error:
-        print(error)
-        exception = error.readlines()
-        exception = str(exception)
-        print("Authentication failed enter valid user name and password")
-        info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit(0)
-        except Exception as error:
-            print(error)
-            pass 
+    l_switch_cmd = []
+    l_switch_cmd.append("show  vlan members port " + port_number)
 
-    try:
-        switch_cmd = "show  vlan members port " + port_number
-        _, stdout, _ = ssh.exec_command(switch_cmd)
-        output = stdout.read().decode('utf-8')
-    except Exception:
-        pass
-    ## if port is member of a linkagg ERROR is displayed in output
-    if re.search(r"ERROR", output):
-        return True
-    else:
-        ## if port is member of more than 2 VLAN tagged
-        qtagged = re.findall(r"qtagged", output)
-        if len(qtagged) > 1:
+    for switch_cmd in l_switch_cmd:
+        try:
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            if output != None:
+                output = str(output)
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                output_vlan_members = output_decode.replace("['","")
+                print(output_vlan_members)
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+        except subprocess.SubprocessError as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+        ## if port is member of a linkagg ERROR is displayed in output
+        if re.search(r"ERROR", output_vlan_members):
             return True
         else:
-            return False
+        ## if port is member of more than 2 VLAN tagged
+            qtagged = re.findall(r"qtagged", output)
+            if len(qtagged) > 1:
+                return True
+            else:
+                return False
         
 def disable_port(user, password, ipadd, portnumber):
     """ 
@@ -2250,8 +2265,10 @@ def send_file(filename_path, subject, action, result, category):
 
 
 if __name__ == "__main__":
-    a = isUpLink("1/1/2", "10.130.7.247")
-    b = isEssential("10.120.7.14")
+    a = isUpLink("admin", "switch", "1/1/21", "10.130.7.239")
+    print(a)
+    b = isEssential("10.130.7.14")
+    print(b)
     login_switch, pass_switch, mails, rainbow_jid, ip_server_log, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
     jid = "570e12872d768e9b52a8b975@openrainbow.com"
     switch_password = "switch"
