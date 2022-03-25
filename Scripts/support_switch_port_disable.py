@@ -145,6 +145,14 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
                 output_vlan_members = output_decode.replace("['","")
                 print(output_vlan_members)
                 if re.search(r"ERROR", output_vlan_members):
+                    try:
+                        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "State": "Port is UpLink - no port disabled"}, "fields": {"count": 1}}])
+                    except UnboundLocalError as error:
+                        print(error)
+                        sys.exit()
+                    except Exception as error:
+                        print(error)
+                        pass 
                     info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
                     send_message(info,jid)
                     sys.exit()
@@ -152,6 +160,14 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
                  ## if port is member of more than 2 VLAN tagged
                     qtagged = re.findall(r"qtagged", output)
                     if len(qtagged) > 1:
+                        try:
+                            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "State": "Port is UpLink - no port disabled"}, "fields": {"count": 1}}])
+                        except UnboundLocalError as error:
+                            print(error)
+                            sys.exit()
+                        except Exception as error:
+                            print(error)
+                            pass 
                         info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
                         send_message(info,jid)
                         sys.exit()
