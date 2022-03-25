@@ -1,10 +1,11 @@
 #!/usr/local/bin/python3.7
 
+from http.client import OK
 import sys
 import os
 from support_tools_OmniSwitch import get_credentials, detect_port_loop, isUpLink, ssh_connectivity_check, debugging, add_new_save, check_save, send_file, collect_command_output_network_loop, script_has_run_recently
 from time import strftime, localtime, sleep
-#import re  # Regex
+import re  # Regex
 from support_send_notification import send_message, send_message_request
 from database_conf import *
 
@@ -96,16 +97,17 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
             port, ipadd, ip_server)
         answer = send_message_request(info, jid)
 
-        if isUpLink(switch_user, switch_password, port, ipadd):
-            answer = "0"
-            info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
-            send_message(info,jid)
-
         if answer == "2":
             add_new_save(ipadd, port, "port_disable", choice="always")
             answer = '1'
         elif answer == "0":
             add_new_save(ipadd, port, "port_disable", choice="never")
+
+        #if isUpLink(switch_user, switch_password, port, ipadd):
+        #    answer = "0"
+        #    info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
+        #    send_message(info,jid)
+
     elif save_resp == "-1":
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
         info = "A loop has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Never, we do not proceed further".format(port, ipadd, ip_server)
@@ -131,6 +133,30 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         send_message(info,jid)
 
     if answer == '1':
+        l_switch_cmd = []
+        l_switch_cmd.append("show  vlan members port " + port)
+        for switch_cmd in l_switch_cmd:
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            if output != None:
+                output = str(output)
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                output_vlan_members = output_decode.replace("['","")
+                print(output_vlan_members)
+                if re.search(r"ERROR", output_vlan_members):
+                    info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
+                    send_message(info,jid)
+                    sys.exit()
+                else:
+                 ## if port is member of more than 2 VLAN tagged
+                    qtagged = re.findall(r"qtagged", output)
+                    if len(qtagged) > 1:
+                        info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
+                        send_message(info,jid)
+                        sys.exit()
+                    else:
+                        pass   
         cmd = "interfaces port {0} admin-state disable".format(port)
         os.system('logger -t montag -p user.info Calling ssh_connectivity_check script')
         os.system('logger -t montag -p user.info SSH session for disabling port')

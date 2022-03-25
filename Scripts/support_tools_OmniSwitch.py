@@ -89,8 +89,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         p.connect(ipadd, port=22, username=switch_user,password=switch_password, timeout=10.0, banner_timeout=100)
     except TimeoutError as exception:
-        exception = error.readlines()
-        exception = str(exception)
+        exception = "SSH Timeout"
         print("Function ssh_connectivity_check - Exception: " + exception)
         print("Function ssh_connectivity_check - Timeout when establishing SSH Session")
         info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
