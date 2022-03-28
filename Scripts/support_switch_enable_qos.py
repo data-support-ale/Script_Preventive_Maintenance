@@ -118,9 +118,10 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         try:
             # Log sample if DDOS Attack of type invalid-ip
             # OS6860E-P24-VC-ACAT swlogd ipni dos WARN: VRF 0: DoS type invalid ip from 158.42.253.193/e8:e7:32:fb:47:4b on port 1/1/22
-            ip_switch_ddos, mac_switch_ddos, port = re.findall(r"from (.*?)/(.*?) on port (.*)", msg)[0]
+            ddos_type, ip_switch_ddos, mac_switch_ddos, port = re.findall(r"DoS type (.*?) from (.*?)/(.*?) on port (.*)", msg)[0]
             print(port)
         except:
+            ddos_type = "port-scan"
             pass 
         print(ip_switch_ddos)
     except json.decoder.JSONDecodeError:
@@ -130,21 +131,19 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         print("Index error in regex")
         exit()
 
-    subject = "A port scan has been detected on your network "
-
     # always 1
     #never -1
     # ? 0
-    save_resp = check_save(ip_switch_ddos, "0", "scan")
+    save_resp = check_save(ip_switch_ddos, "0", "ddos")
 
     if save_resp == "0":
 
         if port != 0:
-            notif = "A DDOS Attack has been detected on your network - Source IP Address {0}  on OmniSwitch {1} / {2} port {3}. (if you click on Yes, the following actions will be done: Policy action block)".format(ip_switch_ddos, host, ip_switch, port)
+            notif = "A DDOS Attack of type {0} has been detected on your network - Source IP Address {1}  on OmniSwitch {2} / {3} port {4}. (if you click on Yes, the following actions will be done: Policy action block)".format(ddos_type, ip_switch_ddos, host, ip_switch, port)
             feature = "Disable port " + port
             answer = send_message_request_advanced(notif, jid,feature)
         else:
-            notif = "A DDOS Attack has been detected on your network - Source IP Address {0}  on OmniSwitch {1} / {2}. (if you click on Yes, the following actions will be done: Policy action block)".format(ip_switch_ddos, host, ip_switch)
+            notif = "A DDOS Attack of type {0} has been detected on your network - Source IP Address {1}  on OmniSwitch {2} / {3}. (if you click on Yes, the following actions will be done: Policy action block)".format(ddos_type, ip_switch_ddos, host, ip_switch)
             answer = send_message_request(notif, jid)
 
         if isEssential(ip_switch_ddos):
@@ -153,10 +152,10 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
                 send_message(info,jid)
 
         if answer == "2":
-            add_new_save(ip_switch_ddos, "0", "scan", choice="always")
+            add_new_save(ip_switch_ddos, "0", "ddos", choice="always")
             answer = '1'
         elif answer == "0":
-            add_new_save(ip_switch_ddos, "0", "scan", choice="never")
+            add_new_save(ip_switch_ddos, "0", "ddos", choice="never")
     elif save_resp == "-1":
         try:
             write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip_switch, "DDOS": ip_switch_ddos}, "fields": {"count": 1}}])
@@ -175,9 +174,9 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
                         ip_switch, ip_switch_ddos)
         os.system('logger -t montag -p user.info Process terminated')
         filename_path = "/var/log/devices/" + host + "/syslog.log"
-        category = "port_scan"
-        subject = "A port scan is detected:".format(host, ip_switch)
-        action = "A port scan is detected on your network and QOS policy is applied to prevent access for the IP Address {0} to access OmniSwitch {1} / {2}".format(ip_switch_ddos, host, ip_switch)
+        category = "ddos"
+        subject = "A {0} attack is detected:".format(ddos_type)
+        action = "A {0} attack is detected on your network and QOS policy is applied to prevent access for the IP Address {1} to access OmniSwitch {2} / {3}".format(ddos_type, ip_switch_ddos, host, ip_switch)
         result = "Find enclosed to this notification the log collection"
         send_file(filename_path, subject, action, result, category)
         
@@ -198,7 +197,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         cmd = "interfaces port " + port + "admin-state disable"
         ssh_connectivity_check(switch_user, switch_password, ip_switch, cmd)
         filename_path = "/var/log/devices/" + host + "/syslog.log"
-        category = "port_scan"
+        category = "ddos"
         subject = "A DDOS Attack of type invalid-ip is detected:".format(host, ip_switch)
         action = "DDOS Attack is detected on your network and interface port {0} is disabled to prevent access to OmniSwitch {2} / {3}".format(port,ip_switch_ddos, host, ip_switch)
         result = "Find enclosed to this notification the log collection"
