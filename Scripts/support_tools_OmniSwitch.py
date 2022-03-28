@@ -1693,10 +1693,14 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
             output_decode = output_decode.replace("']","")
             aaa_status = output_decode.replace("['","")
             print(aaa_status)
-        if "aaa authentication" in aaa_status:
-            aaa_status = "enabled"
-        else:
+        try:
+            if "aaa authentication" in aaa_status:
+                aaa_status = "enabled"
+            else:
+                aaa_status = "disabled"
+        except:
             aaa_status = "disabled"
+            pass
     except subprocess.TimeoutExpired as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
