@@ -177,34 +177,123 @@ class OvHandler:
 
 
     def post( self, path, obj ):
-        fullpath = self.ov + path
-        info = "In post path %s"%fullpath
-        entry_log(info)
+         fullpath = self.ov + path
+         info = "In post path %s"%fullpath
+         entry_log(info)
 
-        r = requests.post( fullpath, json.dumps( obj ),
+         r = requests.post( fullpath, json.dumps( obj ),
                            cookies=self.cookies,
                            verify=False,
                            headers={ 'content-type': 'application/json' } )
-        try:
+         try:
             info = "The post server response : \n {0} \n ".format(r.text)
             entry_log(info)
             return json.loads( r.text )
-        except ValueError:
-            return {}
+         except requests.exceptions.ConnectionError as response:
+            print(response)
+            try:
+                  write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                  print(error)
+                  sys.exit()
+            except Exception as error:
+                  print(error)
+                  pass
+         except requests.exceptions.Timeout as response:
+            print("Request Timeout when calling URL: " + url)
+            print(response)
+            try:
+                  write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                  print(error)
+                  sys.exit()
+            except Exception as error:
+                  print(error)
+                  pass
+         except requests.exceptions.TooManyRedirects as response:
+            print("Too Many Redirects when calling URL: " + url)
+            print(response)
+            try:
+                  write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                  print(error)
+                  sys.exit()
+            except Exception as error:
+                  print(error)
+                  pass
+         except requests.exceptions.RequestException as response:
+            print("Request exception when calling URL: " + url)
+            print(response)
+            try:
+                  write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                  print(error)
+                  sys.exit()
+            except Exception as error:
+                  print(error)
+                  pass
 
     def get( self, path ):
-        r = requests.get( self.ov + path,
+         r = requests.get( self.ov + path,
                           cookies=self.cookies,
                           verify=False,
                           headers={ 'content-type': 'application/json' } )
 
-        try:
+         try:
             info = "The get server response : \n {0} \n ".format(r.text)
             entry_log(info)
             return json.loads( r.text )
-        except ValueError:
-            print ("Exception")
-            return {}
+         except requests.exceptions.ConnectionError as response:
+            print(response)
+            try:
+                  write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                  print(error)
+                  sys.exit()
+            except Exception as error:
+                  print(error)
+                  pass
+         except requests.exceptions.Timeout as response:
+            print("Request Timeout when calling URL: " + url)
+            print(response)
+            try:
+                  write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                  print(error)
+                  sys.exit()
+            except Exception as error:
+                  print(error)
+                  pass
+         except requests.exceptions.TooManyRedirects as response:
+            print("Too Many Redirects when calling URL: " + url)
+            print(response)
+            try:
+                  write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                  print(error)
+                  sys.exit()
+            except Exception as error:
+                  print(error)
+                  pass
+         except requests.exceptions.RequestException as response:
+            print("Request exception when calling URL: " + url)
+            print(response)
+            try:
+                  write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                  print(error)
+                  sys.exit()
+            except Exception as error:
+                  print(error)
+                  pass
 
     
     def postRadiusDeviceNumber(self):
@@ -398,6 +487,7 @@ while True:
    try:
       main()
    except Exception as e:
-      info = "Error when collecting Radius data : \n {0} ".format(e)   
+      info = "Error when collecting Radius data : {0} ".format(e)
+      send_message(info, jid)   
       entry_log(info)
    sleep(900)
