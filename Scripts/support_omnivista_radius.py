@@ -193,7 +193,7 @@ class OvHandler:
             print(response)
             try:
                   write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                     "HTTP_Request": fullpath, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                   print(error)
                   sys.exit()
@@ -201,11 +201,11 @@ class OvHandler:
                   print(error)
                   pass
          except requests.exceptions.Timeout as response:
-            print("Request Timeout when calling URL: " + url)
+            print("Request Timeout when calling URL: " + fullpath)
             print(response)
             try:
                   write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                     "HTTP_Request": fullpath, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                   print(error)
                   sys.exit()
@@ -213,11 +213,11 @@ class OvHandler:
                   print(error)
                   pass
          except requests.exceptions.TooManyRedirects as response:
-            print("Too Many Redirects when calling URL: " + url)
+            print("Too Many Redirects when calling URL: " + fullpath)
             print(response)
             try:
                   write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                     "HTTP_Request": fullpath, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                   print(error)
                   sys.exit()
@@ -225,11 +225,11 @@ class OvHandler:
                   print(error)
                   pass
          except requests.exceptions.RequestException as response:
-            print("Request exception when calling URL: " + url)
+            print("Request exception when calling URL: " + fullpath)
             print(response)
             try:
                   write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                     "HTTP_Request": fullpath, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                   print(error)
                   sys.exit()
@@ -238,6 +238,7 @@ class OvHandler:
                   pass
 
     def get( self, path ):
+         fullpath = self.ov + path
          r = requests.get( self.ov + path,
                           cookies=self.cookies,
                           verify=False,
@@ -251,7 +252,7 @@ class OvHandler:
             print(response)
             try:
                   write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                     "HTTP_Request": fullpath, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                   print(error)
                   sys.exit()
@@ -259,11 +260,11 @@ class OvHandler:
                   print(error)
                   pass
          except requests.exceptions.Timeout as response:
-            print("Request Timeout when calling URL: " + url)
+            print("Request Timeout when calling URL: " + fullpath)
             print(response)
             try:
                   write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                     "HTTP_Request": fullpath, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                   print(error)
                   sys.exit()
@@ -271,11 +272,11 @@ class OvHandler:
                   print(error)
                   pass
          except requests.exceptions.TooManyRedirects as response:
-            print("Too Many Redirects when calling URL: " + url)
+            print("Too Many Redirects when calling URL: " + fullpath)
             print(response)
             try:
                   write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                     "HTTP_Request": fullpath, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                   print(error)
                   sys.exit()
@@ -283,11 +284,11 @@ class OvHandler:
                   print(error)
                   pass
          except requests.exceptions.RequestException as response:
-            print("Request exception when calling URL: " + url)
+            print("Request exception when calling URL: " + fullpath)
             print(response)
             try:
                   write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                     "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+                     "HTTP_Request": fullpath, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                   print(error)
                   sys.exit()
@@ -346,18 +347,149 @@ class OvHandler:
         print()
         return value_total, int(value_guest), int(value_byod), int(value_employee), int(value_unknown)
 
+# Function SSH for checking connectivity before collecting logs
+def ssh_connectivity_check(User_root, Password_root, ipadd, cmd):
+    """ 
+    This function takes entry the command to push remotely on OmniSwitch by SSH with Python Paramiko module
+    Paramiko exceptions are handled for notifying Network Administrator if the SSH Session does not establish
 
+    :param str ipadd                     Command pushed by SSH on OmnISwitch
+    :param str cmd                       Switch IP address
+    :return:  stdout, stderr, output     If exceptions is returned on stderr a notification is sent to Network Administrator, else we log the session was established and retour CLI command outputs
+    """
+    print("Function ssh_connectivity_check - we execute command " + cmd)
+    try:
+        p = paramiko.SSHClient()
+        p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        p.connect(ipadd, port=2222, username=User_root,password=Password_root, timeout=20.0, banner_timeout=200)
+    except TimeoutError as exception:
+        exception = "SSH Timeout"
+        print("Function ssh_connectivity_check - Exception: " + exception)
+        print("Function ssh_connectivity_check - Timeout when establishing SSH Session")
+        info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(0)
+        except Exception as error:
+            print(error)
+            pass 
+    except paramiko.AuthenticationException:
+        exception = "AuthenticationException"
+        print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
+        info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(0)
+        except Exception as error:
+            print(error)
+            pass 
+    except paramiko.SSHException as error:
+        print("Function ssh_connectivity_check - " + error)
+        exception = error.readlines()
+        exception = str(exception)
+        print("Function ssh_connectivity_check - Device unreachable")
+        info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(0)
+        except Exception as error:
+            print(error)
+            pass 
+    try:
+        stdin, stdout, stderr = p.exec_command(cmd, timeout=120)
+        #stdin, stdout, stderr = threading.Thread(target=p.exec_command,args=(cmd,))
+        # stdout.start()
+        # stdout.join(1200)
+        print(stdout)
+        print(stderr)
+    except Exception:
+        exception = "SSH Exception"
+        print("Function ssh_connectivity_check - " + exception)
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+        sys.exit() 
+    exception = stderr.readlines()
+    exception = str(exception)
+    connection_status = stdout.channel.recv_exit_status()
+    print(connection_status)
+    print(exception)
+    if connection_status != 0:
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        send_message(info, jid)
+        os.system('logger -t montag -p user.info ' + info)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(2)
+        except Exception as error:
+            print(error)
+            pass 
+    else:
+        info = ("SSH Session established successfully on OmniSwitch {0}").format(ipadd)
+        os.system('logger -t montag -p user.info ' + info)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_success", "tags": {"IP_Address": ipadd}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass 
+        output = stdout.readlines()
+        # We close SSH Session once retrieved command output
+        p.close()
+        return output
 
 def restart_freeradius_service():
-       ssh = createSSHClient(ip, "2222", User_root, Password_root)
-
-       cmd = "stop freeradius service"
-       stdin, out, err = ssh.exec_command(cmd)
-       out.read()
-
-       cmd = "start freeradius service"
-       stdin, out, err = ssh.exec_command(cmd)
-       out.read()
+       #ssh = createSSHClient(ip, "2222", User_root, Password_root)
+       text = "More logs about the switch : {0} \n\n\n".format(ip)
+       #cmd = "systemctl stop ovupam; systemctl stop ovradius; sleep 2; systemctl start ovupam; systemctl start ovradius"
+       cmd = "sleep 2"
+       output = ssh_connectivity_check(User_root, Password_root, ip, cmd)
+       if output != None:
+               output = str(output)
+               output_decode = bytes(output, "utf-8").decode("unicode_escape")
+               output_decode = output_decode.replace("', '","")
+               output_decode = output_decode.replace("']","")
+               output_decode = output_decode.replace("['","")
+               text = "{0}{1}: \n{2}\n\n".format(text, cmd, output_decode)
+       else:
+               exception = "Timeout"
+               info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ip)
+               print(info)
+               os.system('logger -t montag -p user.info ' + info)
+               send_message(info, jid)
+               try:
+                  write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ip, "Exception": exception}, "fields": {"count": 1}}])
+               except UnboundLocalError as error:
+                  print(error)
+               except Exception as error:
+                  print(error)
+                  pass 
+               sys.exit()
 
 def main():
    # Create OV REST Session
@@ -471,7 +603,7 @@ def rainbow_notif(user_type, value, threshold):
         restart_freeradius_service()
         sleep(2)
         logfilename = strftime('%Y-%m-%d', localtime(time())) + "_lastlog_radius_check.log"
-        logfilepath = "/opt/ALE_Script/{0}".format(logfilename)
+        logfilepath = "/var/log/devices/{0}".format(logfilename)
         category = "radius_issue"
         subject = "The number of devices authenticated on Radius Server {0} was below defined threshold.".format(ip)
         action = "Action done: the Radius services are restarted and we keep monitoring the number of authentications"
