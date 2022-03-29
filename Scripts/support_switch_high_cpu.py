@@ -145,7 +145,7 @@ f_logs.close()
 category = "high_cpu"
 
 try:
-    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Result": "Script executed on Switch"}, "fields": {"count": 1}}])
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Result": "Commands executed on Switch"}, "fields": {"count": 1}}])
 except UnboundLocalError as error:
     print(error)
     sys.exit()
