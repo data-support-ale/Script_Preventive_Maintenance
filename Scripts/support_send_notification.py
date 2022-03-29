@@ -595,8 +595,7 @@ def send_file(info, jid, ipadd, filename_path=''):
         #files = {'file': fp}
 
         try:
-            response = requests.post(url, headers=headers,
-                                     data=payload, timeout=20)
+            response = requests.post(url, headers=headers,data=payload, timeout=20)
             code = re.findall(r"<Response \[(.*?)\]>", str(response))
             if "200" in code:
                 os.system('logger -t montag -p user.info 200 OK')

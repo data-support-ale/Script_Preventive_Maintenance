@@ -10,7 +10,7 @@ from time import sleep
 from unicodedata import name
 
 from paramiko import SSHException
-from support_send_notification import send_message, send_file
+from support_send_notification import send_message
 import subprocess
 import re
 import pysftp

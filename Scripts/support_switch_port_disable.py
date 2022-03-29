@@ -68,7 +68,7 @@ if len(file_lines) != 0:
                     print(port)
 
 function = "loop"
-if script_has_run_recently(300,ipadd,function):
+if script_has_run_recently(600,ipadd,function):
     print('you need to wait before you can run this again')
     os.system('logger -t montag -p user.info Executing script exit because executed within 5 minutes time period')
     exit()
