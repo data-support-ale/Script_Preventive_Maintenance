@@ -73,6 +73,11 @@ def get_credentials(attribute=None):
 
 login_switch, pass_switch, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
+def execute_command(tn, command, prompt):
+    tn.write(command.encode())
+    result = tn.read_until(prompt.encode(), timeout=10)
+    return result.decode("utf-8")
+
 # Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     """ 
@@ -1093,6 +1098,8 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
     l_switch_cmd.append("show fan")
     l_switch_cmd.append("show temperature")
 
+
+
     for switch_cmd in l_switch_cmd:
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
@@ -1225,6 +1232,13 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     l_switch_cmd = []
     l_switch_cmd.append("show powersupply")
     l_switch_cmd.append("show powersupply total")
+    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x80\" | su')
+    sleep(1)
+    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x00\" | su')
+    sleep(2)
+    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cget -y -f 1 0x60 0x90\" | su')
+    sleep(1)
+    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cget -y -f 1 0x60 0x92\" | su')
 
     for switch_cmd in l_switch_cmd:
         try:
