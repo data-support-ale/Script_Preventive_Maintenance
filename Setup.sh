@@ -729,7 +729,7 @@ if \$msg contains 'Internal error' then {
      stop
 }
 
-if \$msg contains 'Fatal exception' or \$msg contains 'Kernel panic' or \$msg contains 'Exception stack' or \$msg contains 'parse condition rule is error' or \$msg contains 'core-monitor reboot' then {
+if \$msg contains 'Fatal exception' or \$msg contains 'Kernel panic' or \$msg contains 'KERNEL PANIC' or \$msg contains 'Exception stack' or \$msg contains 'parse condition rule is error' or \$msg contains 'core-monitor reboot' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omprog\" name=\"support_wlan_generic_exception\" binary=\"/opt/ALE_Script/support_wlan_generic.py exception\")
