@@ -725,7 +725,7 @@ def extract_WIPS():
                 message = "WLAN WIPS - Adding Client's MAC Address {0} in the Block List".format(
                     device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
-                send_alert(message, jid)
+                send_message(message, jid)
                 try:
                    write_api.write(bucket, org, [{"measurement": "support_wlan_wips", "tags": {"Client_MAC": device_mac, "Reason": "Added in BlockList"}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
