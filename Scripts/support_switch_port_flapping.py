@@ -185,11 +185,11 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
             os.system('logger -t montag -p user.info Process terminated')
 
             if jid != '':
-                info = "Log of device : {0}".format(ip_switch_1)
-                send_file(info, jid, ip_switch_1)
+                #info = "Log of device : {0}".format(ip_switch_1)
+                #send_file(info, jid, ip_switch_1)
                 sleep(1)
-                info = "Log of device : {0}".format(ip_switch_2)
-                send_file(info, jid, ip_switch_2)
+                #info = "Log of device : {0}".format(ip_switch_2)
+                #send_file(info, jid, ip_switch_2)
                 info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}, the port {2}  is administratively updated  on device {3}".format(
                     port_switch_1, ip_switch_1, port_switch_2, ip_switch_2)
                 send_message(info, jid)
@@ -246,8 +246,8 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
             os.system('logger -t montag -p user.info Process terminated')
 
             if jid != '':
-                info = "Log of device : {0}".format(ip_switch_1)
-                send_file(info, jid, ip_switch_1)
+                #info = "Log of device : {0}".format(ip_switch_1)
+                #send_file(info, jid, ip_switch_1)
                 info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}." .format(
                     port_switch_1, ip_switch_1)
                 send_message(info, jid)
@@ -299,8 +299,8 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
 
             os.system('logger -t montag -p user.info Process terminated')
             if jid != '':
-                info = "Log of device : {0}".format(ip_switch_2)
-                send_file(info, jid, ip_switch_2)
+                #info = "Log of device : {0}".format(ip_switch_2)
+                #send_file(info, jid, ip_switch_2)
                 info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}" .format(
                     port_switch_2, ip_switch_2)
                 send_message(info, jid)
