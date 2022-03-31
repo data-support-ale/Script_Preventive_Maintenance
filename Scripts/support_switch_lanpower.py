@@ -149,6 +149,33 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
         except IndexError as error:
             print(error)
             sys.exit()
+    #Log sample
+    # OS6860E_VC_Core swlogd lpNi LanNi INFO: Port 1 FAULT State change 1b to 43 desc: Port is off: Class Error (Illegal class)
+    elif "FAULT State change 1b to 43" in msg:
+        try:
+            port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 43 desc: Port is off: Class Error (.*)", msg)[0]
+            save_resp = check_save(ipadd, port, "lanpower")
+            if save_resp == "-1":
+                print("Decision saved set to Never")
+                sys.exit()
+            else:
+                pass
+            filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+            send_file(filename_path, subject, action, result, category)
+#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
+#            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
+                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except IndexError as error:
+            print(error)
+            sys.exit()
     else:
         print("no pattern match - exiting script")
         sys.exit()
@@ -159,11 +186,13 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
 save_resp = check_save(ipadd, port, "lanpower")
 
 if save_resp == "0":
-        if capacitor_detection_status == "enabled" or high_resistance_detection_status == "enabled":
+        if capacitor_detection_status == "enabled" or high_resistance_detection_status == "enabled" or reason == "(Illegal class)":
             if capacitor_detection_status == "enabled":
                feature = "Disable Capacitor-Detection"
             elif high_resistance_detection_status == "enabled":
                 feature = "Disable High-Resistance-Detection"
+            elif reason == "(Illegal class)":
+                feature = "Disable 4Pair"
             notif = "A LANPOWER issue is detected on OmniSwitch " + host + " Port: 1/1/" + port + \
             ", reason: " + reason + ". Do you want to disable PoE on this port? " + ip_server
             answer = send_message_request_advanced(notif, jid,feature)
@@ -235,6 +264,11 @@ elif answer == '3':
         info = "High-Resistance-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
         ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
         send_message(info, jid)
+    elif reason == "(Illegal class)":
+        cmd = "lanpower port 1/1/" + port + " 4pair disable"
+        info = "4Pair is disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
+        ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+        send_message(info, jid)        
     ### else it corresponds to PoE Reload
     else:
         l_switch_cmd = []

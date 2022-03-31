@@ -1486,6 +1486,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
     l_switch_cmd.append("show configuration snapshot lanpower")
     l_switch_cmd.append("show powersupply total")
     l_switch_cmd.append("show lanpower slot 1/1")
+    l_switch_cmd.append("show lanpower slot 1/1 port-config")
 #    l_switch_cmd.append("show lanpower slot 2/1")
 #    l_switch_cmd.append("show lanpower slot 3/1")
     l_switch_cmd.append("show lanpower power-rule")
@@ -1616,11 +1617,14 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
         high_resistance_detection_status = "enabled"
     else:
         high_resistance_detection_status = "disabled"
-    subject = (
-        "Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason {3}").format(host,ipadd,port,reason)
-    action = ("A PoE issue has been detected in switch(Hostname : {0}) syslogs. Capacitor Detection is {1}, High Resistance Detection is {2}").format(
-        host, capacitor_detection_status, high_resistance_detection_status)
-    result = "Find enclosed to this notification the log collection for further analysis"
+    if reason == "(Illegal class)":
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason {3}").format(host,ipadd,port,reason)
+        action = ("A PoE issue has been detected in switch(Hostname : {0}) syslogs with reason {1}. The OmniSwitch POE controller requires that the same class be detected on both pairs before passing detection and sending POE power to the port. When it detects different classes from the same device, power is denied until 4pair is disabled").format(host, reason)
+        result = "Find enclosed to this notification the log collection for further analysis"
+    else:
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason {3}").format(host,ipadd,port,reason)
+        action = ("A PoE issue has been detected in switch(Hostname : {0}) syslogs. Capacitor Detection is {1}, High Resistance Detection is {2}").format(host, capacitor_detection_status, high_resistance_detection_status)
+        result = "Find enclosed to this notification the log collection for further analysis"
     category = "poe"
     return filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status
 
