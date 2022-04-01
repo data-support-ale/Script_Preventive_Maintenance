@@ -7,9 +7,9 @@ import re
 import json
 import paramiko
 import threading
-from support_tools_OmniSwitch import isEssential, ssh_connectivity_check, file_setup_qos, format_mac, get_credentials, add_new_save, check_save, script_has_run_recently
+from support_tools_OmniSwitch import isEssential, ssh_connectivity_check, file_setup_qos, format_mac, get_credentials, add_new_save, check_save, script_has_run_recently, send_file
 from time import strftime, localtime
-from support_send_notification import send_message, send_file, send_message_request
+from support_send_notification import send_message, send_message_request_advanced
 from database_conf import *
 
 # Script init
@@ -134,9 +134,10 @@ if script_has_run_recently(300,ip,function):
 save_resp = check_save(ip, port, "duplicate")
 
 if save_resp == "0":
-    notif = "IP address duplication (" + ip_dup + ") on port " + port + " of switch " + \
-        ip + "(" + host + "). Do you want to blacklist mac : " + mac + " ?"
-    answer = send_message_request(notif, jid)
+    feature = "Disable port " + port
+    notif = "An IP address duplication (" + ip_dup + ") on port " + port + " of OmniSwitch " + \
+        ip + "/" + host + " has been detected. Do you want to blacklist the MAC Address: " + mac + " ?"
+    answer = send_message_request_advanced(notif, jid,feature)
     print(answer)
 
     if isEssential(ip_dup):
@@ -173,7 +174,7 @@ if answer == '1':
     if jid != '':
         info = "Log of device : {0}".format(ip)
         send_file(info, jid, ip)
-        info = "A IP duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(
+        info = "An IP Address duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(
             mac, ip)
         send_message(info, jid)
         try:
@@ -184,3 +185,23 @@ if answer == '1':
         except Exception as error:
             print(error)
             pass
+## Value 3 when we return advanced value like Disable port x/x/x
+elif answer == '3':
+    os.system('logger -t montag -p user.info Process terminated')
+    # DISABLE Port
+    cmd = "interfaces port " + port + "admin-state disable"
+    ssh_connectivity_check(switch_user, switch_password, ip, cmd)
+    filename_path = "/var/log/devices/" + host + "/syslog.log"
+    category = "ddos"
+    subject = "An IP Address duplication has been detected:".format(host, ip)
+    action = "An IP Address duplication has been detected on your network and interface port {0} is disabled to prevent access to OmniSwitch {2} / {3}".format(port,ip_dup, host, ip)
+    result = "Find enclosed to this notification the log collection"
+    send_file(filename_path, subject, action, result, category)
+    try:
+         write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
+            "IP": ip, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+    except Exception as error:
+        print(error)
+        pass
