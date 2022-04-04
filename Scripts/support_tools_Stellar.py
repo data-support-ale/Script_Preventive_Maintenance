@@ -227,6 +227,65 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         p.close()
         return output
 
+def  drm_neighbor_scanning(login_AP, pass_AP, ipadd):
+    """ 
+    This function returns the neighbor channel scanned and current channel set on AP
+
+    :param str login_AP:                   Stellar AP support login
+    :param str pass_AP:                    Stellar AP support password
+    :param str ipadd:                      Switch IP address
+    :return:                               filename_path,subject,action,result,category
+    """
+    l_stellar_cmd = []
+    l_stellar_cmd.append("ssudo tech_support_command 13")
+    for stellar_cmd in l_stellar_cmd:
+        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, ipadd, stellar_cmd)
+        try:
+            output = ssh_connectivity_check(login_AP, pass_AP, ipadd, stellar_cmd)
+            output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
+            if output != None:
+                output = output.decode('UTF-8').strip()
+            else:
+                exception = "Timeout"
+                info = (
+                    "Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = (
+                "The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
+                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+    print(output)
+    if "Channel" in output:
+        try:
+            my_channel = re.findall(r"    Channel:(.*)", output)
+            print(my_channel)
+        except IndexError:
+            print("Index error in regex")
+            exit()
+    return my_channel
+
 
 def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
     """ 

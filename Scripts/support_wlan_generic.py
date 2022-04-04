@@ -11,7 +11,9 @@ from time import strftime, localtime
 #import datetime
 import re
 from unicodedata import category
-from support_tools_Stellar import get_credentials, vlan_limit_reached_tools, sta_limit_reached_tools, send_file
+
+from paramiko import Channel
+from support_tools_Stellar import get_credentials, vlan_limit_reached_tools, sta_limit_reached_tools, send_file, drm_neighbor_scanning
 from support_send_notification import send_message, send_alert, send_alert_advanced
 #from support_OV_get_wlan import OvHandler
 from database_conf import *
@@ -185,6 +187,52 @@ def kernel_panic(ipadd):
         print(error)
         pass 
 
+def wlan_drm(login_AP, pass_AP):
+    # Wireless drm[2924] <INFO> [AP DC:08:56:76:C0:C0@10.130.7.146] [10.130.7.155 is my neighbor, notify channel:  6 36 0]--[scan_control.c:536]
+    os.system('logger -t montag -p user.info ACS neighbor scanning')
+    last = ""
+    neighbor_channel = 0
+    with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file:
+        for line in log_file:
+            last = line
+
+    with open("/var/log/devices/lastlog_drm.json", "w", errors='ignore') as log_file:
+        log_file.write(last)
+
+    with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file:
+        log_json = json.load(log_file)
+        ipadd = log_json["relayip"]
+        host = log_json["hostname"]
+        msg = log_json["message"]
+        f = msg.split(',')
+        for element in f:
+            if "Wireless drm" in element:
+                print(element)
+                neighbor_ip = re.findall(r"\[([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}) is my neighbor, ", msg)[0]
+            if "notify channel":
+                neighbor_channel = re.findall(r"notify channel:  (.*?) (.*?) (.*?)\]", msg)[0]
+                print("My neighbor channel is:" + neighbor_channel[1])
+    my_channel = drm_neighbor_scanning(login_AP, pass_AP, ipadd)
+    #send_file(filename_path, subject, action, result, category)
+    #send_message(message_reason, jid)
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_drm", "tags": {"AP_IPAddr": ipadd, "AP_channel": my_channel, "Neighbor_channel": neighbor_channel, "Neighbor_IP_Address": neighbor_ip}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except Exception as error:
+        print(error)
+        pass
+    if my_channel[0]==neighbor_channel[0]:
+        info = "Preventive Maintenance - WLAN Stellar AP {} Channel on Radio band 2.4GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel[0],neighbor_ip)
+        send_message(info, jid)
+    elif my_channel[1]==neighbor_channel[1]:
+        print(neighbor_ip)
+        print(neighbor_channel[1])
+        info = "Preventive Maintenance - WLAN Stellar AP {} Channel on Radio band 5GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel[1],neighbor_ip)
+        send_message(info, jid)   
+    else:
+        print("Channels are differents")
 
 def sta_limit_reached(ipadd, login_AP, pass_AP):
     os.system('logger -t montag -p user.info Associated STA Limit Reached!')
@@ -192,7 +240,7 @@ def sta_limit_reached(ipadd, login_AP, pass_AP):
     send_file(filename_path, subject, action, result, category)
     send_message(message_reason, jid)
     try:
-        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "STA limit reached"}, "fields": {"count": 1}}])
+        write_api.write(bucket, org, [{"measurement": "support_wlan_sta_limit", "tags": {"AP_IPAddr": ipadd, "Reason": "STA limit reached"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
         print(error)
         sys.exit()
@@ -206,7 +254,7 @@ def vlan_limit_reached(ipadd, login_AP, pass_AP):
     send_file(filename_path, subject, action, result, category)
     send_message(message_reason, jid)
     try:
-        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "VLAN limit reached"}, "fields": {"count": 1}}])
+        write_api.write(bucket, org, [{"measurement": "support_wlan_vlan_limit", "tags": {"AP_IPAddr": ipadd, "Reason": "VLAN limit reached"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
         print(error)
         sys.exit()
@@ -224,8 +272,7 @@ def authentication_step1(ipadd, device_mac, auth_type, ssid, deassociation):
         print(error)
         pass 
     if "0" in deassociation:
-        message = "[{0}] WLAN deassociation detected from client {1} on Stellar AP {2} with Authentication type {3}".format(
-            ssid, device_mac, ipadd, auth_type)
+        message = "[{0}] WLAN deassociation detected from client {1} on Stellar AP {2} with Authentication type {3}".format(ssid, device_mac, ipadd, auth_type)
         os.system('logger -t montag -p user.info ' + message)
 
 
@@ -238,8 +285,7 @@ def authentication_step2(ipadd, user_name, ssid):
     except Exception as error:
         print(error)
         pass 
-    message = "[{0}] WLAN authentication on Captive Portal from User: {1} on Stellar AP {2}".format(
-        ssid, user_name, ipadd)
+    message = "[{0}] WLAN authentication on Captive Portal from User: {1} on Stellar AP {2}".format(ssid, user_name, ipadd)
     os.system('logger -t montag -p user.info ' + message)
 
 
@@ -253,16 +299,13 @@ def mac_authentication(device_mac_auth, ARP, source, reason):
         print(error)
         pass 
     if "failed" in reason:
-        message = "WLAN Authentication failed from client {0} assigned to {1} from {2}".format(
-            device_mac_auth, ARP, source)
+        message = "WLAN Authentication failed from client {0} assigned to {1} from {2}".format(device_mac_auth, ARP, source)
         os.system('logger -t montag -p user.info ' + message)
     elif "will" in reason:
-        message = "WLAN Authentication success from client {0} assigned to {1} from {2}".format(
-            device_mac_auth, ARP, source)
+        message = "WLAN Authentication success from client {0} assigned to {1} from {2}".format(device_mac_auth, ARP, source)
         os.system('logger -t montag -p user.info ' + message)
     else:
-        message = "WLAN Authentication success from client {0} assigned to {1} from {2} - reason: {3}".format(
-            device_mac_auth, ARP, source, reason)
+        message = "WLAN Authentication success from client {0} assigned to {1} from {2} - reason: {3}".format(device_mac_auth, ARP, source, reason)
         os.system('logger -t montag -p user.info ' + message)
 
 
@@ -276,19 +319,15 @@ def radius_authentication(auth_result, device_mac, accounting_status):
         print(error)
         pass 
     if "Failed" in auth_result:
-        message = "WLAN 802.1x Authentication {0} for client {1}".format(
-            auth_result, device_mac)
+        message = "WLAN 802.1x Authentication {0} for client {1}".format(auth_result, device_mac)
         os.system('logger -t montag -p user.info ' + message)
     if "Success" in auth_result:
-        message = "WLAN 802.1x Authentication {0} for client {1}".format(
-            auth_result, device_mac)
+        message = "WLAN 802.1x Authentication {0} for client {1}".format(auth_result, device_mac)
         os.system('logger -t montag -p user.info ' + message)
     if "null" in auth_result:
-        os.system(
-            'logger -t montag -p user.info Radius authentication attempt or in progress')
+        os.system('logger -t montag -p user.info Radius authentication attempt or in progress')
     else:
-        message = "WLAN 8021x Accounting {0} for {1}".format(
-            accounting_status, device_mac)
+        message = "WLAN 8021x Accounting {0} for {1}".format(accounting_status, device_mac)
         os.system('logger -t montag -p user.info ' + message)
 
 
@@ -375,25 +414,52 @@ def radius_failover():
         if "RADIUS" in element:
             # In case of too many failed retransmit attempts, Radius Server is considered as unreachable
             if "too many failed retransmit attempts" in element:
-                os.system(
-                    'logger -t montag -p user.info Radius Server unreachable - too many failed retransmit attempts')
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_wlan_radius", "tags": {"Event": "Authentication Server unreachable", "Radius Server": "Too many failed retransmit attempts"}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                    sys.exit()
+                except Exception as error:
+                    print(error)
+                    pass     
+                os.system('logger -t montag -p user.info Radius Server unreachable - too many failed retransmit attempts')
             if "No response from Authentication server" in element:
-                os.system(
-                    'logger -t montag -p user.info Primary Radius Server unreachable')
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_wlan_radius", "tags": {"Event": "Authentication Server unreachable", "Radius Server": "No response from Authentication server"}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                    sys.exit()
+                except Exception as error:
+                    print(error)
+                    pass                 
+                os.system('logger -t montag -p user.info Primary Radius Server unreachable')
             if "failover" in element:
-                os.system(
-                    'logger -t montag -p user.info Failover to backup server')
+                os.system('logger -t montag -p user.info Failover to backup server')
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_wlan_radius", "tags": {"Event": "Authentication Server unreachable", "Radius Server": "Failover to Backup Server"}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                    sys.exit()
+                except Exception as error:
+                    print(error)
+                    pass 
                 element_split = element.split(' ')
                 for i in range(len(element_split)):
                     if element_split[i] == "server":
                         print("802.1x Authentication server unreachable")
                         server = element_split[i+1]
-                        os.system(
-                            'logger -t montag -p user.info Radius Server unreachable ' + server)
+                        try:
+                           write_api.write(bucket, org, [{"measurement": "support_wlan_radius", "tags": {"Event": "Authentication Server unreachable", "Radius Server": server}, "fields": {"count": 1}}])
+                        except UnboundLocalError as error:
+                           print(error)
+                           sys.exit()
+                        except Exception as error:
+                           print(error)
+                           pass 
+                        os.system('logger -t montag -p user.info Radius Server unreachable ' + server)
 # Condition hardcoded to review once we have additionnal syslog messages in AWOS 4.0.4
             if "RADIUS Authentication server 10.130.7.25" in element:
-                os.system(
-                    'logger -t montag -p user.info Authentication sent to Backup Radius Server 10.130.7.25')
+                os.system('logger -t montag -p user.info Authentication sent to Backup Radius Server 10.130.7.25')
 
 
 def extract_RADIUS():
@@ -422,22 +488,52 @@ def extract_RADIUS():
                         if element_split[i] == "to":
                             server = element_split[i+1]
                             server = server.replace("\"", "")
-                            os.system(
-                                'logger -t montag -p user.info Authentication sent to Radius Server ' + server)
+                            try:
+                               write_api.write(bucket, org, [{"measurement": "support_wlan_radius", "tags": {"Event": "Authentication sent to Radius Server", "Radius Server": server}, "fields": {"count": 1}}])
+                            except UnboundLocalError as error:
+                               print(error)
+                               sys.exit()
+                            except Exception as error:
+                               print(error)
+                               pass 
+                            os.system('logger -t montag -p user.info Authentication sent to Radius Server ' + server)
             if "8021x Authentication" in element:
-                auth_result, device_8021x_auth = re.findall(
-                    r"8021x-Auth (.*?) for Sta<(.*?)>", msg)[0]
+                auth_result, device_8021x_auth = re.findall(r"8021x-Auth (.*?) for Sta<(.*?)>", msg)[0]
                 print("Authentication success use case")
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_wlan_radius", "tags": {"Event": "Authentication Successful", "Device": device_8021x_auth}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                    sys.exit()
+                except Exception as error:
+                    print(error)
+                    pass 
                 # Wireless roam_trace[10065] <INFO> [AP DC:08:56:54:2D:40@10.130.7.76] [Employee_EAP @ ath11]: 8021x Authentication Success for Sta<de:ab:50:25:b8:71>
             if "8021x-Auth Failed" in element:
                 auth_result = "Failed"
                 device_8021x_auth = re.findall(r"STA <(.*?)>", msg)[0]
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_wlan_radius", "tags": {"Event": "Authentication Failure", "Device": device_8021x_auth}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                    sys.exit()
+                except Exception as error:
+                    print(error)
+                    pass 
                 print("Authentication failure use case")
                 # Wireless roam_trace[10065] <INFO> [AP DC:08:56:54:2D:40@10.130.7.76] [Employee_EAP @ ath11]: 8021x-Auth Failed, STA <de:ab:50:25:b8:71> Disconnect
             if "8021x-Auth Accounting" in element:
                 accounting_status, device_8021x_auth = re.findall(
                     r"8021x-Auth Accounting (.*?) for STA <(.*?)>", msg)[0]
                 auth_result = "0"
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_wlan_radius", "tags": {"Event": "Radius Accounting", "Device": device_8021x_auth}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                    sys.exit()
+                except Exception as error:
+                    print(error)
+                    pass 
                 print("accounting use case")
                 # Wireless roam_trace[10065] <INFO> [AP DC:08:56:54:2D:40@10.130.7.76] [Employee_EAP @ ath11]: 8021x-Auth Accounting start for STA <de:ab:50:25:b8:71>
             print(auth_result)
@@ -975,6 +1071,14 @@ elif sys.argv[1] == "vlan_limit_reached":
         'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     vlan_limit_reached(ipadd, login_AP, pass_AP)
+    os.system('logger -t montag -p user.info Sending email')
+    os.system('logger -t montag -p user.info Process terminated')
+    sys.exit(0)
+
+elif sys.argv[1] == "drm":
+    print("call function WLAN DRM Scanning")
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    wlan_drm(login_AP, pass_AP)
     os.system('logger -t montag -p user.info Sending email')
     os.system('logger -t montag -p user.info Process terminated')
     sys.exit(0)
