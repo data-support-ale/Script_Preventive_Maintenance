@@ -503,6 +503,12 @@ template (name=\"devicelogovc\" type=\"string\"
 template (name=\"devicelogiot\" type=\"string\"
      string=\"/var/log/devices/lastlog_iot.json\")
 
+template (name=\"devicelogsaa\" type=\"string\"
+     string=\"/var/log/devices/lastlog_saa.json\")
+
+template (name=\"devicelogdrm\" type=\"string\"
+     string=\"/var/log/devices/lastlog_drm.json\")
+
 template(name=\"json_syslog\"
   type=\"list\") {
     constant(value=\"{\")
@@ -652,6 +658,15 @@ if \$msg contains 'Found DHCPACK for STA' or \$msg contains 'Found dhcp ack for 
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdhcp\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omprog\" name=\"support_wlan_generic_dhcp\" binary=\"/opt/ALE_Script/support_wlan_generic.py dhcp\")
+     stop
+}
+
+##### WLAN Rules for Stellar AP DRM Scanning #####
+
+if \$msg contains 'is my neighbor' and \$msg contains 'notify channel' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"devicelogdrm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_wlan_generic_drm\" binary=\"/opt/ALE_Script/support_wlan_generic.py drm\")
      stop
 }
 
@@ -1035,6 +1050,15 @@ if \$msg contains 'alert' and \$msg contains 'The top 20' then {
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloghighmemory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_high_memory.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+#### Service Assurance Agent - LAN ####
+if \$msg contains 'saaCmm' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogsaa\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_saa.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
