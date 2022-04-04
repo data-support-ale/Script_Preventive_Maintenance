@@ -466,8 +466,8 @@ def ssh_connectivity_check(User_root, Password_root, ipadd, cmd):
 def restart_freeradius_service():
        #ssh = createSSHClient(ip, "2222", User_root, Password_root)
        text = "More logs about the switch : {0} \n\n\n".format(ip)
-       #cmd = "systemctl stop ovupam; systemctl stop ovradius; sleep 2; systemctl start ovupam; systemctl start ovradius"
-       cmd = "sleep 2"
+       cmd = "systemctl stop ovupam; systemctl stop ovradius; sleep 2; systemctl start ovupam; systemctl start ovradius"
+       #cmd = "sleep 2"
        output = ssh_connectivity_check(User_root, Password_root, ip, cmd)
        if output != None:
                output = str(output)
@@ -584,12 +584,6 @@ def rainbow_notif(user_type, value, threshold):
 
    elif save_resp == "-1":
       answer = "0"
-      try:
-        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "Total": value}, "fields": {"count": 1}}]) 
-      except UnboundLocalError as error:
-         print(error)
-      except Exception as error:
-        print(error)
 
    elif save_resp == "1":
       answer = '2'
