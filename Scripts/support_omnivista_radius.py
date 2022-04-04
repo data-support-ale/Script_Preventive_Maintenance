@@ -583,15 +583,13 @@ def rainbow_notif(user_type, value, threshold):
          add_new_save(user_type, ip, "radius", choice="never")
 
    elif save_resp == "-1":
+      answer = "0"
       try:
-        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "Total": value}, "fields": {"count": 1}}])
-        sys.exit()   
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "Total": value}, "fields": {"count": 1}}]) 
       except UnboundLocalError as error:
          print(error)
-         sys.exit()
       except Exception as error:
         print(error)
-        sys.exit() 
 
    elif save_resp == "1":
       answer = '2'
@@ -599,7 +597,7 @@ def rainbow_notif(user_type, value, threshold):
       answer = '1'
 
    if answer == '1':
-        os.system('logger -t montag -p user.info Process terminated')
+        os.system('logger -t montag -p user.info Received Answer Yes')
         restart_freeradius_service()
         sleep(2)
         logfilename = strftime('%Y-%m-%d', localtime(time())) + "_lastlog_radius_check.log"
@@ -611,9 +609,11 @@ def rainbow_notif(user_type, value, threshold):
         send_file(logfilepath, subject, action, result, category)
 
    elif answer == '2':
-        os.system('logger -t montag -p user.info Process terminated')
+        os.system('logger -t montag -p user.info Received Answer Yes and Remember')
         restart_freeradius_service()
         sleep(2)
+   else:
+      pass
 
 while True:
    try:
