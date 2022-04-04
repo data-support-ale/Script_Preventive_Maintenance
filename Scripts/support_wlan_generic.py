@@ -187,6 +187,45 @@ def kernel_panic(ipadd):
         print(error)
         pass 
 
+def wlan_drm_change(login_AP, pass_AP):
+    # Wireless drm[17849] <NOTICE> [AP DC:08:56:36:17:80@10.130.7.181] [wifi1 best channel = 36, changed by apc because channel is inconsistent between driver and drm]
+    os.system('logger -t montag -p user.info ACS neighbor scanning')
+    last = ""
+    best_channel = reason = 0
+    with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file:
+        for line in log_file:
+            last = line
+
+    with open("/var/log/devices/lastlog_drm.json", "w", errors='ignore') as log_file:
+        log_file.write(last)
+
+    with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file:
+        log_json = json.load(log_file)
+        ipadd = log_json["relayip"]
+        host = log_json["hostname"]
+        msg = log_json["message"]
+        f = msg.split(',')
+        for element in f:
+            print(element)
+            band, best_channel, reason = re.findall(r"\[wifi(.*?) best channel = (.*?), changed by (.*?)\]", msg)[0]
+            if band == "1":
+                band = "5GHz"
+            if band == "0":
+                band = "2.4GHz"
+            else:
+                pass 
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_drm", "tags": {"AP_IPAddr": ipadd, "New_channel": best_channel, "Radio Band": band, "Changed by": reason}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except Exception as error:
+        print(error)
+        pass
+    info = "Preventive Maintenance - WLAN Stellar AP {} - Channel on Radio band {} changed to Channel {} reason ({}).".format(ipadd,band,best_channel,reason)
+    send_message(info, jid)
+   
+
 def wlan_drm(login_AP, pass_AP):
     # Wireless drm[2924] <INFO> [AP DC:08:56:76:C0:C0@10.130.7.146] [10.130.7.155 is my neighbor, notify channel:  6 36 0]--[scan_control.c:536]
     os.system('logger -t montag -p user.info ACS neighbor scanning')
@@ -1079,6 +1118,14 @@ elif sys.argv[1] == "drm":
     print("call function WLAN DRM Scanning")
     os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     wlan_drm(login_AP, pass_AP)
+    os.system('logger -t montag -p user.info Sending email')
+    os.system('logger -t montag -p user.info Process terminated')
+    sys.exit(0)
+
+elif sys.argv[1] == "drm_change":
+    print("call function WLAN DRM Channel change")
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    wlan_drm_change(login_AP, pass_AP)
     os.system('logger -t montag -p user.info Sending email')
     os.system('logger -t montag -p user.info Process terminated')
     sys.exit(0)
