@@ -9,7 +9,7 @@ import paramiko
 import threading
 from support_tools_OmniSwitch import isEssential, ssh_connectivity_check, file_setup_qos, format_mac, get_credentials, add_new_save, check_save, script_has_run_recently, send_file
 from time import strftime, localtime
-from support_send_notification import send_message, send_message_request_advanced
+from support_send_notification import send_message, send_message_request_advanced, send_message_request
 from database_conf import *
 
 # Script init
@@ -114,12 +114,22 @@ with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_fi
     except IndexError:
         print("Index error in regex")
         exit()
-
-    try:
-        ip_dup, port, mac = re.findall(r"duplicate IP address (.*?) from port (.*?) eth addr (.*)", msg)[0]
-    except IndexError:
-        print("Index error in regex")
-        exit()   
+    if "duplicate" in msg:
+        try:
+            ip_dup, port, mac = re.findall(r"duplicate IP address (.*?) from port (.*?) eth addr (.*)", msg)[0]
+        except IndexError:
+            print("Index error in regex")
+            exit()
+    # CORE swlogd ipni arp INFO: arp info overwritten for 172.16.29.30 by 78e3b5:054b08 port Lag 1
+    elif "overwritten" in msg:
+        try:
+            ip_dup, mac, port = re.findall(r"arp info overwritten for (.*?) by (.*?) port (.*)", msg)[0]
+        except IndexError:
+            print("Index error in regex")
+            exit()
+    else:
+        print("No pattern match")
+        exit()         
     mac = format_mac(mac)
 
 function = "duplicate_ip"
@@ -134,22 +144,28 @@ if script_has_run_recently(300,ip,function):
 save_resp = check_save(ip, port, "duplicate")
 
 if save_resp == "0":
-    feature = "Disable port " + port
-    notif = "An IP address duplication (" + ip_dup + ") on port " + port + " of OmniSwitch " + \
-        ip + "/" + host + " has been detected. Do you want to blacklist the MAC Address: " + mac + " ?"
-    answer = send_message_request_advanced(notif, jid,feature)
-    print(answer)
+    if not ("Lag")in port: 
+        feature = "Disable port " + port
+        notif = "An IP address duplication (" + ip_dup + ") on port " + port + " of OmniSwitch " + ip + "/" + host + " has been detected. Do you want to blacklist the MAC Address: " + mac + " ?"
+        answer = send_message_request_advanced(notif, jid,feature)
+        print(answer)
+
+    else:
+        notif = "An IP address duplication (" + ip_dup + ") on port " + port + " of OmniSwitch " + ip + "/" + host + " has been detected. Do you want to blacklist the MAC Address: " + mac + " ?"
+        answer = send_message_request(notif, jid)  
 
     if isEssential(ip_dup):
-            answer = "0"
-            info = "An IP duplication has been detected on your network that involves essential IP Address {} therefore we do not proceed further".format(ip_dup)
-            send_message(info,jid)
+        answer = "0"
+        info = "An IP duplication has been detected on your network that involves essential IP Address {} therefore we do not proceed further".format(ip_dup)
+        send_message(info,jid)
+        sys.exit()
 
     if "e8:e7:32" in format_mac(mac):
-            answer = "0"
-            info = "An IP duplication has been detected on your network that involves an Alcatel OmniSwitch chassis/interfaces MAC-Address therefore we do not proceed further".format(ip_dup)
-            send_message(info,jid)
-
+        answer = "0"
+        info = "An IP duplication has been detected on your network that involves an Alcatel OmniSwitch chassis/interfaces MAC-Address therefore we do not proceed further".format(ip_dup)
+        send_message(info,jid)
+        sys.exit()
+       
     if answer == "2":
         add_new_save(ip, port, "duplicate", choice="always")
         answer = '1'
@@ -174,8 +190,7 @@ if answer == '1':
     if jid != '':
         info = "Log of device : {0}".format(ip)
         send_file(info, jid, ip)
-        info = "An IP Address duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(
-            mac, ip)
+        info = "An IP Address duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(mac, ip)
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
@@ -189,7 +204,7 @@ if answer == '1':
 elif answer == '3':
     os.system('logger -t montag -p user.info Process terminated')
     # DISABLE Port
-    cmd = "interfaces port " + port + "admin-state disable"
+    cmd = "interfaces port " + port + " admin-state disable"
     ssh_connectivity_check(switch_user, switch_password, ip, cmd)
     filename_path = "/var/log/devices/" + host + "/syslog.log"
     category = "ddos"

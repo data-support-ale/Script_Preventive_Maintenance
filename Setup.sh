@@ -865,7 +865,7 @@ if \$msg contains 'ALV4 event: PSCAN' or \$msg contains 'invalid ip from' then {
 }
 
 #### Rule Duplicate IP Address - LAN ####
-if \$msg contains 'duplicate IP address' or \$msg contains 'Duplicate IP address' then{
+if \$msg contains 'duplicate IP address' or \$msg contains 'Duplicate IP address' or \$msg contains 'arp info overwritten' then {
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdupip\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omprog\" name=\"support_lan_generic_dupip\" binary=\"/opt/ALE_Script/support_switch_duplicate_ip.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
