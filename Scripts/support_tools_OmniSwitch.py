@@ -1433,8 +1433,8 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = ("Preventive Maintenance Application - Linkagg issue detected on switch: {0}").format(ipadd)
-    action = ("A Linkagg issue has been detected in switch(Hostname: {0}) Aggregate {1}").format(host, agg)
+    subject = ("Preventive Maintenance Application - A LinkAgg Port Leave occurs on OmniSwitch: {0}").format(ipadd)
+    action = ("A Linkagg issue has been detected in switch(Hostname: {0}) Aggregate ID {1}").format(host, agg)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "linkagg"
     return filename_path, subject, action, result, category
@@ -1799,6 +1799,144 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
     category = "authentication"
     return filename_path, subject, action, result, category
 
+# Function to collect OmniSwitch LLDP Remote System Port Description
+def collect_command_output_lldp_port_description(switch_user, switch_password, port, ipadd):
+    """ 
+    This function takes IP Address and port as argument. This function is called when we want additionnal information on equipment connected to Switch Interface
+    This function returns LLDP Port Description field value
+    :param str port:                      Switch Interface Port
+    :param str ipadd:                     Switch IP address
+    :return:                              lldp_port_description
+    """
+    lldp_port_description = lldp_mac_address = 0
+
+    switch_cmd = "show lldp port {0} remote-system".format(port)
+    try:
+        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+        print(output)
+        if output != None:
+            output = str(output)
+            output_decode = bytes(output, "utf-8").decode("unicode_escape")
+            output_decode = output_decode.replace("', '","")
+            output_decode = output_decode.replace("']","")
+            lldp_port = output_decode.replace("['","")
+    except subprocess.TimeoutExpired as exception:
+        info = (
+            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass 
+        sys.exit()
+    except AttributeError as exception:
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass 
+        sys.exit()
+    except FileNotFoundError as exception:
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass 
+        sys.exit()
+    if "Port Description" in lldp_port:
+        try: 
+           print(lldp_port)
+           lldp_port_description = re.findall(r"Port Description            = (.*?),", lldp_port)[0]
+           lldp_mac_address = re.findall(r"Port (.*?):\n", lldp_port)[1]
+        except exception as error:
+            print(error)
+            lldp_port_description = lldp_mac_address = 0
+            pass
+    return lldp_port_description, lldp_mac_address
+
+# Function to collect OmniSwitch LLDP Remote System Port Description
+def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
+    """ 
+    This function takes Switch IP Address and Device MAC Address. This function is called when we want to find the Device IP Address from ARP Table
+    This function returns LLDP Port Description field value
+    :param str lldp_mac_address:          Device MAC Address found from LLDP Port Description
+    :param str ipadd:                     Switch IP address
+    :return:                              device_ip
+    """
+    device_ip = 0
+
+    switch_cmd = "show arp | grep \"{0}\"".format(lldp_mac_address)
+    try:
+        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+        print(output)
+        if output != None:
+            output = str(output)
+            output_decode = bytes(output, "utf-8").decode("unicode_escape")
+            output_decode = output_decode.replace("', '","")
+            output_decode = output_decode.replace("']","")
+            device_ip = output_decode.replace("['","")
+    except subprocess.TimeoutExpired as exception:
+        info = (
+            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass 
+        sys.exit()
+    except AttributeError as exception:
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass 
+        sys.exit()
+    except FileNotFoundError as exception:
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        print(info)
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass 
+        sys.exit()
+    if "{0}".format(lldp_mac_address) in device_ip:
+        print(device_ip)
+        device_ip = re.findall(r" ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}) ", device_ip)[0]
+    print(device_ip)
+    return device_ip
 
 def check_save(ipadd, port, type):
     """ 
