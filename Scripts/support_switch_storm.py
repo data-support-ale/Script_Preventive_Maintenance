@@ -125,18 +125,11 @@ else:
 
 if answer == '1':
     os.system('logger -t montag -p user.info Process terminated')
-    # CLEAR VIOLATION
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ip)
-    #cmd = "clear violation port " + port
-    #os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, cmd))
-    
     send_file(filename_path, subject, action, result, category)
-    #info = "A port Storm violation has been cleared up on device {}".format(ip)
-    #send_message(info, jid)
 
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')
-    # CLEAR VIOLATION
     cmd = "clear violation port " + port
     os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
         switch_password, switch_user, ip, cmd))
