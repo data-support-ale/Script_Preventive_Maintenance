@@ -17,23 +17,16 @@ from support_tools_Stellar import get_credentials, vlan_limit_reached_tools, sta
 from support_send_notification import send_message, send_alert, send_alert_advanced
 #from support_OV_get_wlan import OvHandler
 from database_conf import *
-#import psutil
-#print(psutil.cpu_percent())
+
 
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
-
 def deassociation(ipadd, device_mac, reason, reason_number):
-    message = "WLAN Deassociation detected reason : {0} from Stellar AP {1}, client MAC Address {2}".format(
-        reason, ipadd, device_mac)
-    message_bis = "WLAN Deassociation detected reason : {0} from Stellar AP {1}".format(
-        reason_number, ipadd)
+    message = "WLAN Deassociation detected reason : {0} from Stellar AP {1}, client MAC Address {2}".format(reason, ipadd, device_mac)
+    message_bis = "WLAN Deassociation detected reason : {0} from Stellar AP {1}".format(reason_number, ipadd)
     os.system('logger -t montag -p user.info ' + message_bis)
-    subject_content = "[TS LAB] A deassociation is detected on Stellar AP!"
-    message_content_1 = "WLAN Alert - There is a WLAN deassociation detected on server {0} from Stellar AP {1}, Device's MAC Address: {2} .".format(
-        ip_server, ipadd, device_mac)
+    message_content_1 = "WLAN Alert - There is a WLAN deassociation detected on server {0} from Stellar AP {1}, Device's MAC Address: {2} .".format(ip_server, ipadd, device_mac)
     print(message_content_1)
-    message_content_2 = "Reason number: ".format(reason_number)
     send_alert(message, jid)
     send_message(message_reason, jid)
     try:
@@ -63,10 +56,7 @@ def deassociation(ipadd, device_mac, reason, reason_number):
 
 def reboot(ipadd):
     os.system('logger -t montag -p user.info reboot detected')
-    subject_content = "[TS LAB] A reboot is detected on Stellar AP!"
-    message_content_1 = "WLAN Alert - There is a Stellar reboot detected on server {0} from Stellar AP {1}".format(
-        ip_server, ipadd)
-    message_content_2 = "sysreboot"
+    message_content_1 = "WLAN Alert - There is a Stellar reboot detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
     try:
@@ -80,8 +70,6 @@ def reboot(ipadd):
 
 def unexpected_reboot(ipadd):
     os.system('logger -t montag -p user.info reboot detected')
-#    subject_content = "[TS LAB] A reboot is detected on Stellar AP!"
-#    message_content_1 = "WLAN Alert - There is a Stellar unexpected reboot detected on server {0} from Stellar AP {1} - please check the LANPOWER is running fine on OmniSwitch and verify the capacitor-detection is disabled".format(ip_server, ipadd)
     subject = ("Preventive Maintenance Application - There is a Stellar unexpected reboot detected on server {0} from Stellar AP {1}").format(ip_server, ipadd)
     action = "Please check the LANPOWER is running fine on OmniSwitch and verify the capacitor-detection is disabled"
     result = "More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000066402"
@@ -98,10 +86,7 @@ def unexpected_reboot(ipadd):
 
 def upgrade(ipadd):
     os.system('logger -t montag -p user.info upgrade detected')
-    subject_content = "[TS LAB] An upgrade is detected on Stellar AP!"
-    message_content_1 = "WLAN Alert - There is a Stellar upgrade detected on server {0} from Stellar AP {1}".format(
-        ip_server, ipadd)
-    message_content_2 = "sysupgrade"
+    message_content_1 = "WLAN Alert - There is a Stellar upgrade detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
     try:
@@ -115,8 +100,6 @@ def upgrade(ipadd):
 
 def exception(ipadd):
     os.system('logger -t montag -p user.info exception detected')
-#    subject_content = "[TS LAB] An exception (Fatal exception, Exception stack, Kernel Panic) is detected on Stellar AP!"
-#    message_content_1 = "WLAN Alert - There is a Stellar exception detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
     subject = ("Preventive Maintenance Application - There is a Fatal exception detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
     action = "There is high probability that Stellar AP is rebooting following this exception"
     result = "If Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6 and others, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737  and https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058376. If Stellar AP is running AWOS 4.0.0 there is a known issue related to Voice and Video awareness fixed in AWOS 4.0.1, more details here https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000061233  "
@@ -133,8 +116,6 @@ def exception(ipadd):
 
 def internal_error(ipadd):
     os.system('logger -t montag -p user.info internal error detected')
-#    subject_content = "[TS LAB] An Internal Error is detected on Stellar AP!"
-#    message_content_1 = "WLAN Alert - There is an Internal Error detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
     subject = ("Preventive Maintenance Application - There is an Internal Error detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
     action = "There is high probability that Stellar AP is rebooting following this exception"
     result = "If Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737"
@@ -151,9 +132,6 @@ def internal_error(ipadd):
 
 def target_asserted(ipadd):
     os.system('logger -t montag -p user.info target asserted detected')
-#    subject_content = "[TS LAB] A Target Asserted Error is detected on Stellar AP!"
-#    message_content_1 = "WLAN Alert - There is a Target Asserted error detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
-#    message_content_2 = "Target Asserted"
     subject = ("Preventive Maintenance Application - There is a Target Asserted error detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
     action = "There is high probability that Stellar AP is rebooting following this exception"
     result = "This is a known issue fixed in AWOS 4.0.0 MR-3, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058976"
@@ -171,8 +149,6 @@ def target_asserted(ipadd):
 
 def kernel_panic(ipadd):
     os.system('logger -t montag -p user.info Kernel Panic detected')
-#    subject_content = "[TS LAB] A Kernel Panic is detected on Stellar AP!"
-#    message_content_1 = "WLAN Alert - There is a Kernel Panic error detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
     subject = ("Preventive Maintenance Application - There is a Kernel Panic error detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
     action = "There is high probability that Stellar AP is rebooting following this exception"
     result = "This is a known issue fixed in AWOS 3.0.7 MR-2, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058276"
@@ -202,7 +178,6 @@ def wlan_drm_change(login_AP, pass_AP):
     with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file:
         log_json = json.load(log_file)
         ipadd = log_json["relayip"]
-        host = log_json["hostname"]
         msg = log_json["message"]
         f = msg.split(',')
         for element in f:
@@ -241,7 +216,6 @@ def wlan_drm(login_AP, pass_AP):
     with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file:
         log_json = json.load(log_file)
         ipadd = log_json["relayip"]
-        host = log_json["hostname"]
         msg = log_json["message"]
         f = msg.split(',')
         for element in f:
@@ -249,11 +223,9 @@ def wlan_drm(login_AP, pass_AP):
                 print(element)
                 neighbor_ip = re.findall(r"\[([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}) is my neighbor, ", msg)[0]
             if "notify channel":
-                neighbor_channel = re.findall(r"notify channel:  (.*?) (.*?) (.*?)\]", msg)[0]
-                print("My neighbor channel is:" + neighbor_channel[1])
-    my_channel = drm_neighbor_scanning(login_AP, pass_AP, ipadd)
-    #send_file(filename_path, subject, action, result, category)
-    #send_message(message_reason, jid)
+                my_channel = re.findall(r"notify channel:  (.*?) (.*?) (.*?)\]", msg)[0]
+                print("My channels are:" + my_channel[1])
+    neighbor_channel = drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_drm", "tags": {"AP_IPAddr": ipadd, "AP_channel": my_channel, "Neighbor_channel": neighbor_channel, "Neighbor_IP_Address": neighbor_ip}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -403,10 +375,8 @@ def extract_reason():
                 reason = re.findall(r"reason (.*)", msg)[0]
                 reason_number = re.findall(r"reason (.*?)\(", msg)[0]
                 reason = str(reason)
-                device_mac = re.findall(
-                    r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
-                ap_mac = re.findall(
-                    r".*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*", msg)[0]
+                device_mac = re.findall(r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
+                ap_mac = re.findall(r".*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*", msg)[0]
                 device_mac = str(device_mac[0])
                 ap_mac = str(ap_mac[0])
                 print("WLAN Deauthentication use case")
@@ -428,7 +398,6 @@ def extract_ipadd():
     with open("/var/log/devices/lastlog_deauth.json", "r", errors='ignore') as log_file:
         log_json = json.load(log_file)
         ipadd = log_json["relayip"]
-        host = log_json["hostname"]
         message_reason = log_json["message"]
         ipadd = str(ipadd)
         print(ipadd)
@@ -441,10 +410,7 @@ def extract_ipadd():
 
 def radius_failover():
     # open the file lastlog_8021X_authentication.json  and the Radius Authentication Server reachability
-    pattern_Device_MAC = re.compile(
-        '.*\<(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\>.*')
-    content_variable = open(
-        '/var/log/devices/lastlog_8021X_authentication.json', 'r')
+    content_variable = open('/var/log/devices/lastlog_8021X_authentication.json', 'r')
     file_lines = content_variable.readlines()
     content_variable.close()
     last_line = file_lines[-1]
@@ -496,7 +462,7 @@ def radius_failover():
                            print(error)
                            pass 
                         os.system('logger -t montag -p user.info Radius Server unreachable ' + server)
-# Condition hardcoded to review once we have additionnal syslog messages in AWOS 4.0.4
+            # Condition hardcoded to review once we have additionnal syslog messages in AWOS 4.0.4
             if "RADIUS Authentication server 10.130.7.25" in element:
                 os.system('logger -t montag -p user.info Authentication sent to Backup Radius Server 10.130.7.25')
 
@@ -582,8 +548,7 @@ def extract_RADIUS():
 
 
 def extract_WCF():
-    pattern_Device_MAC = re.compile(
-        '.*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*')
+    pattern_Device_MAC = re.compile('.*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*')
     pattern_FQDN = re.compile('(fqdn:\[(.*?)\])')
     pattern_domain = re.compile('(domain:\[(.*?)\])')
     content_variable = open('/var/log/devices/lastlog_wcf.json', 'r')
@@ -618,10 +583,8 @@ def extract_WCF():
 
 def extract_ARP():
     # open the file lastlog_mac_authentication.json  and and get the Access Role Profile + result + source
-    pattern_Device_MAC = re.compile(
-        '.*\<(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\>.*')
-    content_variable = open(
-        '/var/log/devices/lastlog_mac_authentication.json', 'r')
+    pattern_Device_MAC = re.compile('.*\<(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\>.*')
+    content_variable = open('/var/log/devices/lastlog_mac_authentication.json', 'r')
     file_lines = content_variable.readlines()
     content_variable.close()
     last_line = file_lines[-1]
@@ -686,10 +649,8 @@ def extract_Policy():
                 if element_split[i] == "PolicyList":
                     print("Policy assigned")
                     Policy = element_split[i+3]
-                    Policy = Policy.replace("[", " ", 2).replace(
-                        "]", " ", 2).replace("\"", " ", 2)
-                    os.system(
-                        'logger -t montag -p user.info Policy List applied: ' + Policy)
+                    Policy = Policy.replace("[", " ", 2).replace("]", " ", 2).replace("\"", " ", 2)
+                    os.system('logger -t montag -p user.info Policy List applied: ' + Policy)
     ### If Location Policy check fails ####
     # Log sample [SSID-TEST-EGE @ ath01]: Loaction Policy [__SSID-TEST-EGE] check Failed, STA <00:1e:2a:c8:2f:e4> Disconnect
         if "check Failed" in element:
@@ -735,7 +696,7 @@ def extract_Policy():
                 print(error)
                 pass 
     ### If Can't Match Access Policy ####
-    # Log sample [PORTAL CNP @ ath15]: MAC Authentication Reject for STA <7c:d6:61:b2:f9:43>, reply message is Can't Match Access Policy
+    # Log sample [PORTAL @ ath15]: MAC Authentication Reject for STA <7c:d6:xx:xx:xx:xx>, reply message is Can't Match Access Policy
         if "Can't Match Access Policy" in element:
             try:
                 pattern_Device_MAC = re.compile('.*\<(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\>.*')
@@ -781,12 +742,8 @@ def extract_ip_dhcp():
 
 def extract_ip_port():
     # open the file lastlog_wlan_authentication.json  and get the AP IP Address + Client MAC Address + Authentication type + SSID
-    pattern_AP_MAC = re.compile(
-        '.*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*')
-    pattern_Device_MAC = re.compile(
-        '.*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*')
-    content_variable = open(
-        '/var/log/devices/lastlog_wlan_authentication.json', 'r')
+    pattern_Device_MAC = re.compile('.*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*')
+    content_variable = open('/var/log/devices/lastlog_wlan_authentication.json', 'r')
     file_lines = content_variable.readlines()
     content_variable.close()
     last_line = file_lines[-1]
@@ -854,11 +811,9 @@ def extract_WIPS():
         f = msg.split(',')
         for element in f:
             if "Add black list" in element:
-                device_mac = re.findall(
-                    r"Add black list mac is (.*?) ]", msg)[0]
+                device_mac = re.findall(r"Add black list mac is (.*?) ]", msg)[0]
                 print(device_mac)
-                message = "WLAN WIPS - Adding Client's MAC Address {0} in the Block List".format(
-                    device_mac)
+                message = "WLAN WIPS - Adding Client's MAC Address {0} in the Block List".format(device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
                 send_message(message, jid)
                 try:
@@ -870,14 +825,12 @@ def extract_WIPS():
                    print(error)
                    pass 
             if "status 37" in element:
-                device_mac = re.findall(
-                    r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
+                device_mac = re.findall(r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
                 device_mac = str(device_mac[0])
                 reason = re.findall(r"status (.*?),", msg)[0]
                 print(reason)
                 print(device_mac)
-                message = "WLAN Client MAC Address {0} authentication rejected by ACL".format(
-                    device_mac)
+                message = "WLAN Client MAC Address {0} authentication rejected by ACL".format(device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
                 send_alert(message, jid)
                 try:
@@ -894,8 +847,7 @@ def extract_WIPS():
 ## if $msg contains 'Recv the  wam module  notify  data user'##
 if sys.argv[1] == "auth_step1":
     print("call function authentication step1")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, device_mac, ap_mac, auth_type, user_name, ssid, deassociation = extract_ip_port()
     authentication_step1(ipadd, device_mac, auth_type, ssid, deassociation)
     sys.exit(0)
@@ -904,8 +856,7 @@ if sys.argv[1] == "auth_step1":
 ##    if $msg contains 'Access Role(' ##
 elif sys.argv[1] == "mac_auth":
     print("call function mac_authentication")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     arp, device_mac_auth, source, reason = extract_ARP()
     mac_authentication(device_mac_auth, arp, source, reason)
     sys.exit(0)
@@ -913,8 +864,7 @@ elif sys.argv[1] == "mac_auth":
 ## if $msg contains '8021x-Auth' or $msg contains 'RADIUS' or $msg contains '8021x Authentication' ##
 elif sys.argv[1] == "8021X":
     print("call function radius_authentication")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     auth_result, device_8021x_auth, accounting_status = extract_RADIUS()
     radius_authentication(auth_result, device_8021x_auth, accounting_status)
     sys.exit(0)
@@ -922,8 +872,7 @@ elif sys.argv[1] == "8021X":
 # if $msg contains 'too many failed retransmit attempts' or $msg contains 'No response'
 elif sys.argv[1] == "failover":
     print("call function radius_failover")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     radius_failover()
     sys.exit(0)
 
@@ -932,8 +881,7 @@ elif sys.argv[1] == "failover":
 ## OR if $msg contains 'check period policy' or $msg contains 'Loaction Policy' ##
 elif sys.argv[1] == "policy":
     print("call function policy")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     extract_Policy()
     sys.exit(0)
 
@@ -941,8 +889,7 @@ elif sys.argv[1] == "policy":
 ## if $msg contains 'Found DHCPACK for STA'  or $msg contains 'Found dhcp ack for STA'##
 elif sys.argv[1] == "dhcp":
     print("call function dhcp_ack")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, device_mac, ap_mac, auth_type, user_name, ssid, deassociation = extract_ip_port()
     ip_dhcp = extract_ip_dhcp()
     dhcp_ack(ipadd, device_mac)
@@ -951,16 +898,14 @@ elif sys.argv[1] == "dhcp":
 ## if $msg contains 'verdict:[NF_DROP]' #
 elif sys.argv[1] == "wcf_block":
     print("call function wcf_block")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     extract_WCF()
     sys.exit(0)
 
 ## if $msg contains 'Recv the  eag module  notify  data user' ##
 elif sys.argv[1] == "auth_step2":
     print("call function authentication step2")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, device_mac, ap_mac, auth_type, user_name, ssid, deassociation = extract_ip_port()
     authentication_step2(ipadd, user_name, ssid)
     sys.exit(0)
@@ -968,15 +913,13 @@ elif sys.argv[1] == "auth_step2":
 ## if $msg contains 'Add black list mac' ##
 elif sys.argv[1] == "wips":
     print("call function wips")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     device_mac, reason = extract_WIPS()
     sys.exit(0)
 
 elif sys.argv[1] == "deauth":
     print("call function deassociation")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     reason, device_mac, reason_number = extract_reason()
     deassociation(ipadd, device_mac, reason, reason_number)
@@ -994,8 +937,7 @@ elif sys.argv[1] == "deauth":
 
 elif sys.argv[1] == "roaming":
     print("WLAN Roaming - deauth reason 1")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     reason, device_mac, reason_number = extract_reason()
     try:
@@ -1010,8 +952,7 @@ elif sys.argv[1] == "roaming":
 
 elif sys.argv[1] == "leaving":
     print("WLAN Client disconnection")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     reason, device_mac, reason_number = extract_reason()
     try:
@@ -1026,8 +967,7 @@ elif sys.argv[1] == "leaving":
 
 elif sys.argv[1] == "reboot":
     print("call function reboot")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     reboot(ipadd)
     os.system('logger -t montag -p user.info Sending email')
@@ -1036,8 +976,7 @@ elif sys.argv[1] == "reboot":
 
 elif sys.argv[1] == "unexpected_reboot":
     print("call function reboot")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     unexpected_reboot(ipadd)
     os.system('logger -t montag -p user.info Sending email')
@@ -1046,8 +985,7 @@ elif sys.argv[1] == "unexpected_reboot":
 
 elif sys.argv[1] == "upgrade":
     print("call function upgrade")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     upgrade(ipadd)
     os.system('logger -t montag -p user.info Sending email')
@@ -1056,8 +994,7 @@ elif sys.argv[1] == "upgrade":
 
 elif sys.argv[1] == "exception":
     print("call function exception")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     exception(ipadd)
     os.system('logger -t montag -p user.info Sending email')
@@ -1066,8 +1003,7 @@ elif sys.argv[1] == "exception":
 
 elif sys.argv[1] == "target_asserted":
     print("call function target_asserted")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     target_asserted(ipadd)
     os.system('logger -t montag -p user.info Sending email')
@@ -1076,8 +1012,7 @@ elif sys.argv[1] == "target_asserted":
 
 elif sys.argv[1] == "internal_error":
     print("call function internal_error")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     internal_error(ipadd)
     os.system('logger -t montag -p user.info Sending email')
@@ -1086,8 +1021,7 @@ elif sys.argv[1] == "internal_error":
 
 elif sys.argv[1] == "kernel_panic":
     print("call function kernel_panic")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     kernel_panic(ipadd)
     os.system('logger -t montag -p user.info Sending email')
@@ -1096,8 +1030,7 @@ elif sys.argv[1] == "kernel_panic":
 
 elif sys.argv[1] == "sta_limit_reached":
     print("call function Associated STA limit reached")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     sta_limit_reached(ipadd, login_AP, pass_AP)
     os.system('logger -t montag -p user.info Sending email')
@@ -1106,8 +1039,7 @@ elif sys.argv[1] == "sta_limit_reached":
 
 elif sys.argv[1] == "vlan_limit_reached":
     print("call function Associated VLAN limit reached")
-    os.system(
-        'logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
     vlan_limit_reached(ipadd, login_AP, pass_AP)
     os.system('logger -t montag -p user.info Sending email')

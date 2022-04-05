@@ -89,13 +89,11 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     except ConnectionError as exception:
         print(exception)
         print("SSH not allowed when establishing SSH Session")
-        info = (
-            "SSH Connection fails when establishing SSH Session to Stellar AP {0}, please verify if SSH is enabled on the AP Group").format(ipadd)
+        info = ("SSH Connection fails when establishing SSH Session to Stellar AP {0}, please verify if SSH is enabled on the AP Group").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -105,13 +103,11 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     except TimeoutError as exception:
         print(exception)
         print("Timeout when establishing SSH Session")
-        info = (
-            "Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+        info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -121,13 +117,11 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
         print("Authentication failed enter valid user name and password")
-        info = (
-            "SSH Authentication failed when connecting to Stellar AP {0}, we cannot collect logs").format(ipadd)
+        info = ("SSH Authentication failed when connecting to Stellar AP {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -145,8 +139,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -160,8 +153,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "SSH_disabled_on_AP_Group", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "SSH_disabled_on_AP_Group", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(0)
@@ -175,14 +167,12 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         # stdout.join(1200)
     except Exception:
         exception = "SSH Timeout"
-        info = (
-            "The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -197,13 +187,11 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     if connection_status == 1:
         pass
     elif connection_status != 0 :
-        info = (
-            "The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
         send_message(info, jid)
         os.system('logger -t montag -p user.info ' + info)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
             sys.exit(2)
@@ -211,8 +199,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
             print(error)
             pass 
     else:
-        info = ("SSH Session established successfully on Stellar AP {0}").format(
-            ipadd)
+        info = ("SSH Session established successfully on Stellar AP {0}").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_success", "tags": {
@@ -227,34 +214,32 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         p.close()
         return output
 
-def  drm_neighbor_scanning(login_AP, pass_AP, ipadd):
+def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):
     """ 
     This function returns the neighbor channel scanned and current channel set on AP
 
     :param str login_AP:                   Stellar AP support login
     :param str pass_AP:                    Stellar AP support password
-    :param str ipadd:                      Switch IP address
+    :param str neighbor_ip:                Stellar Neighbor IP Address when scanning
     :return:                               filename_path,subject,action,result,category
     """
     l_stellar_cmd = []
     l_stellar_cmd.append("ssudo tech_support_command 13")
     for stellar_cmd in l_stellar_cmd:
-        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, ipadd, stellar_cmd)
+        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, neighbor_ip, stellar_cmd)
         try:
-            output = ssh_connectivity_check(login_AP, pass_AP, ipadd, stellar_cmd)
+            output = ssh_connectivity_check(login_AP, pass_AP, neighbor_ip, stellar_cmd)
             output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
             if output != None:
                 output = output.decode('UTF-8').strip()
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(neighbor_ip)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": neighbor_ip, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -262,14 +247,12 @@ def  drm_neighbor_scanning(login_AP, pass_AP, ipadd):
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on Stellar AP {0} failed - {1}").format(neighbor_ip, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": neighbor_ip, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -387,14 +370,12 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
                 text = "{0}{1}: \n{2}\n\n".format(text, stellar_cmd, output)
             else:
                 exception = "Timeout"
-                info = (
-                    "Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -402,14 +383,12 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = (
-                "The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                            "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -419,8 +398,7 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
-    filename = "{0}_{1}-{2}_{3}_vlan_limit_reached_logs".format(
-        date, date_hm.hour, date_hm.minute, ipadd)
+    filename = "{0}_{1}-{2}_{3}_vlan_limit_reached_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
@@ -447,13 +425,11 @@ def send_file(filename_path, subject, action, result, category):
     request_debug = "Call VNA REST API Method POST path %s" % url
     print(request_debug)
     os.system('logger -t montag -p user.info Call VNA REST API Method POST')
-    headers = {'Content-type': "text/plain", 'Content-Disposition': ("attachment;filename={0}_troubleshooting.log").format(category), 'jid1': '{0}'.format(
-        jid), 'tata': '{0}'.format(subject), 'toto': '{0}'.format(action), 'tutu': '{0}'.format(result), 'Card': '0', 'Email': '0'}
+    headers = {'Content-type': "text/plain", 'Content-Disposition': ("attachment;filename={0}_troubleshooting.log").format(category), 'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject), 'toto': '{0}'.format(action), 'tutu': '{0}'.format(result), 'Card': '0', 'Email': '0'}
     files = {'file': open(filename_path, 'r')}
     response = requests.post(url, files=files, headers=headers)
     print(response)
     response = str(response)
-    #response = "<Response [408]>"
     response = re.findall(r"<Response \[(.*?)\]>", response)
     if "200" in response:
         os.system('logger -t montag -p user.info 200 OK')
