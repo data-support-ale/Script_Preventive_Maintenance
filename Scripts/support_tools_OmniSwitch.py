@@ -485,11 +485,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show qos config")
-    l_switch_cmd.append("show qos statistics")
-    l_switch_cmd.append("show qos log")
-    l_switch_cmd.append("show qos rules")
-    l_switch_cmd.append("show tcam utilization detail")
+    l_switch_cmd.append("show qos config; show qos statistics; show qos log; show qos rules; show tcam utilization detail")
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -555,8 +551,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show system")      
-    l_switch_cmd.append("show chassis")
+    l_switch_cmd.append("show system; show chassis")      
     l_switch_cmd.append("show interfaces " + port + " status")
     l_switch_cmd.append("show mac-learning port " + port)
     l_switch_cmd.append("show vlan members port " + port)
@@ -629,14 +624,11 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show system")
-    l_switch_cmd.append("show cloud-agent status")   
-    l_switch_cmd.append("show cloud-agent vpn status")
-    l_switch_cmd.append("show ntp server status")
+    l_switch_cmd.append("show system; show cloud-agent status; show cloud-agent vpn status; show ntp server status; show log swlog | grep 'openvpn\|ovcCmm'; cat libcurl_log")
+
     if vpn_ip != "0":
         l_switch_cmd.append("ping " + vpn_ip)
         l_switch_cmd.append("traceroute " + vpn_ip + " max-hop 3")
-    l_switch_cmd.append("cat libcurl_log")
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -713,8 +705,7 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show device-profile config")
-    l_switch_cmd.append("show appmgr iot-profiler")
+    l_switch_cmd.append("show device-profile config; show appmgr iot-profiler")
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -875,8 +866,7 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
     l_switch_cmd.append("show interfaces " + port + " status")
     if decision == "1":
         l_switch_cmd.append("clear violation port " + port)
-    l_switch_cmd.append("show violation")
-    l_switch_cmd.append("show violation port " + port)
+    l_switch_cmd.append("show violation; show violation port " + port)
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -947,8 +937,7 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show spb isis adjacency")
-    l_switch_cmd.append("show spb isis interface")
+    l_switch_cmd.append("show spb isis adjacency; show spb isis interface")
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -1016,9 +1005,7 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show microcode")
-    l_switch_cmd.append("show system")
-    l_switch_cmd.append("show spantree mode")
+    l_switch_cmd.append("show microcode; show system; show spantree mode")
     l_switch_cmd.append("show spantree vlan " + vlan)
     l_switch_cmd.append("show " + vlan)
     if decision == "1":
@@ -1093,12 +1080,7 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show microcode")
-    l_switch_cmd.append("show system")
-    l_switch_cmd.append("show fan")
-    l_switch_cmd.append("show temperature")
-
-
+    l_switch_cmd.append('show microcode; show system; show fan; show temperature')
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -1230,8 +1212,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show powersupply")
-    l_switch_cmd.append("show powersupply total")
+    l_switch_cmd.append("show powersupply; show powersupply total")
     l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x80\" | su')
     sleep(1)
     l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x00\" | su')
@@ -1310,10 +1291,7 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show virtual-chassis vf-link")
-    l_switch_cmd.append("show virtual-chassis auto-vf-link-port")
-    l_switch_cmd.append("show virtual-chassis neighbors")
-    l_switch_cmd.append("debug show virtual-chassis topology")
+    l_switch_cmd.append("show virtual-chassis vf-link; show virtual-chassis auto-vf-link-port; show virtual-chassis neighbors; debug show virtual-chassis topology")
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -1393,8 +1371,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show interfaces alias")
-    l_switch_cmd.append("show linkagg")
+    l_switch_cmd.append("show interfaces alias; show linkagg")
     l_switch_cmd.append("show linkagg agg " + agg)
     l_switch_cmd.append("show linkagg agg " + agg + " port")
 
@@ -1479,35 +1456,10 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show interfaces alias")
-    l_switch_cmd.append("show system")
-    l_switch_cmd.append("show date")
-    l_switch_cmd.append("show lldp remote-system")
-    l_switch_cmd.append("show configuration snapshot lanpower")
-    l_switch_cmd.append("show powersupply total")
-    l_switch_cmd.append("show lanpower slot 1/1")
-    l_switch_cmd.append("show lanpower slot 1/1 port-config")
-#    l_switch_cmd.append("show lanpower slot 2/1")
-#    l_switch_cmd.append("show lanpower slot 3/1")
-    l_switch_cmd.append("show lanpower power-rule")
-    l_switch_cmd.append("show lanpower chassis 1 capacitor-detection")
-#    l_switch_cmd.append("show lanpower chassis 2 capacitor-detection")
-#    l_switch_cmd.append("show lanpower chassis 3 capacitor-detection")
-    l_switch_cmd.append("show lanpower chassis 1 usage-threshold")
-#    l_switch_cmd.append("show lanpower chassis 2 usage-threshold")
-#    l_switch_cmd.append("show lanpower chassis 3 usage-threshold")
-    l_switch_cmd.append("show lanpower chassis 1 ni-priority")
-#    l_switch_cmd.append("show lanpower chassis 2 ni-priority")
-#    l_switch_cmd.append("show lanpower chassis 3 ni-priority")
-    l_switch_cmd.append("show lanpower slot 1/1 high-resistance-detection")
-#    l_switch_cmd.append("show lanpower slot 2/1 high-resistance-detection")
-#    l_switch_cmd.append("show lanpower slot 3/1 high-resistance-detection")
-    l_switch_cmd.append("show lanpower slot 1/1 priority-disconnect")
-#    l_switch_cmd.append("show lanpower slot 2/1 priority-disconnect")
-#    l_switch_cmd.append("show lanpower slot 3/1 priority-disconnect")
-    l_switch_cmd.append("show lanpower slot 1/1 class-detection")
-#    l_switch_cmd.append("show lanpower slot 2/1 class-detection")
-#    l_switch_cmd.append("show lanpower slot 3/1 class-detection")
+    l_switch_cmd.append("show interfaces alias; show system; show lldp remote-system; show configuration snapshot lanpower; \
+        show powersupply total; show lanpower slot 1/1 ; show lanpower slot 1/1 port-config; show lanpower power-rule; show lanpower chassis 1 capacitor-detection; \
+        show lanpower chassis 1 usage-threshold; show lanpower chassis 1 ni-priority; show lanpower slot 1/1 high-resistance-detection; \
+        show lanpower slot 1/1 priority-disconnect; show lanpower slot 1/1 class-detection")
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -1781,8 +1733,7 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show ip service")
-    l_switch_cmd.append("show aaa authentication")
+    l_switch_cmd.append("show ip service; show aaa authentication")
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -2286,26 +2237,26 @@ def send_file(filename_path, subject, action, result, category):
 
 
 if __name__ == "__main__":
-    a = isUpLink("admin", "switch", "1/1/21", "10.130.7.239")
-    print(a)
-    b = isEssential("10.130.7.14")
-    print(b)
+#    a = isUpLink("admin", "switch", "1/1/21", "10.130.7.239")
+#    print(a)
+#    b = isEssential("10.130.7.14")
+#    print(b)
     login_switch, pass_switch, mails, rainbow_jid, ip_server_log, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
     jid = "570e12872d768e9b52a8b975@openrainbow.com"
     switch_password = "switch"
     switch_user = "admin"
-    ipadd = "10.130.7.246"
+    ipadd = "10.130.7.244"
     cmd = "show system"
     host = "LAN-6860N-2"
     port = "1/1/52"
     source = "Unknown Unicast"
     decision = 0
-    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-    filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
+#    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+#    filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
     filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ipadd)
     send_file(filename_path, subject, action, result, category)
-    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
-    send_file(filename_path, subject, action, result,category)
+#    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
+#    send_file(filename_path, subject, action, result,category)
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
     send_file(filename_path, subject, action, result,category)
     reason="Fail due to out-of-range capacitor value"
