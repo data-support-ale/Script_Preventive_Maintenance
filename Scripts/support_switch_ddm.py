@@ -4,10 +4,8 @@ import sys
 import os
 import re
 import json
-import subprocess
-import datetime
 from time import strftime, localtime, sleep
-from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check
+from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, collect_command_output_ddm, send_file
 from time import strftime, localtime, sleep
 from support_send_notification import send_message
 from database_conf import *
@@ -43,26 +41,26 @@ with open("/var/log/devices/lastlog_ddm.json", "r", errors='ignore') as log_file
     except IndexError:
         print("Index error in regex")
         exit()
-
+   # Log sample: cmmEsmCheckDDMThresholdViolations: SFP/XFP Supply Current=8.6 mA on slot=1 port=34, crossed DDM threshold high warning
     try:
-        sfp_power, slot, port, threshold = re.findall(r"Power=(.*?) dBm on slot=(.*?) port=(.*?), crossed DDM threshold (.*)", msg)[0]
+        ddm_type, sfp_power, slot, port, threshold = re.findall(r"SFP/XFP (.*?)=(.*?) on slot=(.*?) port=(.*?), crossed DDM threshold (.*)", msg)[0]
+        # Log sample cmmEsmCheckDDMThresholdViolations: SFP/XFP Tx Optical Power=-inf dBm on slot=1 port=28, crossed DDM threshold low alarm
+        if sfp_power == "-inf dBm":
+            print("DDM event generated when interface is administratively DOWN")
+            os.system('logger -t montag -p user.info Executing script support_switch_ddm - DDM event generated when interface is administratively DOWN - exit')
+            exit()
     except IndexError:
         print("Index error in regex")
+        os.system('logger -t montag -p user.info Executing script support_switch_ddm - Index error in regex - exit')
         exit()
 
-if jid != '':
-    notif = "The SFP " + slot + "/" + port + " on OmniSwitch \"" + host + "\" IP: " + \
-        ipadd + " crossed DDM threshold " + threshold + " Power: " + sfp_power + " dBm"
-    send_message(notif, jid)
-else:
-    print("Mail request set as no")
-    os.system('logger -t montag -p user.info Mail request set as no')
-    sleep(1)
-    open('/var/log/devices/lastlog_ddm.json', 'w', errors='ignore').close()
+#notif = "The SFP " + slot + "/" + port + " on OmniSwitch \"" + host + "\" IP: " + ipadd + " crossed DDM (Digital Diagnostics Monitoring) threshold " + threshold + " " + ddm_type + ": " + sfp_power + "."
+filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power)
+send_file(filename_path, subject, action, result, category)
+
 
 try:
-    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                    "IP": ipadd, "Port": slot + '/' + port, "Threshold": threshold, "Power": sfp_power}, "fields": {"count": 1}}])
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": slot + '/' + port, "Threshold": threshold, ddm_type: sfp_power}, "fields": {"count": 1}}])
 except UnboundLocalError as error:
     print(error)
     sys.exit()
@@ -70,93 +68,3 @@ except Exception as error:
     print(error)
     pass
 
-##########################Get More LOGS########################################
-text = "########################################################################"
-text = "More logs related to the Digital Diagnostics Monitoring (DDM) noticed on OmniSwitch: {0} \n\n\n".format(
-    ipadd)
-text = "########################################################################"
-
-l_switch_cmd = []
-l_switch_cmd.append("show interfaces")
-l_switch_cmd.append("show interfaces status")
-l_switch_cmd.append("show system")
-l_switch_cmd.append("show transceivers slot " + slot + "/1")
-l_switch_cmd.append("show lldp remote-system")
-
-print(ipadd)
-for switch_cmd in l_switch_cmd:
-    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-        switch_password, switch_user, ipadd, switch_cmd)
-    try:
-        output = ssh_connectivity_check(
-            switch_user, switch_password, ipadd, switch_cmd)
-        output = subprocess.check_output(
-            cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
-        if output != None:
-            output = output.decode('UTF-8').strip()
-            text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
-        else:
-            exception = "Timeout"
-            info = (
-                "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-            print(info)
-            os.system('logger -t montag -p user.info ' + info)
-            send_message(info, jid)
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-                sys.exit()
-            except Exception as error:
-                print(error)
-                pass
-    except subprocess.TimeoutExpired as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass
-    except FileNotFoundError as exception:
-        info = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass
-
-date = datetime.date.today()
-date_hm = datetime.datetime.today()
-
-filename = "{0}_{1}-{2}_{3}_logs".format(date,
-                                         date_hm.hour, date_hm.minute, ipadd)
-f_logs = open(
-    '/opt/ALE_Script/{0}_ddm.txt'.format(filename), 'w', errors='ignore')
-f_logs.write(text)
-f_logs.close()
-###############################################################################
-
-#### Send file with additionnal logs #####
-filename = '/opt/ALE_Script/{0}.txt'.format(filename)
-print(filename)
-
-if jid != '':
-    #send_file(info,jid,ipadd,filename)
-    print("file attached in Rainbow bubble")

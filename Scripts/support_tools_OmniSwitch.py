@@ -88,7 +88,12 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     :param str cmd                       Switch IP address
     :return:  stdout, stderr, output     If exceptions is returned on stderr a notification is sent to Network Administrator, else we log the session was established and retour CLI command outputs
     """
-    print("Function ssh_connectivity_check - we execute command " + cmd)
+    print("Function ssh_connectivity_check - we execute command " + cmd + " on Device: " + ipadd)
+    logging = "Function ssh_connectivity_check - we execute command '{}' on Device {}".format(cmd,ipadd)
+    try:
+        os.system('logger -t montag -p user.info ' + logging)
+    except:
+        pass
     try:
         p = paramiko.SSHClient()
         p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -1581,6 +1586,92 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
     return filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status
 
 
+# Function to collect several command outputs related to Digital Diagnostics Monitoring
+def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power):
+    """ 
+    This function takes IP Address and Hostname, slot and port number
+    This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+    :param str port:                  Switch port without unit/slot
+    :param str slot:                  Switch slot number
+    :param str ddm_type:              DDM Treshold type (Supply current, Rx optical power, temperature )
+    :param str threshold:             DDM Treshold level (low, high)
+    :param str sfp_power:             value in mA or Dbm
+    :param str ipadd:                 Switch IP address
+    :param str host:                  Switch Hostname
+    :return:                          filename_path,subject,action,result,category
+    """
+    text = "More logs related to the Digital Diagnostics Monitoring (DDM) noticed on OmniSwitch: {0} \n\n\n".format(ipadd)
+    text = "########################################################################"
+
+    l_switch_cmd = []
+    l_switch_cmd.append("show system; show transceivers slot " + slot + "/1")
+    l_switch_cmd.append("show interfaces; show interfaces status; show lldp remote-system")
+
+    for switch_cmd in l_switch_cmd:
+        try:
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            if output != None:
+                output = str(output)
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+        except subprocess.SubprocessError as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass  
+            sys.exit()
+    date = datetime.date.today()
+    date_hm = datetime.datetime.today()
+
+    filename = "{0}_{1}-{2}_{3}_ddm_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
+    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    f_logs = open(filename_path, 'w')
+    f_logs.write(text)
+    f_logs.close()
+    subject = ("The SFP on OmniSwitch: {0}/{1} - crossed DDM (Digital Diagnostics Monitoring) threshold").format(host,ipadd)
+    action = ("The SFP {0}/{1} on OmniSwitch {2}/{3} crossed DDM (Digital Diagnostics Monitoring) threshold {4} {5}: {6}").format(slot, port, host, ipadd, threshold, ddm_type, sfp_power)
+    result = "Find enclosed to this notification the log collection for further analysis"
+    category = "ddm"
+    return filename_path, subject, action, result, category
+
+
 # Function to collect OmniSwitch IP Service/AAA Authentication status based on protocol received as argument
 def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
     """ 
@@ -1932,9 +2023,14 @@ def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
             print(error)
             pass 
         sys.exit()
-    if "{0}".format(lldp_mac_address) in device_ip:
-        print(device_ip)
-        device_ip = re.findall(r" ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}) ", device_ip)[0]
+    try:
+        if "{0}".format(lldp_mac_address) in device_ip:
+            print(device_ip)
+            device_ip = re.findall(r" ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}) ", device_ip)[0]
+        else:
+            print("No ARP Entry for this MAC Address")
+    except:
+        pass
     print(device_ip)
     return device_ip
 
