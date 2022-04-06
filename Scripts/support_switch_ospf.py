@@ -47,16 +47,8 @@ with open("/var/log/devices/lastlog_ospf.json", "r", errors='ignore') as log_fil
         print("Index error in regex")
         exit()
 
-if jid != '':
-    notif = "OSPF Neighbor state change on OmniSwitch \"" + host + "\" IP: " + ip + \
-        " Router-ID/Interface " + router_id + "/" + neighbor_ip + \
-            " from " + initial_state + " to " + final_state
-    send_message(notif, jid)
-else:
-    print("Mail request set as no")
-    os.system('logger -t montag -p user.info Mail request set as no')
-    sleep(1)
-    open('/var/log/devices/lastlog_ospf.json', 'w', errors='ignore').close()
+notif = "OSPF Neighbor state change on OmniSwitch \"" + host + "\" IP: " + ip + " Router-ID/Interface " + router_id + "/" + neighbor_ip + " from " + initial_state + " to " + final_state
+send_message(notif, jid)
 
 try:
     write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
