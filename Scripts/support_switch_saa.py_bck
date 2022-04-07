@@ -1,0 +1,155 @@
+#!/usr/local/bin/python3.7
+
+from distutils.log import info
+import sys
+import os
+import json
+from time import strftime, localtime
+from support_tools_OmniSwitch import get_credentials, send_file, ssh_connectivity_check, execute_command
+from support_send_notification import send_message
+from database_conf import *
+import re
+import paramiko
+import pexpect
+
+def printchild(child, out):
+    temp = b''
+    #require extra empty CLI for correct output
+    child.sendline ("")
+    child.expect ("->") #carefull with expect prompt output from CLI. Each system may difference
+    temp = child.before
+    out += temp.decode("utf-8")
+    return out
+
+def cmd(child, cmds, expt, timeout):
+    temp= b''
+    cmdout=''
+    child.expect(expt, timeout=timeout)
+    child.sendline(cmds)
+    cmdout += printchild(child, cmdout)
+    return cmdout
+
+runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+
+switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+
+last = ""
+with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file:
+    for line in log_file:
+        last = line
+
+with open("/var/log/devices/lastlog_saa.json", "w", errors='ignore') as log_file:
+    log_file.write(last)
+
+with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file:
+    try:
+        log_json = json.load(log_file)
+        ipadd = log_json["relayip"]
+        host = log_json["hostname"]
+        msg = log_json["message"]
+    except json.decoder.JSONDecodeError:
+        print("File /var/log/devices/lastlog_saa.json empty")
+        exit()
+    except IndexError:
+        print("Index error in regex")
+        exit()
+
+    # Sample log
+    # OS6900_VC swlogd saaCmm sm-proto INFO: saa_OS6900 - Iteration packet loss 4/0
+    if "Iteration packet loss" in msg:
+        try:
+            saa_name = re.findall(r"INFO: (.*?) - Iteration packet loss", msg)[0]
+            info = ("Service Assurance Agent - SAA probe {0} configured on OmniSwitch {1} / {2} failed").format(saa_name,ipadd,host)
+            send_message(info,jid)
+            out=''
+            child = pexpect.spawn('ssh %s@%s'%(switch_user, ipadd))
+            i = child.expect([pexpect.TIMEOUT, 'yes/no', '->', '(?i)password'])
+            if i == 0: # Timeout
+                print('ERROR! could not login with SSH')
+                print(child.before, child.after)
+                print(str(child))
+                sys.exit (1)
+            if i == 1:
+                child.sendline ('yes')
+                child.expect ('(?i)password')
+                child.sendline(switch_password)
+            if i == 2:
+                pass
+            if i == 3:
+                child.sendline(switch_password)
+
+            #carefull with expect prompt output from CLI. Each system may difference
+#            out+=cmd(child, 'show system', '->', 5)
+#            out+=cmd(child, 'show chassis', '->', 5)
+#            out+=cmd(child, 'show spb isis nodes', '->', 5)
+#            out+=cmd(child, 'show spb isis adjacency', '->', 5)
+#            out+=cmd(child, 'show spb isis bvlans', '->', 5)
+#            out+=cmd(child, 'show spb isis unicast-table', '->', 5)
+#            out+=cmd(child, 'show spb isis spf bvlan 200', '->', 5)
+#            out+=cmd(child, 'show spb isis spf bvlan 300', '->', 5)
+#            out+=cmd(child, 'show spb isis spf bvlan 400', '->', 5)
+#            out+=cmd(child, 'show spb isis spf bvlan 500', '->', 5)
+#            out+=cmd(child, 'show spb isis spf bvlan 600', '->', 5)
+#            out+=cmd(child, 'show service spb', '->', 5)
+#            out+=cmd(child, 'show spb isis services', '->', 5)
+#            out+=cmd(child, 'show service access', '->', 5)
+#            out+=cmd(child, 'show service 2 debug-info', '->', 5)
+#            out+=cmd(child, 'show service 3 debug-info', '->', 5)
+#            out+=cmd(child, 'show service 4 debug-info', '->', 5)
+#            out+=cmd(child, 'show service 5 debug-info', '->', 5)
+#            out+=cmd(child, 'show service 6 debug-info', '->', 5)            
+#            out+=cmd(child, 'show service 32000 debug-info', '->', 5) 
+#            out+=cmd(child, 'show unp user', '->', 5)
+            out+=cmd(child, 'su', '->', 5)
+#            out+=cmd(child, 'uname -m', '->', 5)
+            out+=cmd(child, 'bshell', '', 10)
+            out+=cmd(child, 'd chg ING_DVP_TABLE;exit', '', 20)
+            
+            out+=cmd(child, 'bshell', '', 10)
+            out+=cmd(child, 'd chg ING_DVP_TABLE;exit', '', 20)
+#            out+=cmd(child, 'bshell', '', 10)
+#            out+=cmd(child, 'd chg ING_EN_EFILTER_BITMAP;exit', '', 20)
+#            out+=cmd(child, 'bshell', '', 10)   
+#            out+=cmd(child, 'd chg ING_L3_NEXT_HOP;exit', '', 20)
+#            out+=cmd(child, 'bshell', '', 10)
+#            out+=cmd(child, 'd chg ING_VLAN_VFI_MEMBERSHIP;exit', '', 20)
+#            out+=cmd(child, 'd chg INITIAL_ING_L3_NEXT_HOP', '', 20)
+#            out+=cmd(child, 'd chg ING_VLAN_VFI_MEMBERSHIP', '', 20)
+#            out+=cmd(child, 'd chg L2MC', '', 20)
+#            out+=cmd(child, 'd chg L3_IPMC', '', 20)
+#            out+=cmd(child, 'd chg VFI_PROFILE', '', 20)
+#            out+=cmd(child, 'd chg EGR_DVP_ATTRIBUTE', '', 20)
+#            out+=cmd(child, 'd chg EGR_IPMC', '', 20)
+#            out+=cmd(child, 'd chg EGR_L3_NEXT_HOP', '', 20)
+#            out+=cmd(child, 'd chg EGR_VFI', '', 20)
+#            out+=cmd(child, 'd chg EGR_VLAN_VFI_MEMBERSHIP', '', 20)
+#            out+=cmd(child, 'd chg EGR_MAC_ADDRESS_PROFILE', '', 20)
+#            out+=cmd(child, 'd chg EGR_L3_INTF', '', 20)
+#            out+=cmd(child, 'd chg L3_DEFIP', '', 20)
+#            out+=cmd(child, 'd chg L3_IIF_PROFILE', '', 20)
+#            out+=cmd(child, 'd chg L3_IIF_ATTRS_2', '', 20)
+#            out+=cmd(child, 'd chg SVP_ATTRS_2', '', 20)
+#            out+=cmd(child, 'd chg MY_STATION_PROFILE_1', '', 20)
+#            out+=cmd(child, 'd chg MY_STATION_TCAM', '', 20)
+#            out+=cmd(child, 'd chg EGR_MAC_ADDRESS_PROFILE', '', 20)
+#            out+=cmd(child, 'd chg L3_ENTRY_SINGLE', '', 20)
+#            out+=cmd(child, 'd chg UNKNOWN_UCAST_BLOCK_MASK', '', 20)
+#            out+=cmd(child, 'd chg UNKNOWN_UCAST_BLOCK_MASK;exit', '', 20)
+            print(out)   
+            try:
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "SAA Name": saa_name}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+               print(error)
+               pass 
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except IndexError as error:
+            print(error)
+            sys.exit()
+    else:
+        print("no pattern match - exiting script")
+        sys.exit()

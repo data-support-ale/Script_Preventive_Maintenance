@@ -166,7 +166,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             sys.exit()
         except Exception as error:
             print(error)
-        sys.exit() 
+        pass
     exception = stderr.readlines()
     exception = str(exception)
     connection_status = stdout.channel.recv_exit_status()
@@ -2398,7 +2398,10 @@ def send_file(filename_path, subject, action, result, category):
     'tutu': '{0}'.format(result),
     'Card': '0',
     'Email': '0'}
-    files = {'file': open(filename_path, 'r')}
+    try:
+        files = {'file': open(filename_path, 'r')}
+    except:
+        pass   
     try:
         response = requests.post(url, files=files, headers=headers, timeout=20)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
