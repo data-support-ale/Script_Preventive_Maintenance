@@ -112,12 +112,12 @@ def detect_port_flapping():
                         pass 
                     if ipadd == first_IP:
                         # ten seconds for the demo, we simulate a flapping . For the real usecase we can down to 1 seconds
-                        if (int(current_time)-int(last_time_first_IP)) < 10:
+                        if (int(current_time)-int(last_time_first_IP)) < 20:
                             i_first_IP = i_first_IP+1  # we count how many link down
                         last_time_first_IP = current_time
 
                     if ipadd == second_IP:
-                        if (int(current_time)-int(last_time_second_IP)) < 10:
+                        if (int(current_time)-int(last_time_second_IP)) < 20:
                             i_second_IP = i_second_IP+1
                         last_time_second_IP = current_time
 
