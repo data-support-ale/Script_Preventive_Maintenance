@@ -70,13 +70,12 @@ if script_has_run_recently(300,ip,function):
 
 
 if save_resp == "0":
-    answer = "0"
     port_monitoring(switch_user, switch_password, port, ip)
     notif = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg
     send_message(notif, jid)   
     lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port, ip)  
     if lldp_port_description == 0:
-        device_type = 0
+        device_type = answer = 0
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
         send_file(filename_path, subject, action, result, category) 
     elif "OAW-AP" in str(lldp_port_description):
@@ -85,13 +84,13 @@ if save_resp == "0":
         device_type = "OAW-AP"
         notif = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". Stellar AP " + device_ip + "/" + lldp_mac_address + " is connected to this port, do you want to collect AP logs? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
         # If LLDP Remote System is Stellar AP we propose to collect AP Logs
-        answer = send_message_request(notif, jid)      
+        answer = send_message_request(notif, jid)
+        print(answer)      
     else:
         device_type = "Others"
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
         action = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
         send_file(filename_path, subject, action, result, category) 
-    print(answer)
     sleep(2)
     #### Download port monitoring capture ###
     filename= '{0}_pmonitor_linkagg.enc'.format(host)
@@ -105,9 +104,11 @@ if save_resp == "0":
         add_new_save(ip,port, "linkagg", choice="always")
     elif answer == "0":
         add_new_save(ip,port, "linkagg", choice="never")
+    else:
+        pass
 elif save_resp == "-1":
     info = "A LinkAgg Port Leave has been detected on your network from the port {0}/Agg {1} on device {2}. Decision saved for this switch/port is set to Never, we do not proceed further".format(port, agg, ip)
-    send_message(info,jid)
+    #send_message(info,jid)
     try:
         print(port)
         print(agg)
