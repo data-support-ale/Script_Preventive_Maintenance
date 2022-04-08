@@ -5,9 +5,9 @@ from distutils.log import info
 import sys
 import os
 import json
-from time import strftime, localtime, time
 import datetime
-from support_tools_OmniSwitch import get_credentials, send_file, ssh_connectivity_check, execute_command
+from time import strftime, localtime, time
+from support_tools_OmniSwitch import get_credentials, send_file, ssh_connectivity_check, execute_command, port_monitoring, get_file_sftp
 from support_send_notification import send_message
 from database_conf import *
 import re
@@ -17,6 +17,9 @@ import pexpect
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+
+date = datetime.date.today()
+date_hm = datetime.datetime.today()
 
 def printchild(child, out):
     temp = b''
@@ -75,8 +78,17 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
     ipadd_list = ['10.130.7.244', '10.130.7.245', '10.130.7.246']
 
     # Sample log
-    # OS6900_VC swlogd saaCmm sm-proto INFO: saa_OS6900 - Iteration packet loss 4/0
+    # OS6900_VC swlogd saaCmm sm-proto INFO: SPB:SPB-500-e8-e7-32-cc-f3-4f - Iteration packet loss 4/0
     if "Iteration packet loss" in msg:
+        ##### Port monitoring to check if frames are received with VLAN Tag 4095 #####
+        try:
+            port = "2/1/6"
+            ip = "10.130.7.245"
+            port_monitoring(switch_user, switch_password, port, ip)
+        except:
+            info = "Service Assurance Agent - Port Monitoring failed"
+            send_message(info,jid)
+            pass
         try:
             saa_name = re.findall(r"INFO: (.*?) - Iteration packet loss", msg)[0]
             info = ("Service Assurance Agent - SAA probe {0} configured on OmniSwitch {1} / {2} failed").format(saa_name,ipadd,host)
@@ -211,6 +223,17 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 category = "saa_{0}_{1}".format(ipaddress,function)
                 send_file(logfilepath, subject, action, result, category)
 
+            try:
+                filename= '{0}_pmonitor_saa.enc'.format(host)
+                remoteFilePath = '/flash/pmonitor.enc'
+                localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ip,filename)
+                get_file_sftp(switch_user, switch_password, ip, remoteFilePath, localFilePath)
+                info = "Service Assurance Agent - Port Monitoring capture - download success"
+                send_message(info,jid)               
+            except:
+                info = "Service Assurance Agent - Port Monitoring capture - download failed"
+                send_message(info,jid)
+                pass
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "SAA Name": saa_name}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
