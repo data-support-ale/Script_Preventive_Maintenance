@@ -1388,12 +1388,19 @@ else
     apt-get install python3-pip
 fi
 
-python3 -m pip install pysftp 
-python3 -m pip install influxdb-client 
+# Used in function get_pmd_file_sftp
+python3 -m pip install pysftp
+# Used for adding metrics in influxDB
+python3 -m pip install influxdb-client
+# Used for exposing metrics to Prometheus
 python3 -m pip install prometheus-client 
-python3 -m pip install flask 
+#python3 -m pip install flask
+#This one shall be removed  
 python3 -m pip install asyncio
 python3 -m pip install requests
+#Used for BSHELL log collection 
+python3 -m pip install pexpect
+#Used for collecting AP snapshot logs - could be removed once Stellar AP support snapshot log download thru HTTP REST-API
 apt-get -qq -y install tftpd-hpa 
 
 echo

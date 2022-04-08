@@ -14,7 +14,7 @@ import datetime
 import re
 from support_tools_OmniSwitch import get_credentials, get_tech_support_sftp, get_pmd_file_sftp
 from support_send_notification import send_message, send_file, send_alert
-import pysftp
+#import pysftp
 from database_conf import *
 
 # Example of JSON content

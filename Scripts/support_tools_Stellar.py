@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3.7
 
-from asyncio.subprocess import PIPE
 from copy import error
 import sys
 import os
@@ -9,15 +8,11 @@ import datetime
 from time import sleep
 from unicodedata import name
 
-from paramiko import SSHException
 from support_send_notification import send_message
 import subprocess
 import re
-import pysftp
 import requests
 import paramiko
-import csv
-import threading
 from database_conf import *
 
 # This script contains all functions interacting with Stellar APs

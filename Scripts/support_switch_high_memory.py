@@ -1,7 +1,5 @@
 #!/usr/local/bin/python3.7
 
-import logging
-
 from time import  strftime, localtime, sleep
 import sys
 import os
@@ -9,10 +7,7 @@ import datetime
 from support_tools_OmniSwitch import get_credentials, get_tech_support_sftp, send_file, ssh_connectivity_check
 from support_send_notification import send_message
 import subprocess
-import requests
-import paramiko
 import json
-import pysftp
 from database_conf import *
 
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
