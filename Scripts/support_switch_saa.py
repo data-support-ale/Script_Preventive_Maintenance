@@ -6,7 +6,7 @@ import sys
 import os
 import json
 import datetime
-from time import strftime, localtime, time
+from time import strftime, localtime, time, sleep
 from support_tools_OmniSwitch import get_credentials, send_file, ssh_connectivity_check, execute_command, port_monitoring, get_file_sftp
 from support_send_notification import send_message
 from database_conf import *
@@ -75,27 +75,19 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
         print("Index error in regex")
         exit()
     
-    ipadd_list = ['10.130.7.244', '10.130.7.245', '10.130.7.246']
-
+    ipadd_list = ['10.130.7.244', '10.130.7.245', '10.69.147.135']
+    #ipadd_list = ['10.69.147.135']
     # Sample log
     # OS6900_VC swlogd saaCmm sm-proto INFO: SPB:SPB-500-e8-e7-32-cc-f3-4f - Iteration packet loss 4/0
+
     if "Iteration packet loss" in msg:
-        ##### Port monitoring to check if frames are received with VLAN Tag 4095 #####
-        try:
-            port = "2/1/6"
-            ip = "10.130.7.245"
-            port_monitoring(switch_user, switch_password, port, ip)
-        except:
-            info = "Service Assurance Agent - Port Monitoring failed"
-            send_message(info,jid)
-            pass
         try:
             saa_name = re.findall(r"INFO: (.*?) - Iteration packet loss", msg)[0]
             info = ("Service Assurance Agent - SAA probe {0} configured on OmniSwitch {1} / {2} failed").format(saa_name,ipadd,host)
             send_message(info,jid)
 
             l_switch_cmd = []
-            l_switch_cmd.append("show system; show chassis; show spb isis nodes; show spb isis adjacency; show spb isis bvlans; show spb isis unicast-table \
+            l_switch_cmd.append("show system; show chassis; show arp; show spb isis nodes; show spb isis adjacency; show spb isis bvlans; show spb isis unicast-table \
             show spb isis spf bvlan 200; show spb isis spf bvlan 300; show spb isis spf bvlan 400; show spb isis spf bvlan 500; show spb isis spf bvlan 600 \
             show service spb; show spb isis services; show service access; show service 2 debug-info; show service 3 debug-info; show service 4 debug-info \
             show service 5 debug-info; show service 6 debug-info; show service 32000 debug-info; show unp user")
@@ -129,7 +121,8 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
 
                     except Exception as error:
                         print(error)
-                    pass 
+                    pass
+
 
             l_switch_cmd = []
             l_switch_cmd.append("d chg ING_DVP_TABLE;exit")
@@ -223,25 +216,56 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 category = "saa_{0}_{1}".format(ipaddress,function)
                 send_file(logfilepath, subject, action, result, category)
 
+            ##### Port monitoring to check if frames are received with VLAN Tag 4095 #####
+            try:
+                ip = "10.130.7.245"
+                switch_cmd = ("no port-monitoring 1")
+                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)  
+                port = "2/1/6"
+                ip = "10.130.7.245"
+                switch_cmd = ("port-monitoring 1 source port " + port + " file /flash/pmonitor.enc size 10 timeout 120 inport capture-type full")
+                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)  
+                switch_cmd = ("port-monitoring 1 resume")
+                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd) 
+                port = "1/1/6"
+                ip = "10.130.7.245"
+                switch_cmd = ("port-monitoring 1 source port " + port + " file /flash/pmonitor.enc size 10 timeout 120 inport capture-type full")
+                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)  
+                switch_cmd = ("port-monitoring 1 resume")
+                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd) 
+                port = "2/1/9"
+                ip = "10.130.7.245"
+                switch_cmd = ("port-monitoring 1 source port " + port + " file /flash/pmonitor.enc size 10 timeout 120 inport capture-type full")
+                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)
+                switch_cmd = ("port-monitoring 1 resume")
+                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)    
+            except:
+                info = "Service Assurance Agent - Port Monitoring failed on OmniSwitch {0}".format(ip)
+                send_message(info,jid)
+                pass
+            
+            sleep(120)
+
             try:
                 filename= '{0}_pmonitor_saa.enc'.format(host)
                 remoteFilePath = '/flash/pmonitor.enc'
                 localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ip,filename)
                 get_file_sftp(switch_user, switch_password, ip, remoteFilePath, localFilePath)
-                info = "Service Assurance Agent - Port Monitoring capture - download success"
+                info = "Service Assurance Agent - Port Monitoring capture {0} - download success".format(localFilePath)
                 send_message(info,jid)               
             except:
                 info = "Service Assurance Agent - Port Monitoring capture - download failed"
                 send_message(info,jid)
                 pass
+
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "SAA Name": saa_name}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
-            except Exception as error:
-               print(error)
-               pass 
+        except Exception as error:
+            print(error)
+            pass 
         except UnboundLocalError as error:
             print(error)
             sys.exit()
