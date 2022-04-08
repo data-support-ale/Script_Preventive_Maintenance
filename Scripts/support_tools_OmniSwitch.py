@@ -1217,7 +1217,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show powersupply; show powersupply total")
+    l_switch_cmd.append("show chassis; show system; show powersupply; show powersupply total; show hardware-info")
     l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x80\" | su')
     sleep(1)
     l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x00\" | su')
