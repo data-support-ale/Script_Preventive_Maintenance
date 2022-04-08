@@ -183,6 +183,8 @@ def wlan_drm_change(login_AP, pass_AP):
         for element in f:
             print(element)
             band, best_channel, reason = re.findall(r"\[wifi(.*?) best channel = (.*?), changed by (.*?)\]", msg)[0]
+            if band == "2":
+                band = "5GHz High"
             if band == "1":
                 band = "5GHz"
             if band == "0":
