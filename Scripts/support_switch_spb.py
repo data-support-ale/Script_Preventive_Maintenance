@@ -61,8 +61,12 @@ with open("/var/log/devices/lastlog_spb.json", "r", errors='ignore') as log_file
     port = str(unit) + "/" + str(slot) + "/" + str(port)
     port = "Port " + port
     if n > 6:
-        port = str(dig[7])
-        port = "Linkagg " + port
+        if str(dig[6]) != "0":
+            port = str(dig[6]) + str(dig[7])
+            port = "Linkagg " + port
+        else:
+            port = str(dig[7])
+            port = "Linkagg " + port
     print(port)
 
 if jid != '':
