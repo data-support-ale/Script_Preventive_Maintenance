@@ -53,7 +53,7 @@ with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_fil
 if jid != '':
     notif = "A Denial of Service Attack is detected on OmniSwitch \"" + \
         host + "\" IP: " + ip + " of type " + ddos_type
-    send_message(notif, jid)
+    #send_message(notif, jid)
     try:
         write_api.write(bucket, org, [{"measurement": str(os.path.basename(
             __file__)), "tags": {"IP": ip, "DDOS_Type": ddos_type}, "fields": {"count": 1}}])

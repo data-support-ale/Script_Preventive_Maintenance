@@ -50,6 +50,8 @@ if len(file_lines) != 0:
                         # clear lastlog file
                         open('/var/log/devices/lastlog_loop.json', 'w').close()
                         sys.exit()
+                    if port == "0":
+                        break
                     slot_in_element = element_split[i+3]
                     print(slot_in_element)
                     if slot_in_element == "0":
@@ -187,7 +189,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
            pass 
         # disable_port(switch_user,switch_password,ipadd,port)
         os.system('logger -t montag -p user.info Port disabled')
-        info = "A loop has been detected on your network and the port {0} is administratively disabled on device {1}".format(port, ipadd)
+        info = "A loop has been detected on your network and the port {0} is administratively disabled on device {1}. More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000051875".format(port, ipadd)
         filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
         send_file(filename_path, subject, action, result, category)
         sleep(5)

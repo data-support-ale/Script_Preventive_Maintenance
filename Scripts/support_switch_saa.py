@@ -75,7 +75,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
         print("Index error in regex")
         exit()
     
-    ipadd_list = ['10.130.7.244', '10.130.7.245', '10.69.147.135']
+    ipadd_list = ['10.69.145.69', '10.69.145.72', '10.69.147.135','10.69.147.136']
     #ipadd_list = ['10.69.147.135']
     # Sample log
     # OS6900_VC swlogd saaCmm sm-proto INFO: SPB:SPB-500-e8-e7-32-cc-f3-4f - Iteration packet loss 4/0

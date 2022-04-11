@@ -609,7 +609,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
     f_logs.close()
     subject = ("Preventive Maintenance Application - A loop has been detected on your network and the port {0} is administratively disabled on device {1}").format(port,ipadd)
     action = ("A Network Loop is noticed on OmniSwitch: {0} and we have deactivated the interface administratively").format(ipadd)
-    result = ("Find enclosed to this notification the log collection of last 5 minutes and interface port {0} status").format(port)
+    result = ("Find enclosed to this notification the log collection of last 5 minutes and interface port {0} status. More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000051875").format(port)
     category = "network_loop"
     return filename_path, subject, action, result, category
 
@@ -841,7 +841,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     subject = ("Preventive Maintenance Application - Unexpected traffic (storm) detected on switch: {0}, reason {1}").format(ipadd, source)
     if decision == "1" or decision == "2":
         action = ("The Interface {0} is administratively disabled on OmniSwitch (Hostname: {1})").format(port, host)
-        result = "Find enclosed to this notification the log collection of actions done"
+        result = "Find enclosed to this notification the log collection of actions done. More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000061786"
     else:
         action = ("No action done on OmniSwitch (Hostname: {0})").format(host)
         result = "Find enclosed to this notification the interface's status/statistics"

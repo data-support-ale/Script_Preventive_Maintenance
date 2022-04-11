@@ -177,7 +177,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         category = "ddos"
         subject = "A {0} attack is detected:".format(ddos_type)
         action = "A {0} attack is detected on your network and QOS policy is applied to prevent access for the IP Address {1} to access OmniSwitch {2} / {3}".format(ddos_type, ip_switch_ddos, host, ip_switch)
-        result = "Find enclosed to this notification the log collection"
+        result = "Find enclosed to this notification the log collection. More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000063327"
         send_file(filename_path, subject, action, result, category)
         
         # We disable debugging logs
