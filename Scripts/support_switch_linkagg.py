@@ -45,7 +45,6 @@ with open("/var/log/devices/lastlog_linkagg.json", "r", errors='ignore') as log_
         print("Index error in regex")
         exit()
  
- 
     ## Sample Log
     ## OS6860E_VC_Core swlogd linkAggCmm main INFO: Receive agg port leave request: agg: 1, port: 1/1/1(0)
     os.system('logger -t montag -p user.info Executing script support_switch_linkagg - start')
@@ -60,7 +59,7 @@ with open("/var/log/devices/lastlog_linkagg.json", "r", errors='ignore') as log_
 # always 1
 #never -1
 # ? 0
-save_resp = check_save(ip,port, "linkagg")
+save_resp = check_save(ip,agg, "linkagg")
 
 function = "linkagg"
 if script_has_run_recently(300,ip,function):
@@ -106,9 +105,19 @@ if save_resp == "0":
         add_new_save(ip,port, "linkagg", choice="never")
     else:
         pass
+
+    notif = "Preventive Maintenance Application - LinkAgg issue detected on OmniSwitch " + host + ". Do you want to keep being notified? " + ip_server        #send_message(info, jid)
+    answer = send_message_request(notif, jid)
+    print(answer)
+    if answer == "2":
+        add_new_save(ip, agg, "linkagg", choice="always")
+    elif answer == "0":
+        add_new_save(ip, agg, "linkagg", choice="never")
+
 elif save_resp == "-1":
-    info = "A LinkAgg Port Leave has been detected on your network from the port {0}/Agg {1} on device {2}. Decision saved for this switch/port is set to Never, we do not proceed further".format(port, agg, ip)
+    #info = "A LinkAgg Port Leave has been detected on your network from the port {0}/Agg {1} on device {2}. Decision saved for this switch/port is set to Never, we do not proceed further".format(port, agg, ip)
     #send_message(info,jid)
+    print("Decision set to never - exit")
     try:
         print(port)
         print(agg)
