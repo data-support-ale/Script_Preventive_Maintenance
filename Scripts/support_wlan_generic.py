@@ -360,7 +360,7 @@ def dhcp_ack(ipadd, device_mac):
 
 def extract_reason():
     last = ""
-    reason = device_mac = ap_mac = 0
+    reason = reason_number = device_mac = ap_mac = 0
     with open("/var/log/devices/lastlog_deauth.json", "r", errors='ignore') as log_file:
         for line in log_file:
             last = line
@@ -375,12 +375,25 @@ def extract_reason():
         for element in f:
             if "reason" in element:
                 reason = re.findall(r"reason (.*)", msg)[0]
-                reason_number = re.findall(r"reason (.*?)\(", msg)[0]
+                print(reason)
+                try:
+                   reason_number = re.findall(r"reason (.*?)\(", msg)[0]
+                except:
+                   pass
                 reason = str(reason)
-                device_mac = re.findall(r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
-                ap_mac = re.findall(r".*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*", msg)[0]
+                print(element)
+                print(reason_number)
+                if reason_number == "0":
+                    device_mac = re.findall(r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
+                else:
+                    device_mac = re.findall(r"STA <(.*?)> with", msg)[0]
+                    print(device_mac)
+                try:
+                    ap_mac = re.findall(r".*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*", msg)[0]
+                    ap_mac = str(ap_mac[0])
+                except:
+                    pass
                 device_mac = str(device_mac[0])
-                ap_mac = str(ap_mac[0])
                 print("WLAN Deauthentication use case")
                 print(reason)
                 print(device_mac)
