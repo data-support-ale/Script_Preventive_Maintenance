@@ -1,1 +1,1 @@
-{"@timestamp":"2022-03-14T18:13:14+01:00","type":"syslog_json","relayip":"10.130.7.246","hostname":"OS6860N-P48Z","message":"<134>Mar 14 18:13:14 OS6860N-P48Z swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM chassisTrapsAlert - Power supply is inoperable: PS 1","end_msg":""}
+{"@timestamp":"2022-03-14T18:13:14+01:00","type":"syslog_json","relayip":"10.130.7.244","hostname":"OS6860N-P48Z","message":"<134>Mar 14 18:13:14 OS6860N-P48Z swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM chassisTrapsAlert - Power supply is inoperable: PS 1","end_msg":""}
