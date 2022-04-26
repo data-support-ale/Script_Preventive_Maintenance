@@ -176,9 +176,58 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
         except IndexError as error:
             print(error)
             sys.exit()
+    #Log sample
+    # OS6465 swlogd lpNi LanNi INFO: Port 8 FAULT State change 11 to 35 desc: Port is off: Over temperature at the port (Port temperature protection mechanism was activated)
+    elif "FAULT State change 11 to 35" in msg:
+        try:
+            port, reason = re.findall(r"Port (.*?) FAULT State change 11 to 35 desc: Port is off: Over temperature at the port (.*)", msg)[0]
+            save_resp = check_save(ipadd, port, "lanpower")
+            if save_resp == "-1":
+                print("Decision saved set to Never")
+                sys.exit()
+            else:
+                pass
+            filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+            send_file(filename_path, subject, action, result, category)
+#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
+#            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
+                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except IndexError as error:
+            print(error)
+            sys.exit()
     else:
-        print("no pattern match - exiting script")
-        sys.exit()
+        try:
+            port, state_a, state_b, reason = re.findall(r"Port (.*?) FAULT State change (.*?) to (.*?) desc: (.*)", msg)[0]
+            save_resp = check_save(ipadd, port, "lanpower")
+            if save_resp == "-1":
+                print("Decision saved set to Never")
+                sys.exit()
+            else:
+                pass
+            filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+            send_file(filename_path, subject, action, result, category)
+#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
+#            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
+                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except IndexError as error:
+            print(error)
+            sys.exit()
 
 # always 1
 #never -1
