@@ -1360,10 +1360,11 @@ if [ "$ver" != "" ]
 then
     echo -e "\e[32mPython-pip already installed\e[39m"
 else
-    echo -e "\e[32mPython-pip installation\e[39m"
+    echo -e "\e[32mPython-pip Installation\e[39m"
     apt-get install python3-pip
 fi
 
+echo -e "\e[32mPython-pip packages Installation\e[39m"
 # Used in function get_pmd_file_sftp
 python3 -m pip install pysftp
 # Used for adding metrics in influxDB
@@ -1376,6 +1377,7 @@ python3 -m pip install asyncio
 python3 -m pip install requests
 #Used for BSHELL log collection 
 python3 -m pip install pexpect
+echo -e "\e[32mPython-pip packages Installation complete\e[39m"
 #Used for collecting AP snapshot logs - could be removed once Stellar AP support snapshot log download thru HTTP REST-API
 apt-get -qq -y install tftpd-hpa 
 
@@ -1462,7 +1464,7 @@ echo
 apt-get -qq -y install ca-certificates gnupg lsb-release >& /dev/null
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt-get -qq - y update >& /dev/null
+apt-get -qq -y update >& /dev/null
 apt-get -qq -y install docker-ce docker-ce-cli containerd.io >& /dev/null
 echo
 echo -e "\e[32mDocker installation complete\e[39m"

@@ -1218,13 +1218,13 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
 
     l_switch_cmd = []
     l_switch_cmd.append("show chassis; show system; show powersupply; show powersupply total; show hardware-info")
-    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x80\" | su')
-    sleep(1)
-    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x00\" | su')
-    sleep(2)
-    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cget -y -f 1 0x60 0x90\" | su')
-    sleep(1)
-    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cget -y -f 1 0x60 0x92\" | su')
+#    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x80\" | su')
+#    sleep(1)
+#    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x00\" | su')
+#    sleep(2)
+#    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cget -y -f 1 0x60 0x90\" | su')
+#    sleep(1)
+#    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cget -y -f 1 0x60 0x92\" | su')
 
     for switch_cmd in l_switch_cmd:
         try:
