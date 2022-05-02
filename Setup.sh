@@ -1372,8 +1372,9 @@ python3 -m pip install influxdb-client
 # Used for exposing metrics to Prometheus
 python3 -m pip install prometheus-client 
 #python3 -m pip install flask
-#This one shall be removed  
+#Asyncio module for importing PIPE  
 python3 -m pip install asyncio
+#Requests module used for REST-API
 python3 -m pip install requests
 #Used for BSHELL log collection 
 python3 -m pip install pexpect
