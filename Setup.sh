@@ -509,6 +509,9 @@ template (name=\"devicelogsaa\" type=\"string\"
 template (name=\"devicelogdrm\" type=\"string\"
      string=\"/var/log/devices/lastlog_drm.json\")
 
+template (name=\"deviceloglinkagg\" type=\"string\"
+     string=\"/var/log/devices/lastlog_linkagg.json\")
+
 template(name=\"json_syslog\"
   type=\"list\") {
     constant(value=\"{\")
@@ -670,6 +673,13 @@ if \$msg contains 'is my neighbor' and \$msg contains 'notify channel' then {
      stop
 }
 
+if \$msg contains 'drm' and \$msg contains 'changed by' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"devicelogdrm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_wlan_generic_drm\" binary=\"/opt/ALE_Script/support_wlan_generic.py drm_change\")
+     stop
+}
+
 ##### WLAN Rules for Stellar AP Web Control Filtering #####
 
 if \$msg contains 'verdict:[NF_DROP]' then {
@@ -681,7 +691,7 @@ if \$msg contains 'verdict:[NF_DROP]' then {
 
 ##### WLAN Rules for Stellar AP deassociation or deauthentication #####
 
-if \$msg contains 'Send deauth, reason 1' or \$msg contains 'deauth reason 1' or \$msg contains 'Send deauth from wam, reason 36' then {
+if \$msg contains 'reason 1' or \$msg contains 'reason 36' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -689,7 +699,7 @@ if \$msg contains 'Send deauth, reason 1' or \$msg contains 'deauth reason 1' or
      stop
 }
 
-if \$msg contains 'Send deauth, reason' or \$msg contains 'Send deauth from wam, reason' or \$msg contains 'Received disassoc' then {
+if \$msg contains 'Send deauth,' or \$msg contains 'Send deauth from wam,' or \$msg contains 'Received disassoc' and \$msg contains 'calog' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -957,6 +967,15 @@ if \$msg contains 'Fan Failure'  then {
      stop
 }
 
+#### LINKAGG DOWN - LAN ####
+if \$msg contains ''Receive agg port leave request' and not (\$msg contains 'Port Leave') then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogfan\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_linkagg\" binary=\"/opt/ALE_Script/support_switch_linkagg.py\")
+     stop
+}
+
 #### PS Unit DOWN - LAN ####
 if \$msg contains 'Power Supply' and \$msg contains 'Removed'  then {
      \$RepeatedMsgReduction on
@@ -1114,7 +1133,7 @@ if \$msg contains 'Unable to connect' and \$msg contains 'mqttd' then {
        stop
 }
 
-if \$msg contains 'report mqtt disconnect or is empty' then {
+if \$msg contains 'mqtt disconnect' then {
        \$RepeatedMsgReduction on
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogiot\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -1140,7 +1159,6 @@ if \$msg contains 'TCAM_RET_NOT_FOUND' then {
        stop
 }
 
-
 if \$msg contains 'CMM chassisTrapsAlert - CMM Down' then {
        \$RepeatedMsgReduction on
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -1156,8 +1174,6 @@ if \$msg contains 'lpStartNi' and \$msg contains 'Starting' then {
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"LANPOWER Starting\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
-
-
 
 if \$msg contains 'ospf' and \$msg contains 'oversized LSA' then {
        \$RepeatedMsgReduction on

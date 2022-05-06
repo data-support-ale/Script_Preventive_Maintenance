@@ -13,7 +13,7 @@ import re
 from unicodedata import category
 
 from paramiko import Channel
-from support_tools_Stellar import get_credentials, vlan_limit_reached_tools, sta_limit_reached_tools, send_file, drm_neighbor_scanning
+from support_tools_Stellar import get_credentials, vlan_limit_reached_tools, sta_limit_reached_tools, send_file, drm_neighbor_scanning, channel_utilization_per_band
 from support_send_notification import send_message, send_alert, send_alert_advanced
 #from support_OV_get_wlan import OvHandler
 from database_conf import *
@@ -27,7 +27,7 @@ def deassociation(ipadd, device_mac, reason, reason_number):
     os.system('logger -t montag -p user.info ' + message_bis)
     message_content_1 = "WLAN Alert - There is a WLAN deassociation detected on server {0} from Stellar AP {1}, Device's MAC Address: {2} .".format(ip_server, ipadd, device_mac)
     print(message_content_1)
-    send_alert(message, jid)
+    send_message(message, jid)
     send_message(message_reason, jid)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason, "topic": "deauth"}, "fields": {"count": 1}}])
@@ -247,6 +247,39 @@ def wlan_drm(login_AP, pass_AP):
     else:
         print("Channels are differents")
 
+def wlan_channel_utilization(login_AP, pass_AP):
+    # Wireless lbd[22185] <DEBUG> [AP DC:08:56:56:AD:40@10.130.7.108] [han_dcm_check_is_overload] [Lbd-BandSteering] : utilization: 33 Threshold 70
+    os.system('logger -t montag -p user.info Channel utilization')
+    last = ""
+    neighbor_channel = 0
+    with open("/var/log/devices/lastlog_channeluse.json", "r", errors='ignore') as log_file:
+        for line in log_file:
+            last = line
+
+    with open("/var/log/devices/lastlog_channeluse.json", "w", errors='ignore') as log_file:
+        log_file.write(last)
+
+    with open("/var/log/devices/lastlog_channeluse.json", "r", errors='ignore') as log_file:
+        log_json = json.load(log_file)
+        ipadd = log_json["relayip"]
+        msg = log_json["message"]
+        f = msg.split(',')
+        for element in f:
+            if "utilization" in element:
+                print(element)
+                channel_utilization = re.findall(r"utilization: (.*?) Threshold 70", msg)[0]
+                print(channel_utilization)
+    #channel = channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization)
+    #print(channel)
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_wlan_drm", "tags": {"AP_IPAddr": ipadd, "Channel Utilization": channel_utilization}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except Exception as error:
+        print(error)
+        pass
+
 def sta_limit_reached(ipadd, login_AP, pass_AP):
     os.system('logger -t montag -p user.info Associated STA Limit Reached!')
     filename_path, subject, action, result, category = sta_limit_reached_tools(login_AP, pass_AP, ipadd)
@@ -373,7 +406,7 @@ def extract_reason():
         msg = log_json["message"]
         f = msg.split(',')
         for element in f:
-            if "reason" in element:
+#            if "reason" in element:
                 reason = re.findall(r"reason (.*)", msg)[0]
                 print(reason)
                 try:
@@ -383,21 +416,21 @@ def extract_reason():
                 reason = str(reason)
                 print(element)
                 print(reason_number)
-                if reason_number == "0":
+                try:
                     device_mac = re.findall(r".*\[(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\].*", msg)[0]
-                else:
-                    device_mac = re.findall(r"STA <(.*?)> with", msg)[0]
-                    print(device_mac)
+                    device_mac = str(device_mac[0])
+                except:
+                    try:
+                       device_mac = re.findall(r"from addr=(.*)  ",msg)[0]
+                       print(device_mac)
+                    except:
+                        pass
                 try:
                     ap_mac = re.findall(r".*\((([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))\).*", msg)[0]
                     ap_mac = str(ap_mac[0])
                 except:
-                    pass
-                device_mac = str(device_mac[0])
+                    pass                
                 print("WLAN Deauthentication use case")
-                print(reason)
-                print(device_mac)
-                print(ap_mac)
     return reason, device_mac, reason_number
 
 
@@ -1073,6 +1106,14 @@ elif sys.argv[1] == "drm_change":
     print("call function WLAN DRM Channel change")
     os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     wlan_drm_change(login_AP, pass_AP)
+    os.system('logger -t montag -p user.info Sending email')
+    os.system('logger -t montag -p user.info Process terminated')
+    sys.exit(0)
+
+elif sys.argv[1] == "channel_use":
+    print("call function WLAN DRM Channel Utilization")
+    os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
+    wlan_channel_utilization(login_AP, pass_AP)
     os.system('logger -t montag -p user.info Sending email')
     os.system('logger -t montag -p user.info Process terminated')
     sys.exit(0)

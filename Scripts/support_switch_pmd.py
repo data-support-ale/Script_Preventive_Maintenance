@@ -132,5 +132,13 @@ if jid != '':
         - Tech-support eng complete and PMD files are collected and stored in /tftpboot/ on server IP Address: {3}".format(host, ipadd, appid, ip_server)
     send_message(info, jid)
     send_message(message_reason, jid)
+    try:
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Task": appid}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 
 sys.exit(0)

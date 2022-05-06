@@ -99,7 +99,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
     # OS6860E swlogd lpNi LanNi INFO: Port 46 FAULT State change 1b to 1e desc: Port is off: Underload state (Underload state according to 802.3AF\/AT, current is below Imin)
     elif "FAULT State change 1b to 1e" in msg:
         try:
-            port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 1e desc: Port is off: Underload state ((.*?))", msg)[0]
+            port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 1e desc: Port is off: Underload state (.*)", msg)[0]
             save_resp = check_save(ipadd, port, "lanpower")
             if save_resp == "-1":
                 print("Decision saved set to Never")
