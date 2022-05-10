@@ -551,8 +551,15 @@ def extract_RADIUS():
                                pass 
                             os.system('logger -t montag -p user.info Authentication sent to Radius Server ' + server)
             if "8021x Authentication" in element:
-                auth_result, device_8021x_auth = re.findall(r"8021x-Auth (.*?) for Sta<(.*?)>", msg)[0]
-                print("Authentication success use case")
+                try:
+                    auth_result, device_8021x_auth = re.findall(r"8021x-Auth (.*?) for Sta<(.*?)>", msg)[0]
+                    print("Authentication success use case")
+                except:
+                    try:
+                        auth_result, device_8021x_auth = re.findall(r"8021x Authentication (.*?) for Sta<(.*?)>", msg)[0]
+                        print("Authentication success use case")
+                    except:
+                        pass
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_wlan_radius", "tags": {"Event": "Authentication Successful", "Device": device_8021x_auth}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
