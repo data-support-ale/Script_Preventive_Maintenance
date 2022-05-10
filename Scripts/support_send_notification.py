@@ -70,6 +70,15 @@ def send_message(info, jid):
                 pass
             pass
         else:
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass
             os.system('logger -t montag -p user.info REST API Timeout')
             pass
     except requests.exceptions.ConnectionError as response:
