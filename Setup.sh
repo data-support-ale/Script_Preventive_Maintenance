@@ -691,7 +691,7 @@ if \$msg contains 'verdict:[NF_DROP]' then {
 
 ##### WLAN Rules for Stellar AP deassociation or deauthentication #####
 
-if \$msg contains 'reason 1' or \$msg contains 'reason 36' then {
+if \$msg contains 'reason 1' or \$msg contains 'reason 36' and \$msg contains 'calog' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -707,7 +707,7 @@ if \$msg contains 'Send deauth,' or \$msg contains 'Send deauth from wam,' or \$
      stop
 }
 
-if \$msg contains 'Received deauth' then {
+if \$msg contains 'Received deauth' and \$msg contains 'calog' then {
     \$RepeatedMsgReduction on
     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
