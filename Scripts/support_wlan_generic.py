@@ -84,13 +84,13 @@ def unexpected_reboot(ipadd):
         print(error)
         pass 
 
-def upgrade(ipadd):
+def upgrade(ipadd, upgrade_version):
     os.system('logger -t montag -p user.info upgrade detected')
-    message_content_1 = "WLAN Alert - There is a Stellar upgrade detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
+    message_content_1 = "WLAN Alert - There is a Stellar upgrade detected on server {0} from Stellar AP {1} - Version: {2}".format(ip_server, ipadd, upgrade_version)
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
     try:
-        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "sysupgrade"}, "fields": {"count": 1}}])
+        write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "sysupgrade", "Version": upgrade_version}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
         print(error)
         sys.exit()
@@ -386,10 +386,29 @@ def dhcp_ack(ipadd, device_mac):
     except Exception as error:
         print(error)
         pass 
-    message = "DHCP Ack received with IP Address {0} for client {1}".format(
-        ip_dhcp, device_mac)
+    message = "DHCP Ack received with IP Address {0} for client {1}".format(ip_dhcp, device_mac)
     os.system('logger -t montag -p user.info ' + message)
 
+# Log Sample
+# System osupgrade[15410] <CRIT> [AP DC:08:56:76:C0:C0@10.130.7.149] =upgrade= sysupgrade -aww -v4.0.4.3066ww   /tmp/OAW-AP1351_4.0.4.3066.bin &
+def extract_upgrade_version():
+    last = ""
+    reason = reason_number = device_mac = ap_mac = 0
+    with open("/var/log/devices/lastlog_deauth.json", "r", errors='ignore') as log_file:
+        for line in log_file:
+            last = line
+
+    with open("/var/log/devices/lastlog_deauth.json", "w", errors='ignore') as log_file:
+        log_file.write(last)
+
+    with open("/var/log/devices/lastlog_deauth.json", "r", errors='ignore') as log_file:
+        log_json = json.load(log_file)
+        msg = log_json["message"]
+        f = msg.split(',')
+        for element in f:
+                upgrade_version = re.findall(r"-v(.*)ww", msg)[0]
+                print(upgrade_version)
+        return upgrade_version
 
 def extract_reason():
     last = ""
@@ -1042,7 +1061,8 @@ elif sys.argv[1] == "upgrade":
     print("call function upgrade")
     os.system('logger -t montag -p user.info Variable received from rsyslog ' + sys.argv[1])
     ipadd, message_reason = extract_ipadd()
-    upgrade(ipadd)
+    upgrade_version = extract_upgrade_version()
+    upgrade(ipadd, upgrade_version)
     os.system('logger -t montag -p user.info Sending email')
     os.system('logger -t montag -p user.info Process terminated')
     sys.exit(0)
