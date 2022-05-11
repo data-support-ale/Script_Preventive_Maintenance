@@ -39,7 +39,6 @@ with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file
     # Stellar AP log: iot_ins.c|1182: iot_sta_info_report mqtt disconnect or is empty
     if "mqtt disconnect or is empty" in msg:
         try:
-            ipadd="10.130.7.184"
             cmd = "cat /tmp/config/iot.conf"
             output = ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd)
             if output != None:
