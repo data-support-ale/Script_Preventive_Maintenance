@@ -488,11 +488,11 @@ template (name=\"devicelogfan\" type=\"string\"
 template (name=\"devicelogstp\" type=\"string\"
      string=\"/var/log/devices/lastlog_stp.json\")
 
-template (name=\"deviceloghighcpu\" type=\"string\"
-     string=\"/var/log/devices/lastlog_high_cpu.json\")
+template (name=\"deviceloghealth\" type=\"string\"
+     string=\"/var/log/devices/lastlog_switch_health.json\")
 
-template (name=\"deviceloghighmemory\" type=\"string\"
-     string=\"/var/log/devices/lastlog_high_memory.json\")
+template (name=\"deviceloghealth\" type=\"string\"
+     string=\"/var/log/devices/lastlog_switch_health.json\")
 
 template (name=\"deviceloglanpower\" type=\"string\"
      string=\"/var/log/devices/lastlog_lanpower.json\")
@@ -1054,12 +1054,12 @@ if \$msg contains 'radCli' and \$msg contains 'RADIUS' then {
        stop
 }
 
-#### High CPU - LAN ####
-if \$msg contains 'healthCmm' and \$msg contains 'rising above CPU' then {
+#### High CPU or High Traffic on port - LAN ####
+if \$msg contains 'healthCmm' and \$msg contains 'rising above' then {
        \$RepeatedMsgReduction on
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloghighcpu\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_high_cpu.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       action(type=\"omfile\" DynaFile=\"deviceloghealth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_health.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
@@ -1067,8 +1067,8 @@ if \$msg contains 'healthCmm' and \$msg contains 'rising above CPU' then {
 if \$msg contains 'alert' and \$msg contains 'The top 20' then {
        \$RepeatedMsgReduction on
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloghighmemory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_high_memory.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       action(type=\"omfile\" DynaFile=\"deviceloghealth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_health.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 

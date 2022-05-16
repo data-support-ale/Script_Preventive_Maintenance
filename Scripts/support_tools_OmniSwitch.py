@@ -1,5 +1,6 @@
 #!/usr/local/bin/python3.7
 
+from ast import And
 from asyncio.subprocess import PIPE
 from copy import error
 #from operator import sub
@@ -556,10 +557,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show system; show chassis")      
-    l_switch_cmd.append("show interfaces " + port + " status")
-    l_switch_cmd.append("show mac-learning port " + port)
-    l_switch_cmd.append("show vlan members port " + port)
+    l_switch_cmd.append(("show system; show chassis; show interfaces {0} status; show mac-learning port {0}; show vlan members port {0}").format(port))      
 
     for switch_cmd in l_switch_cmd:
         os.system('logger -t montag -p user.info SSH session for show chassis')
@@ -632,8 +630,7 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
     l_switch_cmd.append("show system; show cloud-agent status; show cloud-agent vpn status; show ntp server status; show log swlog | grep 'openvpn\|ovcCmm'; cat libcurl_log")
 
     if vpn_ip != "0":
-        l_switch_cmd.append("ping " + vpn_ip)
-        l_switch_cmd.append("traceroute " + vpn_ip + " max-hop 3")
+        l_switch_cmd.append(("ping {0}; traceroute {0} max-hop 3").format(vpn_ip))
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -784,13 +781,9 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show health port " + port)
-    l_switch_cmd.append("show interfaces " + port)
-    sleep(2)
-    l_switch_cmd.append("show interfaces " + port)
-    sleep(2)
-    l_switch_cmd.append("show interfaces " + port)
-    l_switch_cmd.append("show interfaces " + port + " flood-rate")
+    l_switch_cmd.append(("show health port {0} ; show interfaces {0}; sleep 2 ; show interfaces {0}; sleep 2 ;\
+    show interfaces {0}; sleep 2;  show interfaces {0} flood-rate").format(port))
+
     if decision == "1" or decision == "2":
         l_switch_cmd.append("interfaces port " + port + " admin-state disable")
     for switch_cmd in l_switch_cmd:
@@ -848,6 +841,220 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     category = "storm"
     return filename_path, subject, action, result, category
 
+# Function to collect several command outputs related to High CPU detected
+def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd):
+    """ 
+    This function takes entries arguments the Switch IPAddress/Hostname where High CPU occurs 
+    This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+
+    :param str host:                  Switch Hostname
+    :param str ipadd:                 Switch IP address
+    :return:                          filename_path,subject,action,result,category
+    """
+    ## Log collection of additionnal command outputs
+    text = "More logs about the switch : {0} \n\n\n".format(ipadd)
+
+    l_switch_cmd = []
+    l_switch_cmd.append("show virtual-chassis topology; show chassis; show system; show health; show health all cpu; show health all memory; show health all rx; show health all txrx")
+    l_switch_cmd.append('echo \"top -d 5 -n 5\" | su ; echo \"free -m\" | su \
+        ; sleep 2 ; echo \"free -m\" | su ; echo \"top -b -n 1 | head\" | su \
+        ; echo \"top -b -n 1 | head\" | su ; sleep 2 ; echo \"top -b -n 1 | head\" | su \
+        ; sleep 2 ; echo \"top -b -n 1 | head\" | su ; sleep 2 ; echo \"top -b -n 1 | head\" | su \
+        ; sleep 2 ; echo \"top -b -n 1 | head\" | su')
+
+    for switch_cmd in l_switch_cmd:
+        try:
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            if output != None:
+                output = str(output)
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+    date = datetime.date.today()
+    date_hm = datetime.datetime.today()
+
+    filename = "{0}_{1}-{2}_{3}_health_cpu_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
+    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    f_logs = open(filename_path, 'w')
+    f_logs.write(text)
+    f_logs.close()
+    subject = ("Preventive Maintenance Application - High CPU issue detected on switch: {0}").format(ipadd)
+    action = ("A High CPU issue has been detected in switch(Hostname: {0}) and we have collected logs as well as Tech-Support eng complete archive").format(host)
+    result = "Find enclosed to this notification the log collection for further analysis"
+    category = "health_cpu"
+    return filename_path, subject, action, result, category
+
+# Function to collect several command outputs related to High Memory detected
+def collect_command_output_health_memory(switch_user, switch_password, host, ipadd):
+    """ 
+    This function takes entries arguments the Switch IPAddress/Hostname where High Memory occurs 
+    This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+
+    :param str host:                  Switch Hostname
+    :param str ipadd:                 Switch IP address
+    :return:                          filename_path,subject,action,result,category
+    """
+    ## Log collection of additionnal command outputs
+    text = "More logs about the switch : {0} \n\n\n".format(ipadd)
+
+    l_switch_cmd = []
+    l_switch_cmd.append("show virtual-chassis topology; show chassis; show system; show health; show health all cpu; show health all memory; show health all rx; show health all txrx")
+    l_switch_cmd.append('echo \"top -d 5 -n 5\" | su ; echo \"free -m\" | su \
+        ; sleep 2 ; echo \"free -m\" | su ; echo \"top -b -n 1 | head\" | su \
+        ; echo \"top -b -n 1 | head\" | su ; sleep 2 ; echo \"top -b -n 1 | head\" | su \
+        ; sleep 2 ; echo \"top -b -n 1 | head\" | su ; sleep 2 & echo \"top -b -n 1 | head\" | su \
+        ; sleep 2 ; echo \"top -b -n 1 | head\" | su ; echo \"cat \/proc\/meminfo\" | su \
+        ; sleep 2 ; echo \"cat \/proc\/meminfo\" | su')
+
+    for switch_cmd in l_switch_cmd:
+        try:
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            if output != None:
+                output = str(output)
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+    date = datetime.date.today()
+    date_hm = datetime.datetime.today()
+
+    filename = "{0}_{1}-{2}_{3}_health_memory_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
+    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    f_logs = open(filename_path, 'w')
+    f_logs.write(text)
+    f_logs.close()
+    subject = ("Preventive Maintenance Application - High Memory issue detected on switch: {0}").format(ipadd)
+    action = ("A High Memory issue has been detected in switch(Hostname: {0}) and we have collected logs as well as Tech-Support eng complete archive").format(host)
+    result = "Find enclosed to this notification the log collection for further analysis"
+    category = "health_memory"
+    return filename_path, subject, action, result, category
+
+# Function to collect several command outputs related to High Consumption on port detected
+def collect_command_output_health_port(switch_user, switch_password, port, type, host, ipadd):
+    """ 
+    This function takes entries arguments the Switch IPAddress/Hostname where High consumption on port is noticed
+    This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+
+    :param str port:                  Switch Interface/Port number where RMON noticed traffic above threshold
+    :param str type:                  Switch RMON type receive or receive/transmit
+    :param str host:                  Switch Hostname
+    :param str ipadd:                 Switch IP address
+    :return:                          filename_path,subject,action,result,category
+    """
+    ## Log collection of additionnal command outputs
+    text = "More logs about the switch : {0} \n\n\n".format(ipadd)
+
+    l_switch_cmd = []
+    l_switch_cmd.append(("show virtual-chassis topology; show chassis; show system; show health; show interfaces flood-rate; \
+    show health port {0} ; show qos port {0}").format(port))
+
+    for switch_cmd in l_switch_cmd:
+        try:
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            if output != None:
+                output = str(output)
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+    date = datetime.date.today()
+    date_hm = datetime.datetime.today()
+
+    filename = "{0}_{1}-{2}_{3}_health_port_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
+    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    f_logs = open(filename_path, 'w')
+    f_logs.write(text)
+    f_logs.close()
+    subject = ("Preventive Maintenance Application - High Consumption detected on switch: {0} port {1}").format(ipadd, port)
+    action = ("A High Traffic has been detected in switch(Hostname: {0}), port {1} of type {2} and we have collected logs").format(host, port, type)
+    result = "Find enclosed to this notification the log collection for further analysis"
+    category = "health_port"
+    return filename_path, subject, action, result, category
 
 # Function to collect several command outputs related to Port Violation
 def collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd):
@@ -868,10 +1075,10 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show interfaces " + port + " status")
     if decision == "1":
-        l_switch_cmd.append("clear violation port " + port)
-    l_switch_cmd.append("show violation; show violation port " + port)
+        l_switch_cmd.append(("show interfaces {0} status ; clear violation port {0} ; show violation; show violation port {0}").format(port))
+    else:
+        l_switch_cmd.append(("show interfaces {0} status ; show violation; show violation port {0}").format(port))
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -1010,12 +1217,11 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show microcode; show system; show spantree mode")
-    l_switch_cmd.append("show spantree vlan " + vlan)
-    l_switch_cmd.append("show " + vlan)
     if decision == "1":
-        l_switch_cmd.append("spantree vlan" + vlan + "admin-state enable")    
-
+        l_switch_cmd.append(("show microcode; show system; show spantree mode; show spantree vlan {0}; show {0}; spantree vlan {0} admin-state enable; show spantree vlan {0}").format(vlan))
+    else:
+        l_switch_cmd.append(("show microcode; show system; show spantree mode; show spantree vlan {0}; show {0}; show spantree vlan {0}").format(vlan))
+  
     for switch_cmd in l_switch_cmd:
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
@@ -1376,9 +1582,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show interfaces alias; show linkagg")
-    l_switch_cmd.append("show linkagg agg " + agg)
-    l_switch_cmd.append("show linkagg agg " + agg + " port")
+    l_switch_cmd.append(("show interfaces alias; show linkagg; show linkagg agg {0}; show linkagg agg {0} port").format(agg))
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -1604,8 +1808,7 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, 
     text = "########################################################################"
 
     l_switch_cmd = []
-    l_switch_cmd.append("show system; show transceivers slot " + slot + "/1")
-    l_switch_cmd.append("show interfaces; show interfaces status; show lldp remote-system")
+    l_switch_cmd.append(("show system; show transceivers slot {0}/1; show interfaces; show interfaces status; show lldp remote-system").format(slot))
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -1685,7 +1888,9 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
     protocol_a = 0
     if protocol == "HTTPS":
         protocol_a == "http"
-    switch_cmd = "show ip service | grep {0}".format(protocol_a)
+        switch_cmd = "show ip service | grep {0}".format(protocol_a)
+    else:
+        switch_cmd = "show ip service | grep {0}".format(protocol)
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
         print(output)
@@ -2482,7 +2687,7 @@ if __name__ == "__main__":
     jid = "570e12872d768e9b52a8b975@openrainbow.com"
     switch_password = "switch"
     switch_user = "admin"
-    ipadd = "10.130.7.244"
+    ipadd = "10.130.7.240"
     cmd = "show system"
     host = "LAN-6860N-2"
     port = "1/1/52"
@@ -2510,13 +2715,11 @@ if __name__ == "__main__":
     filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
     send_file(filename_path, subject, action, result,category)
     source = "Access Guardian"
-
+    port="1/1/15"
     decision = "0"
     filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
     send_file(filename_path, subject, action, result,category)
-    filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
-    protocol = "HTTPS"
+    protocol = "Console"
     user = "toto"
     source_ip = "10.130.7.17"
     service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
