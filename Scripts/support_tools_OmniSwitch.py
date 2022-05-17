@@ -274,7 +274,7 @@ def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
     print(ipadd)
     date = datetime.date.today()
     pmd_file = filename.replace("/", "_")
-    remote_path = '/tftpboot/{0}_{1}_{2}'.format(date, ipadd, filename)
+    remote_path = '/tftpboot/{0}_{1}_{2}'.format(date, ipadd, pmd_file)
     try:
         with pysftp.Connection(host=ipadd, username=switch_user, password=switch_password) as sftp:
             # get a remote file
@@ -295,6 +295,7 @@ def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
         sftp.close()
         sys.exit()
     sftp.close()
+    print(remote_path)
     return remote_path
 
 
