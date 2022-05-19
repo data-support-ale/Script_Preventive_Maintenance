@@ -151,7 +151,7 @@ def kernel_panic(ipadd):
     os.system('logger -t montag -p user.info Kernel Panic detected')
     subject = ("Preventive Maintenance Application - There is a Kernel Panic error detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
     action = "There is high probability that Stellar AP is rebooting following this exception"
-    result = "This is a known issue fixed in AWOS 3.0.7 MR-2, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058276"
+    result = "This is a known issue fixed in AWOS 4.0.4 MR-4, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000067381"
     send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
     try:
