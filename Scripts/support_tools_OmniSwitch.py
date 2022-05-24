@@ -332,6 +332,21 @@ def file_setup_qos(addr):
     content_variable.write(setup_config)
     content_variable.close()
 
+# Function to enable syslogs on OmniSwitches when Setup.sh is called
+def enable_syslog(switch_user, switch_password, ipadd, port):
+    """ 
+    This function takes entries arguments the OmniSwitch IP Address from Devices.csv file, the OmniSwitch credentials, the syslog port to be used
+    Note that VRF is not supported, syslog are enabled on the default VRF
+
+    :param str ipadd:                 OmniSwitch IP Address
+    :param str port:                  Syslog Port (default 10514)
+    :script executed ssh_device:      with cmd in argument
+    :return:                          None
+    """
+
+    cmd = ("swlog output socket {0} {1}").format(ipadd, port)
+    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+
 # Function debug enable or disable
 def debugging(switch_user, switch_password, ipadd, appid, subapp, level):
     """ 
