@@ -1124,6 +1124,14 @@ if \$msg contains 'OPENVPN' and \$msg contains 'ETIMEDOUT' then {
        stop
 }
 
+if \$msg contains 'OPENVPN' and \$msg contains 'Fatal TLS error' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"devicelogovc\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_ovc.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
 #### IoT Profiling - LAN ####
 if \$msg contains 'Unable to connect' and \$msg contains 'mqttd' then {
        \$RepeatedMsgReduction on

@@ -175,6 +175,42 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             sys.exit()
         except IndexError as error:
             print(error)
+    # Sample log
+    # OS6860E OPENVPN(168) Data: Fatal TLS error (check_tls_errors_co), restarting
+    elif "Fatal TLS error" in msg:
+        if save_resp == "-1":
+            print("save response is never we exit script")
+            try:
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
+                                "IP": ipadd, "VPN": "Unknown", "Reason": "Fatal TLS error"}, "fields": {"count": 1}}]) 
+                sys.exit()       
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+                print(error)
+                sys.exit() 
+            
+        try:
+            reason = "Fatal TLS error"
+            vpn_ip = "0"
+            try:
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
+                                "IP": ipadd, "VPN": vpn_ip, "Reason": reason}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass 
+            filename_path, subject, action, result, category = collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, host, ipadd)
+            send_file(filename_path, subject, action, result, category)
+
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except IndexError as error:
+            print(error)
     else:
         print("no pattern match - exiting script")
         sys.exit()

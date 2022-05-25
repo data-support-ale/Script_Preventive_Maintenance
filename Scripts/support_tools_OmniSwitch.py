@@ -705,6 +705,10 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
         subject = ("Preventive Maintenance Application - Cloud-Agent module is into Invalid Status on OmniSwitch {0}").format(host)
         action = ("No action done on OmniSwitch (Hostname: {0}), please ensure the Serial Number is added in the OV Cirrus Device Catalog").format(host)
         result = "Find enclosed to this notification the log collection"
+    elif reason == "Fatal TLS error":
+        subject = ("Preventive Maintenance Application - OVC Activation Server is unreachable from OmniSwitch {0} reason - TLS Handshake failed").format(host)
+        action = ("The VPN Interface is DOWN on OmniSwitch (Hostname: {0}), TLS key negotiation failed please check your Network connectivity").format(host)
+        result = "Find enclosed to this notification the log collection"
     category = "ovc"
     return filename_path, subject, action, result, category
 
