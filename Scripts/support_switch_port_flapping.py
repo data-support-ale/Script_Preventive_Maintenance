@@ -2,7 +2,7 @@
 
 import sys
 import os
-from support_tools_OmniSwitch import debugging, get_credentials, disable_port, enable_port, add_new_save, check_save
+from support_tools_OmniSwitch import debugging, get_credentials, disable_port, enable_port, add_new_save, check_save, collect_command_output_lldp_port_description
 from time import strftime, localtime, sleep
 import re  # Regex
 from support_send_notification import send_message, send_file, send_message_request
@@ -73,7 +73,7 @@ def detect_port_flapping():
                     print(ipadd)
                     if first_IP == "0":
                         first_IP = ipadd
-                        # to initiate our last_time_first ip to compare to the other line ( otherwise current time is to high if last_time =0)
+                        # to initiate our last_time_first ip to compare to the other line ( otherwise current time is too high if last_time = 0)
                         last_time_first_IP = current_time
                     if second_IP == "0" and first_IP != ipadd:
                         second_IP = ipadd
@@ -148,16 +148,15 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
         save_resp = check_save(ip_switch_1, port_switch_1, "flapping")
 
         if save_resp == "0":
-            info = "A port flapping has been detected on your network on  the port {0} on device {1} and the port {2}  on device {3}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(
-                port_switch_1, ip_switch_1, port_switch_2, ip_switch_2)
+            lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port_switch_1, ip_switch_1)
+            info = "A port flapping has been detected on your network on  the port {0} - System Description: {1} on device {2} and the port {3}  on device {4}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(
+                port_switch_1, lldp_port_description, ip_switch_1, port_switch_2, ip_switch_2)
             answer = send_message_request(info, jid)
             if answer == "2":
-                add_new_save(ip_switch_1, port_switch_1,
-                             "flapping", choice="always")
+                add_new_save(ip_switch_1, port_switch_1,"flapping", choice="always")
                 answer = '1'
             elif answer == "0":
-                add_new_save(ip_switch_1, port_switch_1,
-                             "flapping", choice="never")
+                add_new_save(ip_switch_1, port_switch_1,"flapping", choice="never")
         elif save_resp == "-1":
             sys.exit()
         else:
@@ -216,8 +215,9 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
         save_resp = check_save(ip_switch_1, port_switch_1, "flapping")
 
         if save_resp == "0":
-            info = "A port flapping has been detected on your network on  the port {0} on device {1} and the port {2}  on device {3}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(
-                port_switch_1, ip_switch_1, port_switch_2, ip_switch_2)
+            lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port_switch_1, ip_switch_1)
+            info = "A port flapping has been detected on your network on  the port {0} - System Description: {1} on device {2} and the port {3}  on device {4}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(
+                port_switch_1, lldp_port_description, ip_switch_1, port_switch_2, ip_switch_2)
             answer = send_message_request(info, jid)
             if answer == "2":
                 add_new_save(ip_switch_1, port_switch_1,
@@ -270,8 +270,9 @@ if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2
         save_resp = check_save(ip_switch_2, port_switch_2, "flapping")
 
         if save_resp == "0":
-            info = "A port flapping has been detected on your network on  the port {0} on device {1} and the port {2}  on device {3}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(
-                port_switch_1, ip_switch_1, port_switch_2, ip_switch_2)
+            lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port_switch_1, ip_switch_1)
+            info = "A port flapping has been detected on your network on  the port {0} - System Description: {1} on device {2} and the port {3}  on device {4}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(
+                port_switch_1, lldp_port_description, ip_switch_1, port_switch_2, ip_switch_2)
             answer = send_message_request(info, jid)
             if answer == "2":
                 add_new_save(ip_switch_2, port_switch_2,
