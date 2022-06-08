@@ -194,6 +194,8 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
         try:
             reason = "Fatal TLS error"
             vpn_ip = "0"
+            info = "A Fatal TLS error has been detected in OmniSwitch (IP : {0} / {1}) syslogs on the OPENVPN task".format(ipadd, host)
+            send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "VPN": vpn_ip, "Reason": reason}, "fields": {"count": 1}}])
