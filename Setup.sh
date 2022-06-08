@@ -509,6 +509,9 @@ template (name=\"devicelogsaa\" type=\"string\"
 template (name=\"devicelogdrm\" type=\"string\"
      string=\"/var/log/devices/lastlog_drm.json\")
 
+template (name=\"devicelogchanneluse\" type=\"string\"
+     string=\"/var/log/devices/lastlog_channeluse.json\")
+
 template (name=\"deviceloglinkagg\" type=\"string\"
      string=\"/var/log/devices/lastlog_linkagg.json\")
 
@@ -666,17 +669,24 @@ if \$msg contains 'Found DHCPACK for STA' or \$msg contains 'Found dhcp ack for 
 
 ##### WLAN Rules for Stellar AP DRM Scanning #####
 
-if \$msg contains 'is my neighbor' and \$msg contains 'notify channel' then {
+if \$msg contains 'Notify neighbor' and \$msg contains 'of my channel' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdrm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_wlan_generic_drm\" binary=\"/opt/ALE_Script/support_wlan_generic.py drm\")
+     action(type=\"omprog\" name=\"support_wlan_generic_drm\" binary=\"/opt/ALE_Script/support_wlan_drm.py\")
      stop
 }
 
 if \$msg contains 'drm' and \$msg contains 'changed by' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"devicelogdrm\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_wlan_generic_drm\" binary=\"/opt/ALE_Script/support_wlan_generic.py drm_change\")
+     action(type=\"omprog\" name=\"support_wlan_generic_drm\" binary=\"/opt/ALE_Script/support_wlan_drm.py\")
+     stop
+}
+
+if \$msg contains 'channel utilization' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"devicelogchanneluse\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_wlan_generic_drm\" binary=\"/opt/ALE_Script/support_wlan_drm.py\")
      stop
 }
 

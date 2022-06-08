@@ -33,9 +33,10 @@ with open("/var/log/devices/lastlog.json", "r", errors='ignore') as log_file:
         print("File /var/log/devices/lastlog.json empty")
         exit()
 
-# Enable debugging logs for getting IP Attacker's IP Address "swlog appid bcmd subapp 3 level debug2"
-appid = "bcmd"
-subapp = "3"
+# Enable debugging logs for getting IP Attacker's IP Address "swlog appid slNI subapp 20 level debug2"
+# Swlog format: slNi MACMOVE DBG2: macCallBackProcessing_t[1174] [u:0][INS]: c/s/p: 1/1/14  d:vlan(1) MAC: 00:80:9f:57:df:33 vid:68 p:13 b:bridging t:learned e:0 dup:0 L3:0 cpu:0 mbi:0 McEntryNew:
+appid = "slNi"
+subapp = "20"
 level = "debug2"
 # Call debugging function from support_tools_OmniSwitch
 print("call function enable debugging")

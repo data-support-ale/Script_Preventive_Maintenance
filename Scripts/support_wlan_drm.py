@@ -74,7 +74,7 @@ with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file
             sys.exit()
     # Sample log
     # Notify neighbor AP 172.16.102.66 of my channel, and neighbor AP channel is 1 36 149, my channel is 1 36 0
-    elif "channel utilization exceeded" in msg:
+    elif "Notify neighbor AP" in msg:
         try:
             neighbor_ip, neighbor_channel_24, neighbor_channel_5, neighbor_channel_5_high, my_channel_24, my_channel_5, my_channel_5_high = re.findall(r"Notify neighbor AP (.*?) of my channel, and neighbor AP channel is (.*?) (.*?) (.*?), my channel is (.*?) (.*?) (.*?)", msg)[0]
 

@@ -34,39 +34,15 @@ if len(file_lines) != 0:
             print(ipadd)
             port = 0
             slot = 0
-          # For each element, look if port is present. If yes,  we take the next element which is the port number
-        if "port" in element:
+          # For each element, look if c/s/p is present. If yes,  we take the next element which is the port number
+          # Log format OS6860E-VC-Building6 swlogd slNi MACMOVE DBG2: macCallBackProcessing_t[1174] [u:0][INS]: c/s/p: 1/1/14  d:vlan(1) MAC: 00:80:9f:57:df:33 vid:68 p:13 b:bridging t:learned e:0 dup:0 L3:0 cpu:0 mbi:0 McEntryNew:
+        if " c\/s\/p:" in element:
             element_split = element.split()
             print(element_split)
             for i in range(len(element_split)):
-                if element_split[i] == "port":
-                    port = element_split[i+1]
-                    n = len(str(port))
-                    print(n)
-                    dig = []
-                    dig = list(int(port) for port in str(port))
-                    if n > 2:
-                        print("wrong port ID")
-                        # clear lastlog file
-                        open('/var/log/devices/lastlog_loop.json', 'w').close()
-                        sys.exit()
-                    if port == "0":
-                        break
-                    slot_in_element = element_split[i+3]
-                    print(slot_in_element)
-                    if slot_in_element == "0":
-                        slot = slot + 1
-                    elif slot_in_element == "4":
-                        slot = slot + 2
-                    elif slot_in_element == "8":
-                        slot = slot + 3
-                    elif slot_in_element == "12":
-                        slot = slot + 4
-                    else:
-                        slot = slot + 5
-            # looking for chassis ID number:
-                    # modify the format of the port number to suit the switch interface
-                    port = "{0}/1/{1}".format(slot, port)
+                if element_split[i] == "c\\/s\\/p:":
+                    port_a = element_split[i+1]
+                    port = port_a.replace("\\", "", 2)
                     print(port)
 
 function = "loop"
@@ -114,7 +90,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
         info = "A loop has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Never, we do not proceed further".format(port, ipadd, ip_server)
         send_message(info,jid)
-        appid = "bcmd"
+        appid = "slNi"
         subapp = "all"
         level = "info"
         # Call debugging function from support_tools_OmniSwitch
@@ -136,45 +112,45 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
 
     if answer == '1':
         l_switch_cmd = []
-        l_switch_cmd.append("show  vlan members port " + port)
-        for switch_cmd in l_switch_cmd:
-            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            if output != None:
-                output = str(output)
-                output_decode = bytes(output, "utf-8").decode("unicode_escape")
-                output_decode = output_decode.replace("', '","")
-                output_decode = output_decode.replace("']","")
-                output_vlan_members = output_decode.replace("['","")
-                print(output_vlan_members)
-                if re.search(r"ERROR", output_vlan_members):
-                    try:
-                        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "State": "Port is UpLink - no port disabled"}, "fields": {"count": 1}}])
-                    except UnboundLocalError as error:
-                        print(error)
-                        sys.exit()
-                    except Exception as error:
-                        print(error)
-                        pass 
-                    info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
-                    send_message(info,jid)
-                    sys.exit()
-                else:
+#        l_switch_cmd.append("show  vlan members port " + port)
+#        for switch_cmd in l_switch_cmd:
+#            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+#            if output != None:
+#                output = str(output)
+#                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+#                output_decode = output_decode.replace("', '","")
+#                output_decode = output_decode.replace("']","")
+#                output_vlan_members = output_decode.replace("['","")
+#                print(output_vlan_members)
+#                if re.search(r"ERROR", output_vlan_members):
+#                    try:
+#                        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "State": "Port is UpLink - no port disabled"}, "fields": {"count": 1}}])
+#                    except UnboundLocalError as error:
+#                        print(error)
+#                        sys.exit()
+#                    except Exception as error:
+#                        print(error)
+#                        pass 
+#                    info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
+#                    send_message(info,jid)
+#                    sys.exit()
+#                else:
                  ## if port is member of more than 2 VLAN tagged
-                    qtagged = re.findall(r"qtagged", output)
-                    if len(qtagged) > 1:
-                        try:
-                            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "State": "Port is UpLink - no port disabled"}, "fields": {"count": 1}}])
-                        except UnboundLocalError as error:
-                            print(error)
-                            sys.exit()
-                        except Exception as error:
-                            print(error)
-                            pass 
-                        info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
-                        send_message(info,jid)
-                        sys.exit()
-                    else:
-                        pass   
+#                    qtagged = re.findall(r"qtagged", output)
+#                    if len(qtagged) > 1:
+#                        try:
+#                            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "State": "Port is UpLink - no port disabled"}, "fields": {"count": 1}}])
+#                        except UnboundLocalError as error:
+#                            print(error)
+#                            sys.exit()
+#                        except Exception as error:
+#                            print(error)
+#                            pass 
+#                        info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
+#                        send_message(info,jid)
+#                        sys.exit()
+#                    else:
+#                        pass   
         cmd = "interfaces port {0} admin-state disable".format(port)
         os.system('logger -t montag -p user.info Calling ssh_connectivity_check script')
         os.system('logger -t montag -p user.info SSH session for disabling port')
@@ -194,7 +170,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         send_file(filename_path, subject, action, result, category)
         sleep(5)
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
-        appid = "bcmd"
+        appid = "slNi"
         subapp = "all"
         level = "info"
         # Call debugging function from support_tools_OmniSwitch
