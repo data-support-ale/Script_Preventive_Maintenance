@@ -146,23 +146,23 @@ save_resp = check_save(ip, port, "duplicate")
 if save_resp == "0":
     if not ("Lag")in port: 
         feature = "Disable port " + port
-        notif = "An IP address duplication (" + ip_dup + ") on port " + port + " of OmniSwitch " + ip + "/" + host + " has been detected. Do you want to blacklist the MAC Address: " + mac + " ?"
+        notif = "Preventive Maintenance Application - An IP address duplication (Duplicate IP: {0}) on port {1} of OmniSwitch {2} / {3} has been detected.\nDo you want to blacklist the MAC Address: {4} ?".format(ip_dup,port,host,ip,mac)
         answer = send_message_request_advanced(notif, jid,feature)
         print(answer)
 
     else:
-        notif = "An IP address duplication (" + ip_dup + ") on port " + port + " of OmniSwitch " + ip + "/" + host + " has been detected. Do you want to blacklist the MAC Address: " + mac + " ?"
+        notif = "Preventive Maintenance Application - An IP address duplication (Duplicate IP: {0}) on port {1} of OmniSwitch {2} / {3} has been detected.\nDo you want to blacklist the MAC Address: {4} ?".format(ip_dup,port,host,ip,mac)
         answer = send_message_request(notif, jid)  
 
     if isEssential(ip_dup):
         answer = "0"
-        info = "An IP duplication has been detected on your network that involves essential IP Address {} therefore we do not proceed further".format(ip_dup)
+        info = "Preventive Maintenance Application - An IP duplication has been detected on your network that involves essential IP Address {} therefore we do not proceed further".format(ip_dup)
         send_message(info,jid)
         sys.exit()
 
     if "e8:e7:32" in format_mac(mac):
         answer = "0"
-        info = "An IP duplication has been detected on your network that involves an Alcatel OmniSwitch chassis/interfaces MAC-Address therefore we do not proceed further".format(ip_dup)
+        info = "Preventive Maintenance Application - An IP duplication has been detected on your network that involves an OmniSwitch chassis/interfaces MAC-Address therefore we do not proceed further".format(ip_dup)
         send_message(info,jid)
         sys.exit()
        
@@ -188,9 +188,9 @@ if answer == '1':
     os.system('logger -t montag -p user.info Process terminated')
     enable_qos_ddos(switch_user, switch_password, ip, mac)
     if jid != '':
-        info = "Log of device : {0}".format(ip)
-        send_file(info, jid, ip)
-        info = "An IP Address duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(mac, ip)
+        #info = "Log of device : {0}".format(ip)
+        #send_file(info, jid, ip)
+        info = "Preventive Maintenance Application - An IP Address duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(mac, ip)
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
@@ -208,10 +208,10 @@ elif answer == '3':
     ssh_connectivity_check(switch_user, switch_password, ip, cmd)
     filename_path = "/var/log/devices/" + host + "/syslog.log"
     category = "ddos"
-    subject = "An IP Address duplication has been detected:".format(host, ip)
+    subject = "Preventive Maintenance Application - An IP Address duplication has been detected:".format(host, ip)
     action = "An IP Address duplication has been detected on your network and interface port {0} is disabled to prevent access to OmniSwitch {2} / {3}".format(port,ip_dup, host, ip)
     result = "Find enclosed to this notification the log collection"
-    send_file(filename_path, subject, action, result, category)
+    send_file(filename_path, subject, action, result, category, jid)
     try:
          write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
             "IP": ip, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
