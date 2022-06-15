@@ -51,11 +51,6 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
-<<<<<<< HEAD
-=======
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
->>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -81,11 +76,6 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
-<<<<<<< HEAD
-=======
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
->>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -114,11 +104,6 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
-<<<<<<< HEAD
-=======
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
->>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -144,11 +129,6 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
-<<<<<<< HEAD
-=======
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
->>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -174,11 +154,6 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
-<<<<<<< HEAD
-=======
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
->>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -204,11 +179,6 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
-<<<<<<< HEAD
-=======
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
->>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -232,11 +202,6 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
-<<<<<<< HEAD
-=======
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
->>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -263,8 +228,8 @@ if save_resp == "0":
                 feature = "Disable High-Resistance-Detection"
             elif reason == "(Illegal class)":
                 feature = "Disable 4Pair"
-            notif = "A LANPOWER issue is detected on OmniSwitch " + host + " Port: 1/1/" + port + \
-            ", reason: " + reason + ". Do you want to disable PoE on this port? " + ip_server
+            notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} \
+            , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
             answer = send_message_request_advanced(notif, jid,feature)
             print(answer)
             if answer == "2":
@@ -273,8 +238,8 @@ if save_resp == "0":
                 add_new_save(ipadd, port, "lanpower", choice="never")       
         else:
             feature = "Reload PoE on port"
-            notif = "A LANPOWER issue is detected on OmniSwitch " + host + " Port: 1/1/" + port + \
-            ", reason: " + reason + ". Do you want to disable PoE on this port? " + ip_server
+            notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} \
+            , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
             answer = send_message_request_advanced(notif, jid, feature)
             print(answer)
             if answer == "2":
@@ -342,9 +307,9 @@ elif answer == '3':
     ### else it corresponds to PoE Reload
     else:
         l_switch_cmd = []
-        l_switch_cmd.append("lanpower port 1/1/" + port + " admin-state disable")
-        l_switch_cmd.append("sleep 2")
-        l_switch_cmd.append("lanpower port 1/1/" + port + " admin-state enable")
+        l_switch_cmd.append(("lanpower port 1/1/{} admin-state disable; sleep 2; lanpower port 1/1/{} admin-state enable").format(port))
+#        l_switch_cmd.append("sleep 2")
+#        l_switch_cmd.append("lanpower port 1/1/" + port + " admin-state enable")
         for switch_cmd in l_switch_cmd:
             ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
         info = "PoE is reloaded on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
