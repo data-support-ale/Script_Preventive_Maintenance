@@ -55,7 +55,7 @@ with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file
     elif "channel utilization exceeded" in msg:
         try:
             band, channel_utilization = re.findall(r"(.*?) channel utilization exceeded the threshold (.*?).", msg)[0]
-            info = "Preventive Maintenance - WLAN Stellar AP {} Channel on Radio band {}Hz exceeds the threshold {}. Please increase the Channel Width on your RF Profile. Recommendation is to increase the width for closed location with lot of WLAN clients. Take care of overlap with other channels".format(ipadd, band, channel_utilization)
+            info = "Preventive Maintenance Application - WLAN Stellar AP {} Channel on Radio band {}Hz exceeds the threshold {}. Please increase the Channel Width on your RF Profile. Recommendation is to increase the width for closed location with lot of WLAN clients. Take care of overlap with other channels".format(ipadd, band, channel_utilization)
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
@@ -94,17 +94,17 @@ with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file
             print(error)
             sys.exit()
         if my_channel_24==neighbor_channel_24:
-            info = "Preventive Maintenance - WLAN Stellar AP {} Channel on Radio band 2.4GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel_24,neighbor_ip)
+            info = "Preventive Maintenance Application - WLAN Stellar AP {} Channel on Radio band 2.4GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel_24,neighbor_ip)
             send_message(info, jid)
         elif my_channel_5==neighbor_channel_5:
             print(neighbor_ip)
             print(neighbor_channel_5)
-            info = "Preventive Maintenance - WLAN Stellar AP {} Channel on Radio band 5GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel_5,neighbor_ip)
+            info = "Preventive Maintenance Application - WLAN Stellar AP {} Channel on Radio band 5GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel_5,neighbor_ip)
             send_message(info, jid)   
         elif my_channel_5_high==neighbor_channel_5_high:
             print(neighbor_ip)
             print(neighbor_channel_5_high)
-            info = "Preventive Maintenance - WLAN Stellar AP {} Channel on Radio band 5GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel_5_high,neighbor_ip)
+            info = "Preventive Maintenance Application - WLAN Stellar AP {} Channel on Radio band 5GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel_5_high,neighbor_ip)
             send_message(info, jid) 
         else:
             print("Channels are differents")
@@ -130,7 +130,7 @@ with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file
             except Exception as error:
                 print(error)
                 pass
-            info = "Preventive Maintenance - WLAN Stellar AP {} - Channel on Radio band {} changed to Channel {} reason ({}).".format(ipadd,band,best_channel,reason)
+            info = "Preventive Maintenance Application - WLAN Stellar AP {} - Channel on Radio band {} changed to Channel {} reason ({}).".format(ipadd,band,best_channel,reason)
             send_message(info, jid)
         except UnboundLocalError as error:
             print(error)

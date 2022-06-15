@@ -48,7 +48,7 @@ if save_resp == "0":
         try:
             nb_power_supply = re.findall(r"Power Supply (.*?) Removed", msg)[0]
             filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, nb_power_supply, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply, ipadd)
 #            send_message(info, jid)
 
@@ -81,7 +81,7 @@ if save_resp == "0":
         try:
             nb_power_supply = re.findall(r"Power supply is inoperable: PS (.*)", msg)[0]
             filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, nb_power_supply, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply, ipadd)
 #            send_message(info, jid)
 
@@ -114,7 +114,7 @@ if save_resp == "0":
         try:
             nb_power_supply = "Unknown"
             filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, nb_power_supply, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "A default on Power supply \"Power Supply operational state changed to UNPOWERED\" from device {} has been detected".format(ipadd)
 #            send_message(info, jid)
 
@@ -159,7 +159,7 @@ if answer == '1':
         try:
             nb_power_supply = re.findall(r"Power Supply (.*?) Removed", msg)[0]
             filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, nb_power_supply, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply, ipadd)
 #            send_message(info, jid)
             try:
@@ -183,7 +183,7 @@ if answer == '1':
         try:
             nb_power_supply = re.findall(r"Power supply is inoperable: PS (.*)", msg)[0]
             filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, nb_power_supply, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply, ipadd)
 #            send_message(info, jid)
             try:
@@ -206,7 +206,7 @@ if answer == '1':
         try:
             nb_power_supply = "Unknown"
             filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, nb_power_supply, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "A default on Power supply \"Power Supply operational state changed to UNPOWERED\" from device {} has been detected".format(ipadd)
 #            send_message(info, jid)
             try:

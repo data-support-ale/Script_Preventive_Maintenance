@@ -37,7 +37,7 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
             nb_vc, topic = re.findall(r"CMM NI (.*?) rising above (.*?) threshold", msg)[0]
             filename_path, subject, action, result, category = collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
 #            get_tech_support_sftp(switch_user, switch_password, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Health": topic, "VC_Unit": nb_vc}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
@@ -58,7 +58,7 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
         try:
             filename_path, subject, action, result, category = collect_command_output_health_memory(switch_user, switch_password, host, ipadd)
             get_tech_support_sftp(switch_user, switch_password, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Health": "MEMORY"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
@@ -80,7 +80,7 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
             port, type = re.findall(r"CMM Port (.*?) rising above (.*?) threshold", msg)[0]
             filename_path, subject, action, result, category = collect_command_output_health_port(switch_user, switch_password, port, type, host, ipadd)
 #            get_tech_support_sftp(switch_user, switch_password, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Health": "PORT", "Port": port, "Type": type}, "fields": {"count": 1}}])
             except UnboundLocalError as error:

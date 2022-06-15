@@ -136,7 +136,7 @@ if jid != '':
     action = ("Tech-support eng complete and PMD files are collected and stored in server {0} - SFTP link: {1}").format(ip_server, sftp_link)
     result = "Please contact ALE Customer Support team"
     category = "core_dump_{0}".format(appid)
-    send_file(filename_path, subject, action, result, category)
+    send_file(filename_path, subject, action, result, category, jid)
     #send_message(info, jid)
     #send_message(message_reason, jid)
     try:

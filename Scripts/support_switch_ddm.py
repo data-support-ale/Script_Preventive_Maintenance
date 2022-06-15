@@ -54,9 +54,8 @@ with open("/var/log/devices/lastlog_ddm.json", "r", errors='ignore') as log_file
         os.system('logger -t montag -p user.info Executing script support_switch_ddm - Index error in regex - exit')
         exit()
 
-#notif = "The SFP " + slot + "/" + port + " on OmniSwitch \"" + host + "\" IP: " + ipadd + " crossed DDM (Digital Diagnostics Monitoring) threshold " + threshold + " " + ddm_type + ": " + sfp_power + "."
 filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power)
-send_file(filename_path, subject, action, result, category)
+send_file(filename_path, subject, action, result, category, jid)
 
 
 try:

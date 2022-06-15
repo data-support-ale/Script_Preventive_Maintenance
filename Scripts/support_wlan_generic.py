@@ -13,8 +13,8 @@ import re
 from unicodedata import category
 
 from paramiko import Channel
-from support_tools_Stellar import get_credentials, vlan_limit_reached_tools, sta_limit_reached_tools, send_file, drm_neighbor_scanning, channel_utilization_per_band
-from support_send_notification import send_message, send_alert, send_alert_advanced
+from support_tools_Stellar import get_credentials, vlan_limit_reached_tools, sta_limit_reached_tools
+from support_send_notification import send_message, send_alert, send_alert_advanced, send_file
 #from support_OV_get_wlan import OvHandler
 from database_conf import *
 
@@ -22,10 +22,10 @@ from database_conf import *
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 def deassociation(ipadd, device_mac, reason, reason_number):
-    message = "WLAN Deassociation detected reason : {0} from Stellar AP {1}, client MAC Address {2}".format(reason, ipadd, device_mac)
-    message_bis = "WLAN Deassociation detected reason : {0} from Stellar AP {1}".format(reason_number, ipadd)
+    message = "Preventive Maintenance Application - WLAN Deassociation detected reason : {0} from WLAN Stellar AP {1}, client MAC Address {2}".format(reason, ipadd, device_mac)
+    message_bis = "WLAN Deassociation detected reason : {0} from WLAN Stellar AP {1}".format(reason_number, ipadd)
     os.system('logger -t montag -p user.info ' + message_bis)
-    message_content_1 = "WLAN Alert - There is a WLAN deassociation detected on server {0} from Stellar AP {1}, Device's MAC Address: {2} .".format(ip_server, ipadd, device_mac)
+    message_content_1 = "WLAN Alert - There is a WLAN deassociation detected on server {0} from WLAN Stellar AP {1}, Device's MAC Address: {2} .".format(ip_server, ipadd, device_mac)
     print(message_content_1)
     send_message(message, jid)
     send_message(message_reason, jid)
@@ -56,7 +56,7 @@ def deassociation(ipadd, device_mac, reason, reason_number):
 
 def reboot(ipadd):
     os.system('logger -t montag -p user.info reboot detected')
-    message_content_1 = "WLAN Alert - There is a Stellar reboot detected on server {0} from Stellar AP {1}".format(ip_server, ipadd)
+    message_content_1 = "Preventive Maintenance Application - WLAN Alert - There is a reboot detected on server {0} from WLAN Stellar AP {1}".format(ip_server, ipadd)
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
     try:
@@ -70,8 +70,8 @@ def reboot(ipadd):
 
 def unexpected_reboot(ipadd):
     os.system('logger -t montag -p user.info reboot detected')
-    subject = ("Preventive Maintenance Application - There is a Stellar unexpected reboot detected on server {0} from Stellar AP {1}").format(ip_server, ipadd)
-    action = "Please check the LANPOWER is running fine on OmniSwitch and verify the capacitor-detection is disabled"
+    subject = ("Preventive Maintenance Application - There is an unexpected reboot detected on server {0} from WLAN Stellar AP {1}").format(ip_server, ipadd)
+    action = "Please check the LANPOWER is running fine on LAN OmniSwitch and verify the capacitor-detection is disabled"
     result = "More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000066402"
     send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
@@ -86,7 +86,7 @@ def unexpected_reboot(ipadd):
 
 def upgrade(ipadd, upgrade_version):
     os.system('logger -t montag -p user.info upgrade detected')
-    message_content_1 = "WLAN Alert - There is a Stellar upgrade detected on server {0} from Stellar AP {1} - Version: {2}".format(ip_server, ipadd, upgrade_version)
+    message_content_1 = "Preventive Maintenance Application - WLAN Alert - There is an upgrade detected on server {0} from WLAN Stellar AP {1} - Version: {2}".format(ip_server, ipadd, upgrade_version)
     send_alert(message_content_1, jid)
     send_message(message_reason, jid)
     try:
@@ -100,9 +100,9 @@ def upgrade(ipadd, upgrade_version):
 
 def exception(ipadd):
     os.system('logger -t montag -p user.info exception detected')
-    subject = ("Preventive Maintenance Application - There is a Fatal exception detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
-    action = "There is high probability that Stellar AP is rebooting following this exception"
-    result = "If Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6 and others, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737  and https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058376. If Stellar AP is running AWOS 4.0.0 there is a known issue related to Voice and Video awareness fixed in AWOS 4.0.1, more details here https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000061233  "
+    subject = ("Preventive Maintenance Application - There is a Fatal exception detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
+    action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
+    result = "If WLAN Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6 and others, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737  and https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058376. If WLAN Stellar AP is running AWOS 4.0.0 there is a known issue related to Voice and Video awareness fixed in AWOS 4.0.1, more details here https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000061233  "
     send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
     try:
@@ -116,9 +116,9 @@ def exception(ipadd):
 
 def internal_error(ipadd):
     os.system('logger -t montag -p user.info internal error detected')
-    subject = ("Preventive Maintenance Application - There is an Internal Error detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
-    action = "There is high probability that Stellar AP is rebooting following this exception"
-    result = "If Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737"
+    subject = ("Preventive Maintenance Application - There is an Internal Error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
+    action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
+    result = "If WLAN Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737"
     send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
     try:
@@ -132,8 +132,8 @@ def internal_error(ipadd):
 
 def target_asserted(ipadd):
     os.system('logger -t montag -p user.info target asserted detected')
-    subject = ("Preventive Maintenance Application - There is a Target Asserted error detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
-    action = "There is high probability that Stellar AP is rebooting following this exception"
+    subject = ("Preventive Maintenance Application - There is a Target Asserted error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
+    action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
     result = "This is a known issue fixed in AWOS 4.0.0 MR-3, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058976"
     send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
@@ -149,8 +149,8 @@ def target_asserted(ipadd):
 
 def kernel_panic(ipadd):
     os.system('logger -t montag -p user.info Kernel Panic detected')
-    subject = ("Preventive Maintenance Application - There is a Kernel Panic error detected on server {0} from Stellar AP: {1}").format(ip_server, ipadd)
-    action = "There is high probability that Stellar AP is rebooting following this exception"
+    subject = ("Preventive Maintenance Application - There is a Kernel Panic error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
+    action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
     result = "This is a known issue fixed in AWOS 4.0.4 MR-4, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000067381"
     send_alert_advanced(subject, action, result, jid)
     send_message(message_reason, jid)
@@ -166,7 +166,7 @@ def kernel_panic(ipadd):
 def sta_limit_reached(ipadd, login_AP, pass_AP):
     os.system('logger -t montag -p user.info Associated STA Limit Reached!')
     filename_path, subject, action, result, category = sta_limit_reached_tools(login_AP, pass_AP, ipadd)
-    send_file(filename_path, subject, action, result, category)
+    send_file(filename_path, subject, action, result, category, jid)
     send_message(message_reason, jid)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_sta_limit", "tags": {"AP_IPAddr": ipadd, "Reason": "STA limit reached"}, "fields": {"count": 1}}])
@@ -180,7 +180,7 @@ def sta_limit_reached(ipadd, login_AP, pass_AP):
 def vlan_limit_reached(ipadd, login_AP, pass_AP):
     os.system('logger -t montag -p user.info Associated VLAN Limit Reached!')
     filename_path, subject, action, result, category = vlan_limit_reached_tools(login_AP, pass_AP, ipadd)
-    send_file(filename_path, subject, action, result, category)
+    send_file(filename_path, subject, action, result, category, jid)
     send_message(message_reason, jid)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_vlan_limit", "tags": {"AP_IPAddr": ipadd, "Reason": "VLAN limit reached"}, "fields": {"count": 1}}])
@@ -201,7 +201,7 @@ def authentication_step1(ipadd, device_mac, auth_type, ssid, deassociation):
         print(error)
         pass 
     if "0" in deassociation:
-        message = "[{0}] WLAN deassociation detected from client {1} on Stellar AP {2} with Authentication type {3}".format(ssid, device_mac, ipadd, auth_type)
+        message = "Preventive Maintenance Application - [{0}] WLAN deassociation detected from client {1} on WLAN Stellar AP {2} with Authentication type {3}".format(ssid, device_mac, ipadd, auth_type)
         os.system('logger -t montag -p user.info ' + message)
 
 
@@ -214,7 +214,7 @@ def authentication_step2(ipadd, user_name, ssid):
     except Exception as error:
         print(error)
         pass 
-    message = "[{0}] WLAN authentication on Captive Portal from User: {1} on Stellar AP {2}".format(ssid, user_name, ipadd)
+    message = "Preventive Maintenance Application - [{0}] WLAN authentication on Captive Portal from User: {1} on WLAN Stellar AP {2}".format(ssid, user_name, ipadd)
     os.system('logger -t montag -p user.info ' + message)
 
 
@@ -228,13 +228,13 @@ def mac_authentication(device_mac_auth, ARP, source, reason):
         print(error)
         pass 
     if "failed" in reason:
-        message = "WLAN Authentication failed from client {0} assigned to {1} from {2}".format(device_mac_auth, ARP, source)
+        message = "Preventive Maintenance Application - WLAN Authentication failed from client {0} assigned to {1} from {2}".format(device_mac_auth, ARP, source)
         os.system('logger -t montag -p user.info ' + message)
     elif "will" in reason:
-        message = "WLAN Authentication success from client {0} assigned to {1} from {2}".format(device_mac_auth, ARP, source)
+        message = "Preventive Maintenance Application - WLAN Authentication success from client {0} assigned to {1} from {2}".format(device_mac_auth, ARP, source)
         os.system('logger -t montag -p user.info ' + message)
     else:
-        message = "WLAN Authentication success from client {0} assigned to {1} from {2} - reason: {3}".format(device_mac_auth, ARP, source, reason)
+        message = "Preventive Maintenance Application - WLAN Authentication success from client {0} assigned to {1} from {2} - reason: {3}".format(device_mac_auth, ARP, source, reason)
         os.system('logger -t montag -p user.info ' + message)
 
 
@@ -248,15 +248,15 @@ def radius_authentication(auth_result, device_mac, accounting_status):
         print(error)
         pass 
     if "Failed" in auth_result:
-        message = "WLAN 802.1x Authentication {0} for client {1}".format(auth_result, device_mac)
+        message = "Preventive Maintenance Application - WLAN 802.1x Authentication {0} for client {1}".format(auth_result, device_mac)
         os.system('logger -t montag -p user.info ' + message)
     if "Success" in auth_result:
-        message = "WLAN 802.1x Authentication {0} for client {1}".format(auth_result, device_mac)
+        message = "Preventive Maintenance Application - WLAN 802.1x Authentication {0} for client {1}".format(auth_result, device_mac)
         os.system('logger -t montag -p user.info ' + message)
     if "null" in auth_result:
         os.system('logger -t montag -p user.info Radius authentication attempt or in progress')
     else:
-        message = "WLAN 8021x Accounting {0} for {1}".format(accounting_status, device_mac)
+        message = "Preventive Maintenance Application - WLAN 8021x Accounting {0} for {1}".format(accounting_status, device_mac)
         os.system('logger -t montag -p user.info ' + message)
 
 
@@ -269,7 +269,7 @@ def dhcp_ack(ipadd, device_mac):
     except Exception as error:
         print(error)
         pass 
-    message = "DHCP Ack received with IP Address {0} for client {1}".format(ip_dhcp, device_mac)
+    message = "Preventive Maintenance Application - DHCP Ack received with IP Address {0} for client {1}".format(ip_dhcp, device_mac)
     os.system('logger -t montag -p user.info ' + message)
 
 # Log Sample
@@ -520,13 +520,13 @@ def extract_WCF():
         if "Add dns domain" in element:
             domain = re.search(pattern_domain, str(f)).group(1)
             print(domain)
-            message = "{0} added in AP cache".format(domain)
+            message = "Preventive Maintenance Application - {0} added in AP cache".format(domain)
             os.system('logger -t montag -p user.info  ' + message)
         if "<ALERT>" in element:
             device_mac_wcf = re.search(pattern_Device_MAC, str(f)).group(1)
             fqdn = re.search(pattern_FQDN, str(f)).group(1)
             print("WCF Block FQDN: " + fqdn)
-            message = "Web Content Filtering for device {0} when accessing Site {1}".format(
+            message = "Preventive Maintenance Application - Web Content Filtering for device {0} when accessing Site {1}".format(
                 device_mac_wcf, fqdn)
             os.system('logger -t montag -p user.info  ' + message)
             try:
@@ -620,7 +620,7 @@ def extract_Policy():
                 sys.exit()
             os.system('logger -t montag -p user.info Access to SSID not authorized as per Location Policy')
             try:
-                info = "Access to SSID not authorized as per Location Policy"
+                info = "Preventive Maintenance Application - Access to WLAN SSID not authorized as per Location Policy"
                 send_message(info,jid)
                 write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Location Policy"}, "fields": {"count": 1}}])
                 sys.exit()
@@ -642,7 +642,7 @@ def extract_Policy():
                 sys.exit()
             os.system('logger -t montag -p user.info Access to SSID not authorized as per Period Policy')
             try:
-                info = "Access to SSID not authorized as per Period Policy"
+                info = "Preventive Maintenance Application - Access to WLAN SSID not authorized as per Period Policy"
                 send_message(info,jid)
                 write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Period Policy"}, "fields": {"count": 1}}])
                 sys.exit()
@@ -662,9 +662,9 @@ def extract_Policy():
             except IndexError:
                 print("Index error in regex")
                 sys.exit()
-            os.system('logger -t montag -p user.info Access to SSID not authorized as no UPAM access policy match')
+            os.system('logger -t montag -p user.info Access to WLAN SSID not authorized as there is no OmniVista/UPAM access policy matching')
             try:
-                info = "Access to SSID not authorized as there is no Access Policy matching with Radius Access-Request"
+                info = "Preventive Maintenance Application - Access to WLAN SSID not authorized as there is no Access Policy matching with Radius Access-Request"
                 send_message(info,jid)
                 write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Can't Match Access Policy"}, "fields": {"count": 1}}])
                 sys.exit()
@@ -770,7 +770,7 @@ def extract_WIPS():
             if "Add black list" in element:
                 device_mac = re.findall(r"Add black list mac is (.*?) ]", msg)[0]
                 print(device_mac)
-                message = "WLAN WIPS - Adding Client's MAC Address {0} in the Block List".format(device_mac)
+                message = "Preventive Maintenance Application - WLAN WIPS - Adding Client's MAC Address {0} in the Block List".format(device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
                 send_message(message, jid)
                 try:
@@ -787,7 +787,7 @@ def extract_WIPS():
                 reason = re.findall(r"status (.*?),", msg)[0]
                 print(reason)
                 print(device_mac)
-                message = "WLAN Client MAC Address {0} authentication rejected by ACL".format(device_mac)
+                message = "Preventive Maintenance Application - WLAN Client MAC Address {0} authentication rejected by ACL".format(device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
                 send_alert(message, jid)
                 try:

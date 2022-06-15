@@ -82,7 +82,7 @@ if save_resp == "0":
     answer = "0"
     port_monitoring(switch_user, switch_password, port, ip)
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ip)
-    send_file(filename_path, subject, action, result, category)
+    send_file(filename_path, subject, action, result, category, jid)
     notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
     answer = send_message_request(notif, jid)
     print(answer)
@@ -126,7 +126,7 @@ else:
 if answer == '1':
     os.system('logger -t montag -p user.info Process terminated')
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ip)
-    send_file(filename_path, subject, action, result, category)
+    send_file(filename_path, subject, action, result, category, jid)
 
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')

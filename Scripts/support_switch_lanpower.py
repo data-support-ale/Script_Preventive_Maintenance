@@ -50,9 +50,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -77,9 +75,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -107,9 +103,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -134,9 +128,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -161,9 +153,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -188,9 +178,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -213,9 +201,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
-#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message(info, jid)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])

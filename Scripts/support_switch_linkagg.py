@@ -76,12 +76,12 @@ if save_resp == "0":
     if lldp_port_description == 0:
         device_type = answer = 0
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
-        send_file(filename_path, subject, action, result, category) 
+        send_file(filename_path, subject, action, result, category, jid) 
     elif "OAW-AP" in str(lldp_port_description):
         # If LLDP Remote System is Stellar AP we search for IP Address in ARP Table
         device_ip = get_arp_entry(switch_user, switch_password, lldp_mac_address, ip)
         device_type = "OAW-AP"
-        notif = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". Stellar AP " + device_ip + "/" + lldp_mac_address + " is connected to this port, do you want to collect AP logs? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
+        notif = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". WLAN Stellar AP " + device_ip + "/" + lldp_mac_address + " is connected to this port, do you want to collect AP logs? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
         # If LLDP Remote System is Stellar AP we propose to collect AP Logs
         answer = send_message_request(notif, jid)
         print(answer)      
@@ -89,7 +89,7 @@ if save_resp == "0":
         device_type = "Others"
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
         action = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
-        send_file(filename_path, subject, action, result, category) 
+        send_file(filename_path, subject, action, result, category, jid) 
     sleep(2)
     #### Download port monitoring capture ###
     filename= '{0}_pmonitor_linkagg.enc'.format(host)
@@ -141,16 +141,16 @@ else:
 
 if answer == '1':
     if device_type == "OAW-AP":
-        os.system('logger -t montag -p user.info Collecting Snapshot logs on Stellar AP')
+        os.system('logger -t montag -p user.info Collecting Snapshot logs on WLAN Stellar AP')
         cmd = "ssudo tech_support_command 12 " + ip_server
         ssh_connectivity_check(login_AP, pass_AP, device_ip, cmd)
         os.system('logger -t montag -p user.info Collecting logs on OmniSwitch')
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
-        send_file(filename_path, subject, action, result, category)
+        send_file(filename_path, subject, action, result, category, jid)
     else:
         os.system('logger -t montag -p user.info Collecting logs on OmniSwitch')
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
-        send_file(filename_path, subject, action, result, category)
+        send_file(filename_path, subject, action, result, category, jid)
 
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')

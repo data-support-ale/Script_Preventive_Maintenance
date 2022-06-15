@@ -3,6 +3,7 @@
 import sys
 import os
 from support_tools_OmniSwitch import get_credentials
+from support_send_notification import send_test
 from time import strftime, localtime
 import requests
 
@@ -20,68 +21,8 @@ if sys.argv[1] != None:
     company = sys.argv[1]
     print(company)
 
-    info = "NBD Preventive Maintenance - This is a test thru the API TEST!"
-    url = (
-        "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Test_{0}").format(company)
-    headers = {
-        'Content-type': 'application/json',
-        "Accept-Charset": "UTF-8",
-        'jid1': '{0}'.format(jid),
-        'toto': '{0}'.format(info),
-    }
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        print(response)
-        if "200" in response:
-            os.system('logger -t montag -p user.info 200 OK')
-            print("Response  Text from VNA")
-            value = response.text
-            print(value)
-        else:
-            os.system('logger -t montag -p user.info REST API Timeout')
-    except requests.exceptions.ConnectionError:
-        pass
-    except requests.exceptions.Timeout:
-        print("Request Timeout when calling URL: " + url)
-        pass
-    except requests.exceptions.TooManyRedirects:
-        print("Too Many Redirects when calling URL: " + url)
-        pass
-    except requests.exceptions.RequestException:
-        print("Request exception when calling URL: " + url)
-        pass
-
-
-    info = "NBD Preventive Maintenance - This is a test!"
-    url = (
-        "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_{0}").format(company)
-    headers = {
-        'Content-type': 'application/json',
-        "Accept-Charset": "UTF-8",
-        'jid1': '{0}'.format(jid),
-        'toto': '{0}'.format(info),
-        'Card': '0'
-    }
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        if "200" in response:
-            os.system('logger -t montag -p user.info 200 OK')
-            print("Response  Text from VNA")
-            value = response.text
-            print(value)
-        else:
-            os.system('logger -t montag -p user.info REST API Timeout')
-    except requests.exceptions.ConnectionError:
-        pass
-    except requests.exceptions.Timeout:
-        print("Request Timeout when calling URL: " + url)
-        pass
-    except requests.exceptions.TooManyRedirects:
-        print("Too Many Redirects when calling URL: " + url)
-        pass
-    except requests.exceptions.RequestException:
-        print("Request exception when calling URL: " + url)
-        pass
+    info = "NBD Preventive Maintenance - API TEST!"
+    send_test(info,jid,company)
 
     url = (
         "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}").format(company)
@@ -89,7 +30,7 @@ if sys.argv[1] != None:
     headers = {
         'jid1': '{0}'.format(jid),
         'toto': '{0}'.format(info),
-        'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',
+        'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
         'Content-Type': 'image/gif',
         'Content-Disposition': 'attachment; filename=welcome.gif'
     }

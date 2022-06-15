@@ -8,14 +8,14 @@ import datetime
 from time import sleep
 from unicodedata import name
 
-from support_send_notification import send_message
+from support_send_notification import send_message, send_file
 import subprocess
 import re
 import requests
 import paramiko
 from database_conf import *
 
-# This script contains all functions interacting with Stellar APs
+# This script contains all functions interacting with WLAN Stellar APs
 
 # Function for extracting environment information from ALE_script.conf file
 
@@ -68,10 +68,10 @@ login_switch, pass_switch, mails, jid, ip_server, login_AP, pass_AP, tech_pass, 
 # Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     """ 
-    This function takes entry the command to push remotely on Stellar AP by SSH with support account with Python Paramiko module
+    This function takes entry the command to push remotely on WLAN Stellar AP by SSH with support account with Python Paramiko module
     Paramiko exceptions are handled for notifying Network Administrator if the SSH Session does not establish
 
-    :param str cmd                  Command pushed by SSH on Stellar AP
+    :param str cmd                  Command pushed by SSH on WLAN Stellar AP
     :param str ipadd                    Stellar IP address
     :return:  stdout, stderr          If exceptions is returned on stderr a notification is sent to Network Administrator, else we log the session was established
     """
@@ -84,7 +84,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     except ConnectionError as exception:
         print(exception)
         print("SSH not allowed when establishing SSH Session")
-        info = ("SSH Connection fails when establishing SSH Session to Stellar AP {0}, please verify if SSH is enabled on the AP Group").format(ipadd)
+        info = ("SSH Connection fails when establishing SSH Session to WLAN Stellar AP {0}, please verify if SSH is enabled on the AP Group").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -98,7 +98,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     except TimeoutError as exception:
         print(exception)
         print("Timeout when establishing SSH Session")
-        info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+        info = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -112,7 +112,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
         print("Authentication failed enter valid user name and password")
-        info = ("SSH Authentication failed when connecting to Stellar AP {0}, we cannot collect logs").format(ipadd)
+        info = ("SSH Authentication failed when connecting to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -128,8 +128,8 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         exception = error.readlines()
         exception = str(exception)
         print("Device unreachable")
-        logging.info(' SSH session does not establish on Stellar AP ' + ipadd)
-        info = ("Stellar AP {0} is unreachable, we cannot collect logs").format(ipadd)
+        logging.info(' SSH session does not establish on WLAN Stellar AP ' + ipadd)
+        info = ("WLAN Stellar AP {0} is unreachable, we cannot collect logs").format(ipadd)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
@@ -142,8 +142,8 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
             print(error)
             pass
     except:
-        logging.info(' SSH session does not establish on Stellar AP, please verify SSH is enabled on the AP Group ' + ipadd)
-        info = ("Stellar AP {0} is unreachable, please verify SSH is enabled on the AP Group").format(ipadd)
+        logging.info(' SSH session does not establish on WLAN Stellar AP, please verify SSH is enabled on the AP Group ' + ipadd)
+        info = ("WLAN Stellar AP {0} is unreachable, please verify SSH is enabled on the AP Group").format(ipadd)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
@@ -162,7 +162,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         # stdout.join(1200)
     except Exception:
         exception = "SSH Timeout"
-        info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
@@ -182,7 +182,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     if connection_status == 1:
         pass
     elif connection_status != 0 :
-        info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+        info = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
         send_message(info, jid)
         os.system('logger -t montag -p user.info ' + info)
         try:
@@ -194,7 +194,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
             print(error)
             pass 
     else:
-        info = ("SSH Session established successfully on Stellar AP {0}").format(ipadd)
+        info = ("SSH Session established successfully on WLAN Stellar AP {0}").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_success", "tags": {
@@ -211,11 +211,11 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
 
 def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):
     """ 
-    This function returns the neighbor channel scanned and current channel set on AP
+    This function returns the neighbor channel scanned and current channel set on WLAN Stellar AP
 
-    :param str login_AP:                   Stellar AP support login
-    :param str pass_AP:                    Stellar AP support password
-    :param str neighbor_ip:                Stellar Neighbor IP Address when scanning
+    :param str login_AP:                   WLAN Stellar AP support login
+    :param str pass_AP:                    WLAN Stellar AP support password
+    :param str neighbor_ip:                WLAN Stellar Neighbor IP Address when scanning
     :return:                               filename_path,subject,action,result,category
     """
     l_stellar_cmd = []
@@ -229,7 +229,7 @@ def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):
                 output = output.decode('UTF-8').strip()
             else:
                 exception = "Timeout"
-                info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(neighbor_ip)
+                info = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(neighbor_ip)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
@@ -242,7 +242,7 @@ def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = ("The python script execution on Stellar AP {0} failed - {1}").format(neighbor_ip, exception)
+            info = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(neighbor_ip, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
@@ -266,11 +266,11 @@ def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):
 
 def  channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization):
     """ 
-    This function returns the neighbor channel scanned and current channel set on AP
+    This function returns the neighbor channel scanned and current channel set on WLAN Stellar AP
 
-    :param str login_AP:                   Stellar AP support login
-    :param str pass_AP:                    Stellar AP support password
-    :param str channel_utilization:        Stellar AP channel utilization
+    :param str login_AP:                   WLAN Stellar AP support login
+    :param str pass_AP:                    WLAN Stellar AP support password
+    :param str channel_utilization:        WLAN Stellar AP channel utilization
     :return:                               filename_path,subject,action,result,category, channel, band
     """
     l_stellar_cmd = []
@@ -284,7 +284,7 @@ def  channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization)
                 output = output.decode('UTF-8').strip()
             else:
                 exception = "Timeout"
-                info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
@@ -297,7 +297,7 @@ def  channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization)
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
@@ -330,12 +330,12 @@ def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
     """ 
     This function returns file path containing the tech_support command outputs and the notification subject, body used when calling VNA API
 
-    :param str login_AP:                   Stellar AP support login
-    :param str pass_AP:                    Stellar AP support password
-    :param str ipadd:                      Switch IP address
+    :param str login_AP:                   WLAN Stellar AP support login
+    :param str pass_AP:                    WLAN Stellar AP support password
+    :param str ipadd:                      WLAN Stellar AP IP address
     :return:                               filename_path,subject,action,result,category
     """
-    text = "More logs about the Stellar AP : {0} \n\n\n".format(ipadd)
+    text = "More logs about the WLAN Stellar AP : {0} \n\n\n".format(ipadd)
 
     l_stellar_cmd = []
     l_stellar_cmd.append("ssudo tech_support_command 1")
@@ -354,7 +354,7 @@ def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
             else:
                 exception = "Timeout"
                 info = (
-                    "Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+                    "Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
@@ -369,7 +369,7 @@ def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = (
-                "The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+                "The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
@@ -391,9 +391,9 @@ def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = ("Preventive Maintenance Application - The number of associated WLAN Clients to BSSID on Stellar AP {0} reached the limit").format(ipadd)
+    subject = ("Preventive Maintenance Application - The number of associated WLAN Clients to BSSID on WLAN Stellar AP {0} reached the limit").format(ipadd)
     action = "Attached to this notification the command outputs, please check if the number of associated clients corresponds to the maximum number of clients allowed per band (default: 64) "
-    result = ("Stellar AP snapshot logs are collected and stored on /tftpboot/ directory on server {0}. If you observe disprecancies between the number of clients associated versus number of clients allowed please contact ALE Customer Support").format(ip_server)
+    result = ("WLAN Stellar AP snapshot logs are collected and stored on /tftpboot/ directory on server {0}. If you observe disprecancies between the number of clients associated versus number of clients allowed please contact ALE Customer Support").format(ip_server)
     category = "sta_limit"
     return filename_path, subject, action, result, category
 
@@ -401,12 +401,12 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
     """ 
     This function returns file path containing the tech_support command outputs and the notification subject, body used when calling VNA API
 
-    :param str login_AP:                   Stellar AP support login
-    :param str pass_AP:                    Stellar AP support password
-    :param str ipadd:                      Switch IP address
+    :param str login_AP:                   WLAN Stellar AP support login
+    :param str pass_AP:                    WLAN Stellar AP support password
+    :param str ipadd:                      WLAN Stellar AP IP address
     :return:                               filename_path,subject,action,result,category
     """
-    text = "More logs about the Stellar AP : {0} \n\n\n".format(ipadd)
+    text = "More logs about the WLAN Stellar AP : {0} \n\n\n".format(ipadd)
 
     l_stellar_cmd = []
     l_stellar_cmd.append("ssudo tech_support_command 1")
@@ -426,7 +426,7 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
                 text = "{0}{1}: \n{2}\n\n".format(text, stellar_cmd, output)
             else:
                 exception = "Timeout"
-                info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+                info = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
                 print(info)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
@@ -439,7 +439,7 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
                     pass 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
-            info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+            info = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
@@ -459,49 +459,22 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = ("Preventive Maintenance Application - The number of created VLAN reached the limit on Stellar AP {0}").format(ipadd)
-    action = "Depending of the Stellar AP model, the VLAN count differs. AP1101/AP1201H(L) (4 VLANs), AP1201 (16 VLANs), others models (32 VLANs)"
-    result = ("Stellar AP snapshot logs are collected and stored on /tftpboot/ directory on server {0}. If you observe disprecancies between the number of VLAN created versus number of VLAN allowed on your Stellar AP model, please contact ALE Customer Support").format(ip_server)
+    subject = ("Preventive Maintenance Application - The number of created VLAN reached the limit on WLAN Stellar AP {0}").format(ipadd)
+    action = "Depending of the WLAN Stellar AP model, the VLAN count differs. AP1101/AP1201H(L) (4 VLANs), AP1201 (16 VLANs), others models (32 VLANs)"
+    result = ("WLAN Stellar AP snapshot logs are collected and stored on /tftpboot/ directory on server {0}. If you observe disprecancies between the number of VLAN created versus number of VLAN allowed on your WLAN Stellar AP model, please contact ALE Customer Support").format(ip_server)
     category = "vlan_limit"
     return filename_path, subject, action, result, category
-
-def send_file(filename_path, subject, action, result, category):
-    """ 
-    This function takes as argument the file containins command outputs, the notification subject, notification action and result. 
-    This function is called for attaching file on Rainbow or Email notification
-    :param str filename_path:                  Path of file attached to the notification
-    :param str subject:                        Notification subject
-    :param str action:                         Preventive Action done
-    :param str result:                         Preventive Result
-    :param int Card:                           Set to 0 for sending notification without card
-    :param int Email:                          0 if email is disabled, 1 if email is enabled
-    :return:                                   None
-    """
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_EMEA"
-    request_debug = "Call VNA REST API Method POST path %s" % url
-    print(request_debug)
-    os.system('logger -t montag -p user.info Call VNA REST API Method POST')
-    headers = {'Content-type': "text/plain", 'Content-Disposition': ("attachment;filename={0}_troubleshooting.log").format(category), 'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject), 'toto': '{0}'.format(action), 'tutu': '{0}'.format(result), 'Card': '0', 'Email': '0'}
-    files = {'file': open(filename_path, 'r')}
-    response = requests.post(url, files=files, headers=headers)
-    print(response)
-    response = str(response)
-    response = re.findall(r"<Response \[(.*?)\]>", response)
-    if "200" in response:
-        os.system('logger -t montag -p user.info 200 OK')
-    else:
-        os.system('logger -t montag -p user.info REST API Call Failure')
 
 if __name__ == "__main__":
     jid = "570e12872d768e9b52a8b975@openrainbow.com"
     pass_AP = "Letacla01*"
     login_AP = "support"
-    ipadd = "10.130.7.70"
+    ipadd = "10.130.7.186"
     cmd = "/usr/sbin/showsysinfo"
-    host = "10.130.7.76"
+    host = "10.130.7.186"
     pass_root = ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd)
 #    get_snapshot_tftp(pass_root, ipadd)
     filename_path, subject, action, result, category = sta_limit_reached_tools(login_AP, pass_AP, ipadd)
-    send_file(filename_path, subject, action, result, category)
+    send_file(filename_path, subject, action, result, category, jid)
     filename_path, subject, action, result, category = vlan_limit_reached_tools(login_AP, pass_AP, ipadd)
-    send_file(filename_path, subject, action, result, category)
+    send_file(filename_path, subject, action, result, category, jid)

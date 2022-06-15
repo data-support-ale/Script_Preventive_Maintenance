@@ -198,7 +198,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 result = ("We have collected the CLI and BSHELL logs of the following OmniSwitches: {0}").format(ipadd_list)
                 action = "Find enclosed to this notification the log collection"
                 category = "saa_{0}_{1}".format(ipaddress,function)
-                send_file(logfilepath, subject, action, result, category)
+                send_file(logfilepath, subject, action, result, category, jid)
 
             for ipaddress in ipadd_list:
                 function = "BSHELL" 
@@ -214,7 +214,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 result = ("We have collected the CLI and BSHELL logs of the following OmniSwitches: {0}").format(ipadd_list)
                 action = "Find enclosed to this notification the log collection"
                 category = "saa_{0}_{1}".format(ipaddress,function)
-                send_file(logfilepath, subject, action, result, category)
+                send_file(logfilepath, subject, action, result, category, jid)
 
             ##### Port monitoring to check if frames are received with VLAN Tag 4095 #####
             try:
