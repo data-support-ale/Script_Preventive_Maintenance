@@ -155,6 +155,7 @@ with open("/var/log/devices/lastlog_flapping.json", "r", errors='ignore') as log
                 print(counter)
 
             if(counter == 5):
+
                 lldp_port_capability = collect_command_output_lldp_port_capability(
                 switch_user, switch_password, port, ip)
 
@@ -162,6 +163,7 @@ with open("/var/log/devices/lastlog_flapping.json", "r", errors='ignore') as log
                     process(ip, hostname, port, "UPLINK")
                 elif(isUpLink(switch_user, switch_password, port, ip)):
                     process(ip, hostname, port, "UPLINK")
+
                 else:
                     process(ip, hostname, port, "ACCESS")
 

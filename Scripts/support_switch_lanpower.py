@@ -51,6 +51,11 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
+<<<<<<< HEAD
+=======
+#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
+#            send_message(info, jid)
+>>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -76,6 +81,11 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
+<<<<<<< HEAD
+=======
+#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
+#            send_message(info, jid)
+>>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -104,6 +114,11 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
+<<<<<<< HEAD
+=======
+#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
+#            send_message(info, jid)
+>>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -129,6 +144,11 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
+<<<<<<< HEAD
+=======
+#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
+#            send_message(info, jid)
+>>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -154,6 +174,11 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
+<<<<<<< HEAD
+=======
+#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
+#            send_message(info, jid)
+>>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -179,6 +204,11 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
+<<<<<<< HEAD
+=======
+#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
+#            send_message(info, jid)
+>>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -202,6 +232,11 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
             send_file(filename_path, subject, action, result, category, jid)
+<<<<<<< HEAD
+=======
+#            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
+#            send_message(info, jid)
+>>>>>>> 7d1056503e3bbb9e8c6bab452093288642e50eb4
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
