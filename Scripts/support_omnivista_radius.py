@@ -600,7 +600,7 @@ def rainbow_notif(user_type, value, threshold):
         subject = "The number of devices authenticated on Radius Server {0} was below defined threshold.".format(ip)
         action = "Action done: the Radius services are restarted and we keep monitoring the number of authentications"
         result = "Find enclosed to this notification the log collection"
-        send_file(logfilepath, subject, action, result, category)
+        send_file(logfilepath, subject, action, result, category, jid)
 
    elif answer == '2':
         os.system('logger -t montag -p user.info Received Answer Yes and Remember')

@@ -44,15 +44,11 @@ with open("/var/log/devices/lastlog_bgp.json", "r", errors='ignore') as log_file
         exit()
 
 
-if jid != '':
-    notif = "BGP Peering state change on OmniSwitch \"" + host + "\" IP: " + ip + \
-        " BGP Peer IP Address/AS " + bgp_peer + "/" + bgp_as + " to " + final_state
-    send_message(notif, jid)
-else:
-    print("Mail request set as no")
-    os.system('logger -t montag -p user.info Mail request set as no')
-    sleep(1)
-    open('/var/log/devices/lastlog_bgp.json', 'w', errors='ignore').close()
+info = "Preventive Maintenance Application - BGP Peering state change on OmniSwitch {0} / {1}\n\nDetails:\n- BGP Peer IP Address/AS : {2} / {3}\n- State : {4}\n".format(host, ip, bgp_peer, bgp_as, final_state)
+send_message(info, jid)
+
+sleep(1)
+open('/var/log/devices/lastlog_bgp.json', 'w', errors='ignore').close()
 
 try:
     write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
