@@ -167,7 +167,7 @@ if answer == '1':
     subject = "A port violation is detected:".format(host, ip)
     action = "Violation on OmniSwitch {0}, port {1} has been cleared up".format(host, port)
     result = "Find enclosed to this notification the log collection"
-    send_file(filename_path, subject, action, result, category)
+    send_file(filename_path, subject, action, result, category, jid)
 
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')

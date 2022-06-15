@@ -66,11 +66,10 @@ logging.info(bcolors.OKGREEN + runtime + ': upload starting' + bcolors.ENDC)
 logging.info(bcolors.OKGREEN + 'Process finished!' + bcolors.ENDC)
 
 
-info = "A Pattern has been detected in AP(IP : {0}) syslogs. A snapshot has been sent at the server logs : {1}, in the directory : /tftpboot/ ".format(
-    ip, ip_server)
+info = "A Pattern has been detected in AP(IP : {0}) syslogs. A snapshot has been sent at the server logs : {1}, in the directory : /tftpboot/ ".format(ip, ip_server)
 if jid != '':
     send_message(info, jid)
-    send_file(info, jid, ip)
+    #send_file(filename_path, subject, action, result, category, jid)
 
 
 # clear log file

@@ -55,7 +55,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             print(vpn_ip)
             print(reason)
             filename_path, subject, action, result, category = collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "VPN": vpn_ip, "Reason": reason}, "fields": {"count": 1}}])
@@ -89,7 +89,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
         try:
             vpn_ip, reason = re.findall(r"[AF_INET](.*?):443 failed: (.*)", msg)[0]
             filename_path, subject, action, result, category = collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "VPN": vpn_ip, "Reason": reason}, "fields": {"count": 1}}])
@@ -124,7 +124,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             vpn_ip= re.findall(r"Cannot resolve host address: (.*?):443", msg)[0]
             reason = "Cannot resolve host address"
             filename_path, subject, action, result, category = collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "VPN": vpn_ip, "Reason": reason}, "fields": {"count": 1}}])
@@ -160,7 +160,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             reason = "Invalid process status"
             vpn_ip = "0"
             filename_path, subject, action, result, category = collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "VPN": vpn_ip, "Reason": reason}, "fields": {"count": 1}}])
@@ -206,7 +206,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
                 print(error)
                 pass 
             filename_path, subject, action, result, category = collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, host, ipadd)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 
         except UnboundLocalError as error:
             print(error)

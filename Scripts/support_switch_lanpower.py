@@ -50,7 +50,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
 #            send_message(info, jid)
             try:
@@ -77,7 +77,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
 #            send_message(info, jid)
             try:
@@ -107,7 +107,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
 #            send_message(info, jid)
             try:
@@ -134,7 +134,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
 #            send_message(info, jid)
             try:
@@ -161,7 +161,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
 #            send_message(info, jid)
             try:
@@ -188,7 +188,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
 #            send_message(info, jid)
             try:
@@ -213,7 +213,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category, jid)
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
 #            send_message(info, jid)
             try:

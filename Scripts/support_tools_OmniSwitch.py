@@ -135,7 +135,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         print("Function ssh_connectivity_check - Device unreachable")
         logging.info(' SSH session does not establish on OmniSwitch ' + ipadd)
         info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -157,7 +157,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         exception = "SSH Exception"
         print("Function ssh_connectivity_check - " + exception)
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -246,7 +246,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         exception = error.readlines()
         exception = str(exception)
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -282,7 +282,7 @@ def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
     except FileNotFoundError as exception:
         print(exception)
         info = ("The download of PMD file {0} on OmniSwitch {1} failed - {2}").format(filename, ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -522,7 +522,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -535,7 +535,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ( "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -589,7 +589,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -602,7 +602,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -661,7 +661,7 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -674,7 +674,7 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -742,7 +742,7 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -755,7 +755,7 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -819,7 +819,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -832,7 +832,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -860,6 +860,66 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
         result = "Find enclosed to this notification the interface's status/statistics"
     category = "storm"
     return filename_path, subject, action, result, category
+
+def collect_command_output_flapping(switch_user, switch_password, port, ipadd):
+    """ 
+    This function takes entries arguments the Interface/Port where flapping occurs and the type of traffic. 
+    This function checks the decision received from Admin:
+       if decision is 1, Administrator selected Yes and script disables the interface
+       if decision is 0, Administrator selected No and we only provide command outputs  
+    This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+
+    :param str port:                  Switch Interface/Port ID <chasis>/<slot>/>port>
+    :param str ipadd:                 Switch IP address
+    :return:                          filename_path,subject,action,result,category
+    """
+    ## Log collection of additionnal command outputs
+    text = "More logs about the switch : {0} \n\n\n".format(ipadd)
+
+    l_switch_cmd = []
+    l_switch_cmd.append(("show interfaces port {0}").format(port))
+
+    for switch_cmd in l_switch_cmd:
+        try:
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            if output != None:
+                output = str(output)
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+        status_changes = re.findall(r"Number of Status Change   : (.*?),", output_decode)[0]
+        link_quality = re.findall(r"Link-Quality              : (.*?),", output_decode)[0]
+    return status_changes, link_quality
+
 
 # Function to collect several command outputs related to High CPU detected
 def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd):
@@ -895,7 +955,7 @@ def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -908,7 +968,7 @@ def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -968,7 +1028,7 @@ def collect_command_output_health_memory(switch_user, switch_password, host, ipa
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -981,7 +1041,7 @@ def collect_command_output_health_memory(switch_user, switch_password, host, ipa
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1038,7 +1098,7 @@ def collect_command_output_health_port(switch_user, switch_password, port, type,
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -1051,7 +1111,7 @@ def collect_command_output_health_port(switch_user, switch_password, port, type,
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1113,7 +1173,7 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -1126,7 +1186,7 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1184,7 +1244,7 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -1197,7 +1257,7 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1255,7 +1315,7 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -1268,7 +1328,7 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1326,7 +1386,7 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -1339,7 +1399,7 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1352,7 +1412,7 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
             sys.exit()
         except subprocess.SubprocessError as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1377,7 +1437,7 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
     fan_status=0
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-        print(output)
+        
         if output != None:
             output = str(output)
             fan_status = bytes(output, "utf-8").decode("unicode_escape")
@@ -1387,7 +1447,7 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
             print(fan_status)
     except subprocess.TimeoutExpired as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -1400,7 +1460,7 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
         sys.exit()
     except subprocess.SubprocessError as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -1455,7 +1515,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     for switch_cmd in l_switch_cmd:
         try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            print(output)
+            
             if output != None:
                 output = str(output)
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
@@ -1466,7 +1526,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -1479,7 +1539,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1537,7 +1597,7 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -1550,7 +1610,7 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1563,7 +1623,7 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
             sys.exit()
         except subprocess.SubprocessError as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1617,7 +1677,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -1630,7 +1690,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1643,7 +1703,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
             sys.exit()
         except subprocess.SubprocessError as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1703,7 +1763,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -1716,7 +1776,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1729,7 +1789,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
             sys.exit()
         except subprocess.SubprocessError as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1752,7 +1812,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
     switch_cmd = "show configuration snapshot lanpower"
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-        print(output)
+        
         if output != None:
             output = str(output)
             output_decode = bytes(output, "utf-8").decode("unicode_escape")
@@ -1764,7 +1824,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
             print(lanpower_settings_status)
     except subprocess.TimeoutExpired as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -1777,7 +1837,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
         sys.exit()
     except subprocess.SubprocessError as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -1843,7 +1903,7 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, 
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -1856,7 +1916,7 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, 
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1869,7 +1929,7 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, 
             sys.exit()
         except subprocess.SubprocessError as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -1888,7 +1948,7 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, 
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = ("The SFP on OmniSwitch: {0}/{1} - crossed DDM (Digital Diagnostics Monitoring) threshold").format(host,ipadd)
+    subject = ("Preventive Maintenance Application - The SFP on OmniSwitch: {0}/{1} - crossed DDM (Digital Diagnostics Monitoring) threshold").format(host,ipadd)
     action = ("The SFP {0}/{1} on OmniSwitch {2}/{3} crossed DDM (Digital Diagnostics Monitoring) threshold {4} {5}: {6}").format(slot, port, host, ipadd, threshold, ddm_type, sfp_power)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "ddm"
@@ -1913,7 +1973,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         switch_cmd = "show ip service | grep {0}".format(protocol)
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-        print(output)
+        
         if output != None:
             output = str(output)
             service_status=0
@@ -1921,10 +1981,11 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
             output_decode = output_decode.replace("', '","")
             output_decode = output_decode.replace("']","")
             service_status = output_decode.replace("['","")
+            service_status = str(service_status)
     except subprocess.TimeoutExpired as exception:
         info = (
             "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -1937,7 +1998,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         sys.exit()
     except AttributeError as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -1950,7 +2011,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         sys.exit()
     except FileNotFoundError as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -1961,7 +2022,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
             print(error)
             pass 
         sys.exit()
-    if "enabled" in service_status:
+    if "enabled" in service_status or service_status != 0:
         print("Protocol " + protocol + " enabled!")
         service_status = "enabled"
     else:
@@ -1971,7 +2032,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
     aaa_status=0
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-        print(output)
+        
         if output != None:
             output = str(output)
             output_decode = bytes(output, "utf-8").decode("unicode_escape")
@@ -1989,7 +2050,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
             pass
     except subprocess.TimeoutExpired as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -2004,7 +2065,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         aaa_status = "disabled"
     except AttributeError as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -2017,7 +2078,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         sys.exit()
     except FileNotFoundError as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -2064,7 +2125,7 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -2077,7 +2138,7 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -2090,7 +2151,7 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
             sys.exit()
         except subprocess.SubprocessError as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -2109,8 +2170,8 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = ("Preventive Maintenance Application - Authentication failure noticed on switch: {0}").format(ipadd)
-    action = ("An Authentication failure has been detected in switch( Hostname: {0} ) from User: {1} - source IP Address: {2} - protocol: {3}").format(host, user, source_ip, protocol)
+    subject = ("Preventive Maintenance Application - Authentication failure noticed on OmniSwitch: {0}").format(ipadd)
+    action = ("An Authentication failure has been detected on OmniSwitch ( Hostname: {0} ) from User: {1} - source IP Address: {2} - protocol: {3}").format(host, user, source_ip, protocol)
     result = ("As per configuration, this service protocol is {0} and aaa authentication is {1}").format(service_status, aaa_status)
     category = "authentication"
     return filename_path, subject, action, result, category
@@ -2129,7 +2190,7 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
     switch_cmd = "show lldp port {0} remote-system".format(port)
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-        print(output)
+        
         if output != None:
             output = str(output)
             output_decode = bytes(output, "utf-8").decode("unicode_escape")
@@ -2139,7 +2200,7 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
     except subprocess.TimeoutExpired as exception:
         info = (
             "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -2152,7 +2213,7 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
         sys.exit()
     except AttributeError as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -2165,7 +2226,7 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
         sys.exit()
     except FileNotFoundError as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -2187,6 +2248,77 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
             pass
     return lldp_port_description, lldp_mac_address
 
+
+
+def collect_command_output_lldp_port_capability(switch_user, switch_password, port, ipadd):
+    """ 
+    This function takes IP Address and port as argument. This function is called when we want additionnal information on equipment connected to Switch Interface
+    This function returns LLDP Port Capability field value
+    :param str port:                      Switch Interface Port
+    :param str ipadd:                     Switch IP address
+    :return:                              lldp_capability
+    """
+    lldp_port_capability = 0
+    switch_cmd = "show lldp port {0} remote-system".format(port)
+    try:
+        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+        if output != None:
+            output = str(output)
+            output_decode = bytes(output, "utf-8").decode("unicode_escape")
+            output_decode = output_decode.replace("', '","")
+            output_decode = output_decode.replace("']","")
+            lldp_port = output_decode.replace("['","")
+    except subprocess.TimeoutExpired as exception:
+        info = (
+            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass 
+        sys.exit()
+    except AttributeError as exception:
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass 
+        sys.exit()
+    except FileNotFoundError as exception:
+        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        
+        os.system('logger -t montag -p user.info ' + info)
+        send_message(info, jid)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass
+        sys.exit()
+    if "Port Description" in lldp_port:
+        try: 
+           lldp_port_capability = re.findall(r"Capabilities Supported      = (.*?),", lldp_port)[0]
+           lldp_mac_address = re.findall(r"Port (.*?):\n", lldp_port)[1]
+        except exception as error:
+            print(error)
+            lldp_port_capability = 0
+            pass
+    return lldp_port_capability
+
+
 # Function to collect OmniSwitch LLDP Remote System Port Description
 def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
     """ 
@@ -2201,7 +2333,7 @@ def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
     switch_cmd = "show arp | grep \"{0}\"".format(lldp_mac_address)
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-        print(output)
+        
         if output != None:
             output = str(output)
             output_decode = bytes(output, "utf-8").decode("unicode_escape")
@@ -2211,7 +2343,7 @@ def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
     except subprocess.TimeoutExpired as exception:
         info = (
             "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -2224,7 +2356,7 @@ def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
         sys.exit()
     except AttributeError as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -2237,7 +2369,7 @@ def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
         sys.exit()
     except FileNotFoundError as exception:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
+        
         os.system('logger -t montag -p user.info ' + info)
         send_message(info, jid)
         try:
@@ -2508,11 +2640,10 @@ def isUpLink(switch_user, switch_password, port_number, ipadd):
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
                 output_vlan_members = output_decode.replace("['","")
-                print(output_vlan_members)
             else:
                 exception = "Timeout"
                 info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                print(info)
+                
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
@@ -2525,7 +2656,7 @@ def isUpLink(switch_user, switch_password, port_number, ipadd):
                 sys.exit()
         except subprocess.TimeoutExpired as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -2538,7 +2669,7 @@ def isUpLink(switch_user, switch_password, port_number, ipadd):
             sys.exit()
         except subprocess.SubprocessError as exception:
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
+            
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
@@ -2593,110 +2724,10 @@ def port_monitoring(switch_user, switch_password, port, ipadd):
     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
     try:
         output = subprocess.call(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
-        print(output)
+        
         return True
     except subprocess.SubprocessError:
         print("Issue when executing command")
-
-
-def send_file(filename_path, subject, action, result, category):
-    """ 
-    This function takes as argument the file containins command outputs, the notification subject, notification action and result. 
-    This function is called for attaching file on Rainbow or Email notification
-    :param str filename_path:                  Path of file attached to the notification
-    :param str subject:                        Notification subject
-    :param str action:                         Preventive Action done
-    :param str result:                         Preventive Result
-    :param int Card:                           Set to 0 for sending notification without card
-    :param int Email:                          0 if email is disabled, 1 if email is enabled
-    :return:                                   None
-    """
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_"+company
-    request_debug = "Call VNA REST API Method POST path %s" % url
-    print(request_debug)
-    os.system('logger -t montag -p user.info Call VNA REST API Method POST')
-    headers = {'Content-type': "text/plain", 
-    'Content-Disposition': ("attachment;filename={0}_troubleshooting.log").format(category),
-    'jid1': '{0}'.format(jid),
-    'tata': '{0}'.format(subject),
-    'toto': '{0}'.format(action),
-    'tutu': '{0}'.format(result),
-    'Card': '0',
-    'Email': '0'}
-    try:
-        files = {'file': open(filename_path, 'r')}
-    except:
-        pass   
-    try:
-        response = requests.post(url, files=files, headers=headers, timeout=20)
-        code = re.findall(r"<Response \[(.*?)\]>", str(response))
-        if "200" in code:
-            os.system('logger -t montag -p user.info 200 OK')
-            print("Response  Text from VNA")
-            value = response.text
-            print(value)
-            print(code)
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": "Success"}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-                sys.exit()
-            except Exception as error:
-                print(error)
-                pass
-        else:
-            os.system('logger -t montag -p user.info REST API Timeout')
-            pass
-    except requests.exceptions.ConnectionError as response:
-        print(response)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass
-    except requests.exceptions.Timeout as response:
-        print("Request Timeout when calling URL: " + url)
-        print(response)
-        try:
-           write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass
-    except requests.exceptions.TooManyRedirects as response:
-        print("Too Many Redirects when calling URL: " + url)
-        print(response)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass
-    except requests.exceptions.RequestException as response:
-        print("Request exception when calling URL: " + url)
-        print(response)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass
-
-
 
 if __name__ == "__main__":
 #    a = isUpLink("admin", "switch", "1/1/21", "10.130.7.239")
@@ -2707,44 +2738,44 @@ if __name__ == "__main__":
     jid = "570e12872d768e9b52a8b975@openrainbow.com"
     switch_password = "switch"
     switch_user = "admin"
-    ipadd = "10.130.7.240"
+    ipadd = "10.130.7.247"
     cmd = "show system"
     host = "LAN-6860N-2"
     port = "1/1/52"
     source = "Unknown Unicast"
     decision = 0
-#    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-#    filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
+    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+    filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
     filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ipadd)
-    send_file(filename_path, subject, action, result, category)
-#    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
-#    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result, category, jid)
+    filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
+    send_file(filename_path, subject, action, result,category, jid)
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result,category, jid)
     reason="Fail due to out-of-range capacitor value"
     port="34"
     filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result,category, jid)
     agg = "6"
     filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result,category, jid)
     vcid = "2"
     filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result,category, jid)
     psid = "2"
     filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result,category, jid)
     source = "Access Guardian"
     port="1/1/15"
     decision = "0"
     filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result,category, jid)
     protocol = "Console"
     user = "toto"
     source_ip = "10.130.7.17"
     service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
     filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
-    send_file(filename_path, subject, action, result,category)
+    send_file(filename_path, subject, action, result,category, jid)
 
 else:
     print("Support_Tools_OmniSwitch Script called by another script")

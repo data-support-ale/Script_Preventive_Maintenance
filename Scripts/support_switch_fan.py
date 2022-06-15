@@ -58,7 +58,7 @@ if save_resp == "0":
         elif answer == "0":
             add_new_save(ip, "1", "fan", choice="never")
         filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ip)
-        send_file(filename_path, subject, action, result, category)
+        send_file(filename_path, subject, action, result, category, jid)
 elif save_resp == "-1":
     try:
         write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "FAN_Unit_ID": " 1"}, "fields": {"count": 1}}])
@@ -77,7 +77,7 @@ else:
 
 if answer == '1':
         filename_path, subject, action, result, category, chassis_id = collect_command_output_fan(switch_user, switch_password, host, ip)
-        send_file(filename_path, subject, action, result, category)
+        send_file(filename_path, subject, action, result, category, jid)
         try:
            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "FAN_Unit_ID": chassis_id}, "fields": {"count": 1}}])
         except UnboundLocalError as error:

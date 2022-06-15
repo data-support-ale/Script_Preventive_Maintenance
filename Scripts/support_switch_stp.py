@@ -55,7 +55,7 @@ if save_resp == "0":
         print(answer)
         decision = "0"
         filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ip, vlan)
-        send_file(filename_path, subject, action, result, category)
+        send_file(filename_path, subject, action, result, category, jid)
     if answer == "2":
         add_new_save(ip, vlan, "stp", choice="always")
     elif answer == "0":
@@ -79,7 +79,7 @@ else:
 if answer == '1':
         decision = "1"
         filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ip, vlan)
-        send_file(filename_path, subject, action, result, category)
+        send_file(filename_path, subject, action, result, category, jid)
         try:
            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ip, "VLAN": vlan}, "fields": {"count": 1}}])
         except UnboundLocalError as error:

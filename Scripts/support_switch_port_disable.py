@@ -167,7 +167,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         os.system('logger -t montag -p user.info Port disabled')
         info = "A loop has been detected on your network and the port {0} is administratively disabled on device {1}. More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000051875".format(port, ipadd)
         filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
-        send_file(filename_path, subject, action, result, category)
+        send_file(filename_path, subject, action, result, category, jid)
         sleep(5)
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
         appid = "slNi"
