@@ -45,16 +45,11 @@ with open("/var/log/devices/lastlog_authfail.json", "r", errors='ignore') as log
         print("Index error in regex")
         exit()
 
-if jid != '':
-    notif = "Authentication failed on OmniSwitch \"" + host + "\" IP: " + ip + \
-        " user login: " + user + " from source IP Address: " + \
-            source_ip + " protocol: " + protocol
-    send_message(notif, jid)
-else:
-    print("Mail request set as no")
-    os.system('logger -t montag -p user.info Mail request set as no')
-    sleep(1)
-    open('/var/log/devices/lastlog_auth_fail.json', 'w').close()
+info = "Preventive Maintenance Application - Authentication failed on OmniSwitch {0} / {1}\n\nDetails:\n- User Login : {2}\n- Source IP Address : {3}\n- Protocol : {4}\n".format(host, ip, user, source_ip, protocol)
+send_message(info, jid)
+
+sleep(1)
+open('/var/log/devices/lastlog_auth_fail.json', 'w').close()
 
 try:
     write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
