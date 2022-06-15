@@ -1,7 +1,9 @@
 #!/usr/local/bin/python3.7
 
 from cProfile import run
+from cgitb import text
 from email import header
+from operator import le
 import sys
 import requests
 from time import sleep, strftime, localtime
@@ -46,10 +48,39 @@ def send_message(info, jid):
     :param str jid:                 Rainbow jid where the message will be send
     :return:                        None
     """
+    text = info.split("\n")
+    if len(text) == 1:
+        text += [".", "", "", "", "", "", "", ""]
+    else:
+        for _ in range(len(text), 10):
+            text += [""]
+
+
     company = get_credentials("company")
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
-    headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-               'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
+    headers = {
+                'Content-type': 'application/json', 
+                "Accept-Charset": "UTF-8",
+                'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+                'jid1': '{0}'.format(jid), 
+#                'jid2': '{0}'.format(jid2),
+#                'jid3': '{0}'.format(jid3),
+                'text1': '{0}'.format(text[0]),
+                'text2': '{0}'.format(text[1]), 
+                'text3': '{0}'.format(text[2]), 
+                'text4': '{0}'.format(text[3]), 
+                'text5': '{0}'.format(text[4]), 
+                'text6': '{0}'.format(text[5]), 
+                'text7': '{0}'.format(text[6]), 
+                'text8': '{0}'.format(text[7]), 
+                'text9': '{0}'.format(text[8]), 
+#                'subject': '{0}'.format(action),
+#                'action': '{0}'.format(info),
+#                'result': '{0}'.format(result),
+                'Card': '0',
+#                'Email': '0',
+#                'Advanced': '0'
+               }
     try:
         response = requests.get(url, headers=headers, timeout=0.5)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
@@ -129,6 +160,108 @@ def send_message(info, jid):
             print(error)
             pass
 
+def send_test(info, jid,company):
+    """ 
+    API for testing VNA and Rainbow reachability
+
+    :param str info:                Message to send to the rainbow bot
+    :param str jid:                 Rainbow jid where the message will be send
+    :return:                        None
+    """
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Test_"+company
+    headers = {
+                'Content-type': 'application/json', 
+                "Accept-Charset": "UTF-8",
+                'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+                'jid1': '{0}'.format(jid), 
+#                'jid2': '{0}'.format(jid2),
+#                'jid3': '{0}'.format(jid3),
+                'toto': '{0}'.format(info), 
+#                'subject': '{0}'.format(action),
+#                'action': '{0}'.format(info),
+#                'result': '{0}'.format(result),
+                'Card': '0',
+#                'Email': '0',
+#                'Advanced': '0'
+               }
+    try:
+        response = requests.get(url, headers=headers, timeout=0.5)
+        code = re.findall(r"<Response \[(.*?)\]>", str(response))
+        if "200" in code:
+            os.system('logger -t montag -p user.info 200 OK')
+            print("Response  Text from VNA")
+            value = response.text
+            print(value)
+            print(code)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": "Success"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass
+            pass
+        else:
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass
+            os.system('logger -t montag -p user.info REST API Timeout')
+            pass
+    except requests.exceptions.ConnectionError as response:
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+    except requests.exceptions.Timeout as response:
+        print("Request Timeout when calling URL: " + url)
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+    except requests.exceptions.TooManyRedirects as response:
+        print("Too Many Redirects when calling URL: " + url)
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
+    except requests.exceptions.RequestException as response:
+        print("Request exception when calling URL: " + url)
+        print(response)
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass
 
 def send_alert(info, jid):
     """
@@ -140,8 +273,14 @@ def send_alert(info, jid):
     """
     company = get_credentials("company")
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_"+company
-    headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-               'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info), 'Card': '0'}
+    headers = {
+                'Content-type': 'application/json',
+                "Accept-Charset": "UTF-8",
+                'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+                'jid1': '{0}'.format(jid), 
+                'toto': '{0}'.format(info), 
+                'Card': '0'
+                }
     try:
         response = requests.get(url, headers=headers, timeout=0.5)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
@@ -222,8 +361,15 @@ def send_message_aijaz(subject, info, jid):
     """
 
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Aijaz"
-    headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-               'jid1': '{0}'.format(jid), 'tata': '{0}'.format(subject), 'toto': '{0}'.format(info), 'Card': '0'}
+    headers = {
+                'Content-type': 'application/json', 
+                "Accept-Charset": "UTF-8",
+                'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+                'jid1': '{0}'.format(jid), 
+                'tata': '{0}'.format(subject), 
+                'toto': '{0}'.format(info), 
+                'Card': '0'
+                }
     try:
         response = requests.get(url, headers=headers, timeout=5)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
@@ -305,11 +451,33 @@ def send_message_request(info, jid):
     :param str id_case:             Unique ID creates during the response_handler , to identifie the URL request to the good case.
     :return:                        None
     """
+ 
+    text = info.split("\n")
+    if len(text) == 1:
+        text += [".", "", "", "", "", "", "", ""]
+    else:
+        for _ in range(len(text), 10):
+            text += [""]
+ 
     try:
         company = get_credentials("company")
         url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
-        headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-                   'Card': '1', 'jid1': '{0}'.format(jid), 'toto': '{0}.'.format(info)}
+        headers = {
+                    'Content-type': 'application/json', 
+                    "Accept-Charset": "UTF-8",
+                    'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+                    'jid1': '{0}'.format(jid),
+                    'text1': '{0}'.format(text[0]),
+                    'text2': '{0}'.format(text[1]), 
+                    'text3': '{0}'.format(text[2]), 
+                    'text4': '{0}'.format(text[3]), 
+                    'text5': '{0}'.format(text[4]), 
+                    'text6': '{0}'.format(text[5]), 
+                    'text7': '{0}'.format(text[6]), 
+                    'text8': '{0}'.format(text[7]), 
+                    'text9': '{0}'.format(text[8]), 
+                    'Card': '1'
+                    }
         response = requests.get(url, headers=headers, timeout=600)
         print("Response from VNA")
         print(response)
@@ -398,16 +566,37 @@ def send_message_request_advanced(info, jid, feature):
     :param str id_case:             Unique ID creates during the response_handler , to identifie the URL request to the good case.
     :return:                        None
     """
+
+    text = info.split("\n")
+    if len(text) == 1:
+        text += [".", "", "", "", "", "", "", ""]
+    else:
+        for _ in range(len(text), 10):
+            text += [""]
+
     if feature != "":
         try:
-
+            print(text[0])
+            print(text[1])
             company = get_credentials("company")
             url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
-            headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-                    'Card': '2', 
-                    'jid1': '{0}'.format(jid), 
-                    'toto': '{0}'.format(info), 
-                    'advanced': '{0}'.format(feature)}
+            headers = {
+                        'Content-type': 'application/json', 
+                        "Accept-Charset": "UTF-8",
+                        'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+                        'jid1': '{0}'.format(jid), 
+                        'text1': '{0}'.format(text[0]),
+                        'text2': '{0}'.format(text[1]), 
+                        'text3': '{0}'.format(text[2]), 
+                        'text4': '{0}'.format(text[3]), 
+                        'text5': '{0}'.format(text[4]), 
+                        'text6': '{0}'.format(text[5]), 
+                        'text7': '{0}'.format(text[6]), 
+                        'text8': '{0}'.format(text[7]), 
+                        'text9': '{0}'.format(text[8]), 
+                        'Card': '2',  
+                        'advanced': '{0}'.format(feature)
+                        }
             print(runtime)
             response = requests.get(url, headers=headers, timeout=600)
             print("Response from VNA")
@@ -502,8 +691,11 @@ def send_alert_advanced(subject, action, result, jid):
     """
     company = get_credentials("company")
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_"+company
-    headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-               'jid1': '{0}'.format(jid),
+    headers = {
+                'Content-type': 'application/json', 
+                "Accept-Charset": "UTF-8",
+                'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+                'jid1': '{0}'.format(jid),
                 'jid2': '{0}'.format(jid),
                 'jid3': '{0}'.format(jid),              
                 'tata': '{0}'.format(subject),
@@ -511,7 +703,8 @@ def send_alert_advanced(subject, action, result, jid):
                 'tutu': '{0}'.format(result),
                 'Card': '0',
                 'Email': '0',
-                'Advanced': '0'}
+                'Advanced': '0'
+                }
     print(headers)
     try:
         response = requests.get(url, headers=headers, timeout=0.5)
@@ -583,135 +776,39 @@ def send_alert_advanced(subject, action, result, jid):
             pass
 
 
-def send_file(info, jid, ipadd, filename_path=''):
+def send_file(filename_path, subject, action, result, category, jid):
     """ 
-    Send the attachement to a Rainbowbot. This bot will send this file to the jid in parameters
-    :param str info:                Message to send to the rainbow bot
-    :param str jid:                 Rainbow jid where the message will be send
-    :param str ipadd:               IP Address of the device concerned by the issue 
-    :return:                        None
+    This function takes as argument the file containins command outputs, the notification subject, notification action and result. 
+    This function is called for attaching file on Rainbow or Email notification
+    :param str filename_path:                  Path of file attached to the notification
+    :param str subject:                        Notification subject
+    :param str action:                         Preventive Action done
+    :param str result:                         Preventive Result
+    :param int Card:                           Set to 0 for sending notification without card
+    :param int Email:                          0 if email is disabled, 1 if email is enabled
+    :return:                                   None
     """
-
-    if not filename_path == '':
-        payload = open("{0}".format(filename_path), 'rb')
-        filename = filename_path.split("/")
-        filename = filename[-1]
-        info = "Log of device : {0}".format(ipadd)
-        company = get_credentials("company")
-        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_"+company
-        headers = {'Content-type': "application/x-tar", 'Content-Disposition': "attachment;filename={0}".format(
-            filename), 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info)}
-        #files = {'file': fp}
-
-        try:
-            response = requests.post(url, headers=headers,data=payload, timeout=20)
-            code = re.findall(r"<Response \[(.*?)\]>", str(response))
-            if "200" in code:
-                os.system('logger -t montag -p user.info 200 OK')
-                print("Response  Text from VNA")
-                value = response.text
-                print(value)
-                print(code)
-                try:
-                    write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": "Success"}, "fields": {"count": 1}}])
-                except UnboundLocalError as error:
-                    print(error)
-                    sys.exit()
-                except Exception as error:
-                    print(error)
-                    pass
-            else:
-                os.system('logger -t montag -p user.info REST API Timeout')
-                pass
-        except requests.exceptions.ConnectionError as response:
-            print(response)
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-                sys.exit()
-            except Exception as error:
-                print(error)
-                pass
-        except requests.exceptions.Timeout as response:
-            print("Request Timeout when calling URL: " + url)
-            print(response)
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-                sys.exit()
-            except Exception as error:
-                print(error)
-                pass
-        except requests.exceptions.TooManyRedirects as response:
-            print("Too Many Redirects when calling URL: " + url)
-            print(response)
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-                sys.exit()
-            except Exception as error:
-                print(error)
-                pass
-        except requests.exceptions.RequestException as response:
-            print("Request exception when calling URL: " + url)
-            print(response)
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                    "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-                sys.exit()
-            except Exception as error:
-                print(error)
-                pass
-
-    info = "Log of device : {0}".format(ipadd)
-
-    with open("/var/log/devices/attachment.log", "r+", errors='ignore') as log_file:
-        for line in log_file:
-            timestamp = ""
-            if re.search(r"\d?\d \d\d:\d\d:\d\d", line):
-                timestamp = re.findall(r"\d?\d \d\d:\d\d:\d\d", line)[0]
-                break
-        if re.search(r"\d?\d (\d\d):(\d\d):(\d\d)", timestamp):
-            hour, min, sec = re.findall(
-                r"\d?\d (\d\d):(\d\d):(\d\d)", timestamp)[0]
-            sec = int(sec) + 80
-            if sec > 60:
-                min = int(min) + 1
-                sec -= 60
-        else:
-            hour, min, sec = (24, 59, 59)
-
-        new_file = ""
-        for line in log_file:
-            if re.search(r"\d?\d \d\d:\d\d:\d\d", line):
-                timestamp = re.findall(r"\d?\d \d\d:\d\d:\d\d", line)[0]
-                new_hour, new_min, new_sec = re.findall(
-                    r"\d?\d (\d\d):(\d\d):(\d\d)", str(timestamp))[0]
-                new_file += line
-                if int(new_hour) >= int(hour) and int(new_min) >= int(min) and int(new_sec) >= int(sec):
-                    break
-
-    with open("/var/log/devices/short_attachment.log", "w+", errors='ignore') as s_log:
-        print(new_file)
-        s_log.write(new_file)
     company = get_credentials("company")
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_"+company
-    headers = {'Content-type': "text/plain", 'Content-Disposition': "attachment;filename=short_attachment.log",
-               'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info)}
-    files = {'file': open('/var/log/devices/short_attachment.log', 'r')}
-    response = requests.post(url, files=files, headers=headers, timeout=120)
+    request_debug = "Call VNA REST API Method POST path %s" % url
+    print(request_debug)
+    os.system('logger -t montag -p user.info Call VNA REST API Method POST')
+    headers = {
+                'Content-type': "text/plain", 
+                'Content-Disposition': ("attachment;filename={0}_troubleshooting.log").format(category),
+                'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+                'jid1': '{0}'.format(jid),
+                'tata': '{0}'.format(subject),
+                'toto': '{0}'.format(action),
+                'tutu': '{0}'.format(result),
+                'Card': '0',
+                'Email': '0'}
     try:
-        response = requests.post(
-            url, files=files, headers=headers, timeout=120)
+        files = {'file': open(filename_path, 'r')}
+    except:
+        pass   
+    try:
+        response = requests.post(url, files=files, headers=headers, timeout=20)
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
             os.system('logger -t montag -p user.info 200 OK')
@@ -746,7 +843,7 @@ def send_file(info, jid, ipadd, filename_path=''):
         print("Request Timeout when calling URL: " + url)
         print(response)
         try:
-            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
+           write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
                 "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
             print(error)
@@ -778,4 +875,3 @@ def send_file(info, jid, ipadd, filename_path=''):
         except Exception as error:
             print(error)
             pass
-    sleep(5)
