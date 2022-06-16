@@ -71,8 +71,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
     save_resp = check_save(ipadd, port, "port_disable")
 
     if save_resp == "0":
-        info = "A loop has been detected on your network from the port {0} on device {1}. (if you click on Yes, the following action will be done: Port Admin Down - Server: {2})".format(
-            port, ipadd, ip_server)
+        info = "A loop has been detected on your network from the port {0} on device {1}.\nIf you click on Yes, the following action will be done: Port Admin Down".format(port, ipadd)
         answer = send_message_request(info, jid)
 
         if answer == "2":
@@ -88,7 +87,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
 
     elif save_resp == "-1":
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
-        info = "A loop has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Never, we do not proceed further".format(port, ipadd, ip_server)
+        info = "Preventive Maintenance Application - A loop has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Never, we do not proceed further".format(port, ipadd, ip_server)
         send_message(info,jid)
         appid = "slNi"
         subapp = "all"
@@ -107,7 +106,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
             sys.exit()        
     else:
         answer = '1'
-        info = "A loop has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ipadd, ip_server)
+        info = "Preventive Maintenance Application - A loop has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ipadd, ip_server)
         send_message(info,jid)
 
     if answer == '1':
@@ -165,7 +164,6 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
            pass 
         # disable_port(switch_user,switch_password,ipadd,port)
         os.system('logger -t montag -p user.info Port disabled')
-        info = "A loop has been detected on your network and the port {0} is administratively disabled on device {1}. More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000051875".format(port, ipadd)
         filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
         send_file(filename_path, subject, action, result, category, jid)
         sleep(5)
