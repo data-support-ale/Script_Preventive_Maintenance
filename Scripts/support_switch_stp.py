@@ -50,12 +50,10 @@ save_resp = check_save(ip, vlan, "stp")
 
 if save_resp == "0":
     if "may not be stp" in msg:
-        notif = "Spanning Tree is running per-vlan mode and following VLAN: " + vlan + " is disabled on OmniSwitch " + host + ". Do you want to enable STP on this VLAN?" + ip_server        #send_message(info, jid)
+        decision = 0
+        notif = ("Spanning Tree is running per-vlan mode on OmniSwitch {0} / {1} and following SpanTree VLAN {2} is disabled.\nDo you want to enable STP on this VLAN?").format(host,ip,vlan)
         answer = send_message_request(notif, jid)
         print(answer)
-        decision = "0"
-        filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ip, vlan)
-        send_file(filename_path, subject, action, result, category, jid)
     if answer == "2":
         add_new_save(ip, vlan, "stp", choice="always")
     elif answer == "0":

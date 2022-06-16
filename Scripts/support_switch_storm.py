@@ -83,7 +83,8 @@ if save_resp == "0":
     port_monitoring(switch_user, switch_password, port, ip)
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ip)
     send_file(filename_path, subject, action, result, category, jid)
-    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
+    notif = ("A {0} Storm Threshold violation occurs on OmniSwitch {1} / {2} port {3}.\nDo you want to disable this port?\nThe port-monitoring capture of port {3} is available on Server directory /tftpboot/").format(reason,host,ip,port)
+#    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
     answer = send_message_request(notif, jid)
     print(answer)
     sleep(2)
@@ -100,7 +101,7 @@ if save_resp == "0":
     elif answer == "0":
         add_new_save(ip, port, "storm", choice="never")
 elif save_resp == "-1":
-    info = "A Storm Threshold violation has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Never, we do not proceed further".format(port, ip, ip_server)
+    info = "Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Never, we do not proceed further".format(port, ip, ip_server)
     send_message(info,jid)
     try:
         print(port)
@@ -117,10 +118,10 @@ elif save_resp == "-1":
 
 elif save_resp == "1":
     answer = '2'
-    info = "A Storm Threshold violation has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ip, ip_server)
+    info = "Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ip, ip_server)
     send_message(info,jid)
 else:
-    info = "A Storm Threshold violation has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ip, ip_server)
+    info = "Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ip, ip_server)
     send_message(info,jid)
 
 if answer == '1':
