@@ -1298,9 +1298,9 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
 
     l_switch_cmd = []
     if decision == "1":
-        l_switch_cmd.append(("show microcode; show system; show spantree mode; show spantree vlan {0}; show {0}; spantree vlan {0} admin-state enable; show spantree vlan {0}").format(vlan))
+        l_switch_cmd.append(("show microcode; show system; show spantree mode; show spantree vlan {0}; show vlan {0}; spantree vlan {0} admin-state enable; show spantree vlan {0}").format(vlan))
     else:
-        l_switch_cmd.append(("show microcode; show system; show spantree mode; show spantree vlan {0}; show {0}; show spantree vlan {0}").format(vlan))
+        l_switch_cmd.append(("show microcode; show system; show spantree mode; show spantree vlan {0}; show vlan {0}; show spantree vlan {0}").format(vlan))
   
     for switch_cmd in l_switch_cmd:
         try:
@@ -1348,7 +1348,7 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
     f_logs.write(text)
     f_logs.close()
 
-    subject = ("Preventive Maintenance Application - STP configuration issue detected on switch: {0}").format(ipadd)
+    subject = ("Preventive Maintenance Application - STP configuration issue detected on OmniSwitch: {0} / {1}").format(host,ipadd)
     if decision == "1":
         action = ("Decision set to Yes. The Spanning Tree on VLAN {0} is enabled on OmniSwitch (Hostname: {1})").format(vlan,host)
         result = "Find enclosed to this notification the log collection for further analysis"
@@ -1559,11 +1559,11 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = ("Preventive Maintenance Application - Power Supply issue detected on switch: {0}").format(ipadd)
+    subject = ("Preventive Maintenance Application - Power Supply issue detected on OmniSwitch: {0} / {1}").format(host,ipadd)
     if psid == "Unknown":
-        action = ("A Power Supply unit  is down or running abnormal \"Power Supply operational state changed to UNPOWERED\" on OmniSwitch (Hostname: {1})").format(psid, host)
+        action = ("A Power Supply unit  is Down or running abnormal \"Power Supply operational state changed to UNPOWERED\" on OmniSwitch (Hostname: {0})").format(host)
     else:
-        action = ("The Power Supply unit {0} is down or running abnormal on OmniSwitch (Hostname: {1})").format(psid, host)
+        action = ("The Power Supply unit {0} is Down or running abnormal on OmniSwitch (Hostname: {1})").format(psid, host)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "ps"
     return filename_path, subject, action, result, category
@@ -1722,8 +1722,8 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
-    subject = ("Preventive Maintenance Application - A LinkAgg Port Leave occurs on OmniSwitch: {0}").format(ipadd)
-    action = ("A Linkagg issue has been detected in switch(Hostname: {0}) Aggregate ID {1}").format(host, agg)
+    subject = ("Preventive Maintenance Application - A LinkAgg Port Leave occurs on OmniSwitch: {0} / {1}").format(host, ipadd)
+    action = ("A LinkAgg Port Leave has been detected in OmniSwitch(Hostname: {0}) Aggregate ID {1}").format(host, agg)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "linkagg"
     return filename_path, subject, action, result, category

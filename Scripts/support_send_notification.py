@@ -62,8 +62,6 @@ def send_message(info, jid):
                 "Accept-Charset": "UTF-8",
                 'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
                 'jid1': '{0}'.format(jid), 
-#                'jid2': '{0}'.format(jid2),
-#                'jid3': '{0}'.format(jid3),
                 'text1': '{0}'.format(text[0]),
                 'text2': '{0}'.format(text[1]), 
                 'text3': '{0}'.format(text[2]), 
@@ -73,12 +71,8 @@ def send_message(info, jid):
                 'text7': '{0}'.format(text[6]), 
                 'text8': '{0}'.format(text[7]), 
                 'text9': '{0}'.format(text[8]), 
-#                'subject': '{0}'.format(action),
-#                'action': '{0}'.format(info),
-#                'result': '{0}'.format(result),
                 'Card': '0',
-#                'Email': '0',
-#                'Advanced': '0'
+                'Email': '1',
                }
     try:
         response = requests.get(url, headers=headers, timeout=0.5)
@@ -173,15 +167,8 @@ def send_test(info, jid,company):
                 "Accept-Charset": "UTF-8",
                 'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
                 'jid1': '{0}'.format(jid), 
-#                'jid2': '{0}'.format(jid2),
-#                'jid3': '{0}'.format(jid3),
                 'info': '{0}'.format(info), 
-#                'subject': '{0}'.format(action),
-#                'action': '{0}'.format(info),
-#                'result': '{0}'.format(result),
                 'Card': '0',
-#                'Email': '0',
-#                'Advanced': '0'
                }
     try:
         response = requests.get(url, headers=headers, timeout=0.5)
@@ -611,7 +598,7 @@ def send_alert_advanced(subject, action, result, jid):
                 'action': '{0}'.format(action),
                 'result': '{0}'.format(result),
                 'Card': '0',
-                'Email': '0',
+                'Email': '1',
                 'Advanced': '0'
                 }
     print(headers)
@@ -712,7 +699,7 @@ def send_file(filename_path, subject, action, result, category, jid):
                 'action': '{0}'.format(action),
                 'result': '{0}'.format(result),
                 'Card': '0',
-                'Email': '0'}
+                'Email': '1'}
     try:
         files = {'file': open(filename_path, 'r')}
     except:

@@ -36,8 +36,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
         try:
             nb_vc = re.findall(
                 r"bootMgrVCMTopoDataEventHandler: remote chassis (.*?) no longer in the topology", msg)[0]
-            info = "The Virtual Chassis Unit " + nb_vc + \
-                " of OmniSwitch \"" + host + "\" IP: " + ipadd + " is DOWN"
+            info = ("Preventive Maintenance Application - The Virtual Chassis Unit {0} of OmniSwitch {1} / {2} is DOWN.\nRemote Chassis no longer in the topology.").format(nb_vc,host,ipadd)
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
