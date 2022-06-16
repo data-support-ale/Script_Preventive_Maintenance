@@ -70,7 +70,7 @@ if script_has_run_recently(300,ip,function):
 
 if save_resp == "0":
     port_monitoring(switch_user, switch_password, port, ip)
-    notif = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg
+    notif = ("Preventive Maintenance Application - A LinkAgg Port Leave occurs on OmniSwitch {0} / {1}.\nPort: {2}\nLinkAgg: {3}").format(host,ip,port,agg)
     send_message(notif, jid)   
     lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port, ip)  
     if lldp_port_description == 0:
@@ -81,14 +81,17 @@ if save_resp == "0":
         # If LLDP Remote System is Stellar AP we search for IP Address in ARP Table
         device_ip = get_arp_entry(switch_user, switch_password, lldp_mac_address, ip)
         device_type = "OAW-AP"
-        notif = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". WLAN Stellar AP " + device_ip + "/" + lldp_mac_address + " is connected to this port, do you want to collect AP logs? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
+        notif = ("Preventive Maintenance Application - A LinkAgg Port Leave occurs on OmniSwitch {0} / {1}.Port: {2} - LinkAgg: {3} - Port Description: {4}\nWLAN Stellar AP: {5} / {6} is connected to this port. Do you want to collect AP logs? The port-monitoring capture of port {7} is available on Server {8} directory /tftpboot/").format(host,ip,port,agg,lldp_port_description,device_ip,lldp_mac_address,port,ip_server)
+#        notif = "Preventive Maintenance Application - A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". WLAN Stellar AP " + device_ip + "/" + lldp_mac_address + " is connected to this port, do you want to collect AP logs? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
         # If LLDP Remote System is Stellar AP we propose to collect AP Logs
         answer = send_message_request(notif, jid)
         print(answer)      
     else:
         device_type = "Others"
+        answer = 0
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
-        action = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
+#        action = "Preventive Maintenance Application - A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
+        action = ("Preventive Maintenance Application - A LinkAgg Port Leave occurs on OmniSwitch {0} / {1}.Port: {2} - LinkAgg: {3} - Port Description: {4}. The port-monitoring capture of port {5} is available on Server {6} directory /tftpboot/").format(host,ip,port,agg,lldp_port_description,port,ip_server)
         send_file(filename_path, subject, action, result, category, jid) 
     sleep(2)
     #### Download port monitoring capture ###
@@ -106,7 +109,7 @@ if save_resp == "0":
     else:
         pass
 
-    notif = "Preventive Maintenance Application - LinkAgg issue detected on OmniSwitch " + host + ". Do you want to keep being notified? " + ip_server        #send_message(info, jid)
+    notif = ("Preventive Maintenance Application - LinkAgg issue detected on OmniSwitch {0} / {1}.\nDo you want to keep being notified? ").format(host,ip)        #send_message(info, jid)
     answer = send_message_request(notif, jid)
     print(answer)
     if answer == "2":
@@ -133,10 +136,10 @@ elif save_resp == "-1":
 
 elif save_resp == "1":
     answer = '2'
-    info = "A LinkAgg Port Leave has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ip, ip_server)
+    info = "Preventive Maintenance Application - A LinkAgg Port Leave has been detected on your network from the port {0} on OmniSwitch {1} / {2}.\nDecision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, host, ip)
     send_message(info,jid)
 else:
-    info = "A LinkAgg Port Leave has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ip, ip_server)
+    info = "Preventive Maintenance Application - A LinkAgg Port Leave has been detected on your network from the port {0} on OmniSwitch {1} / {2}.\nDecision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, host, ip)
     send_message(info,jid)
 
 if answer == '1':

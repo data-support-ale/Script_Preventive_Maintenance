@@ -307,7 +307,7 @@ elif answer == '3':
     ### else it corresponds to PoE Reload
     else:
         l_switch_cmd = []
-        l_switch_cmd.append(("lanpower port 1/1/{} admin-state disable; sleep 2; lanpower port 1/1/{} admin-state enable").format(port))
+        l_switch_cmd.append(("lanpower port 1/1/{0} admin-state disable; sleep 2; lanpower port 1/1/{0} admin-state enable").format(port))
 #        l_switch_cmd.append("sleep 2")
 #        l_switch_cmd.append("lanpower port 1/1/" + port + " admin-state enable")
         for switch_cmd in l_switch_cmd:
