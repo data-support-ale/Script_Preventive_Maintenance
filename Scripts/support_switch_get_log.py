@@ -64,69 +64,6 @@ def get_port():
         print(port)
         return port
 
-# if sys.argv[1] == "aijaz":
-#   port = get_port()
-    #{"@timestamp":"2021-11-22T21:57:06+01:00","type":"syslog_json","relayip":"10.130.7.243","hostname":"sw5-bcb","message":"<134>Nov 22 21:57:06 SW5-BCB swlogd portMgrNi main INFO: : [pmnHALLinkStatusCallback:206] LINKSTS 1\/1\/1 DOWN (gport 0x0) Speed 0 Duplex HALF","end_msg":""}
-#   port=str(port)
-#   subject = "Preventive Maintenance - Port flapping issue detected on port {0}".format(port)
-#   print(subject)
-#   info = "A port flapping is noticed on Aijaz lab and we are collecting logs on Server 10.130.7.14 /tftpboot/ directory"
-#   send_message_aijaz(subject,info,jid)
-#   cmd = "python /flash/python/get_logs_port_flapping.py".format(port)
-#   os.system('logger -t montag -p user.info ' + info)
-    #os.system("sshpass -p 'switch' ssh -v {0}@{1} {2}".format("admin", ipadd, cmd))
-#   try:
-#      p = paramiko.SSHClient()
-#      p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-#      p.connect(ipadd, port=22, username="admin", password="switch")
-#      logging.info(runtime + ' Connecting to OmniSwitch ' + ipadd)
-#   except paramiko.ssh_exception.AuthenticationException:
-   #     print("Authentication failed enter valid user name and password")
-   #     logging.info(runtime + ' SSH Authentication failed when connecting to OmniSwitch ' + ipadd)
-#      info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-   #     os.system('logger -t montag -p user.info ' + info)
-   #     send_message_aijaz(subject,info,jid)
-#      sys.exit(0)
-#   except paramiko.ssh_exception.NoValidConnectionsError:
-   #     print("Device unreachable")
-   #     logging.info(runtime + ' SSH session does not establish on OmniSwitch ' + ipadd)
-   #     info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
-   #     os.system('logger -t montag -p user.info ' + info)
-#      send_message_aijaz(subject,info,jid)
-   #     sys.exit(0)
-
-   #  stdin, stdout, stderr = p.exec_command(cmd)
-   #  exception = stderr.readlines()
-   #  exception = str(exception)
-   #  connection_status = stdout.channel.recv_exit_status()
-    # if connection_status != 0:
-   #     info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
-   #     send_message(info,jid)
-   #     os.system('logger -t montag -p user.info ' + info)
-   #     sys.exit(2)
-   #  sleep(2)
-    # filename_aijaz='RZW-Core_logs.txt'
-    # with pysftp.Connection(host="10.130.7.243", username="admin", password="switch") as sftp:
-   #     remoteFilePath = '/flash/python/RZW-Core_logs.txt'
-   #     localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ipadd,filename_aijaz)
-   #     sftp.get(remoteFilePath, localFilePath)
-   #  info = "Process finished and logs downloaded"
-   #  os.system('logger -t montag -p user.info Process finished and logs downloaded for Aijaz Port flapping issue ')
-   #  print(localFilePath)
-#   jid1="j_9403700392@openrainbow.com"
-   #  url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Test_EMEA"
-   #  headers = {  'Content-type':"text/plain",'Content-Disposition': "attachment;filename=port_flapping.log", 'jid1': '{0}'.format(jid),'toto': '{0}'.format(info)}
-   #  files = {'file': open(localFilePath,'r')}
-   #  response = requests.post(url,files=files, headers=headers)
-
-# if sys.argv[1] == "aijaz2":
-    #{"@timestamp":"2021-11-22T21:57:06+01:00","type":"syslog_json","relayip":"10.130.7.248","hostname":"sw5-bcb","message":"2021 Nov 24 15:20:35.139 S_CA_1212_196 swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM Device Power Supply operational state changed to UNPOWERED","end_msg":""}
-   #  subject = ("Preventive Maintenance - Power Supply issue detected on switch: {0}").format(ipadd)
-   #  print(subject)
-   #  info = "A Power Supply is inoperable on your lab"
-   #  send_message_aijaz(subject,info,jid)
-   #  os.system('logger -t montag -p user.info ' + info)
-
 
 if jid != '':
     info = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. We are collecting logs on syslog server".format(
