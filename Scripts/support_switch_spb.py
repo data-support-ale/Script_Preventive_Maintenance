@@ -69,15 +69,11 @@ with open("/var/log/devices/lastlog_spb.json", "r", errors='ignore') as log_file
             port = "Linkagg " + port
     print(port)
 
-if jid != '':
-    notif = "SPB Adjacency state change on OmniSwitch \"" + host + \
-        "\" IP: " + ip + " System ID " + adjacency_id + " from " + port
-    send_message(notif, jid)
-else:
-    print("Mail request set as no")
-    os.system('logger -t montag -p user.info Mail request set as no')
-    sleep(1)
-    open('/var/log/devices/lastlog_spb.json', 'w').close()
+notif = ("Preventive Maintenance Application - SPB Adjacency state change on OmniSwitch {0} / {1}.\n\nDetails:\n- System ID : {2}\n- Port : {3}\nPlease check the SPB Adjacent node connectivity.").format(host,ip,adjacency_id,port)
+send_message(notif, jid)
+
+sleep(1)
+open('/var/log/devices/lastlog_spb.json', 'w').close()
 
 try:
     write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {

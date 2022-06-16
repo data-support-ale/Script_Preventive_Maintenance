@@ -57,7 +57,7 @@ with open("/var/log/devices/lastlog_radius_down.json", "r", errors='ignore') as 
     elif "RADIUS Backup Server" in msg:
         try:
             radius_server, status = re.findall(r"RADIUS Backup Server - (.*?) is (.*)", msg)[0]
-            info = "The Primary Radius Server " + radius_server + " set on the OmniSwitch " + host + "\" IP: " + ipadd + " aaa settings is " + status
+            info = ("Preventive Maintenance Application - The Primary Radius Server{0} set on the OmniSwitch {1} / {2} aaa settings is {3}").format(radius_server,host,ipadd,status)
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
