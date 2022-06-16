@@ -49,11 +49,10 @@ def send_message(info, jid):
     :return:                        None
     """
     text = info.split("\n")
-    if len(text) == 1:
-        text += [".", "", "", "", "", "", "", ""]
-    else:
-        for _ in range(len(text), 10):
-            text += [""]
+
+    text += ["."]
+    for _ in range(len(text), 10):
+        text += [""]
 
 
     company = get_credentials("company")
@@ -176,7 +175,7 @@ def send_test(info, jid,company):
                 'jid1': '{0}'.format(jid), 
 #                'jid2': '{0}'.format(jid2),
 #                'jid3': '{0}'.format(jid3),
-                'toto': '{0}'.format(info), 
+                'info': '{0}'.format(info), 
 #                'subject': '{0}'.format(action),
 #                'action': '{0}'.format(info),
 #                'result': '{0}'.format(result),
@@ -278,7 +277,7 @@ def send_alert(info, jid):
                 "Accept-Charset": "UTF-8",
                 'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
                 'jid1': '{0}'.format(jid), 
-                'toto': '{0}'.format(info), 
+                'subject': '{0}'.format(info), 
                 'Card': '0'
                 }
     try:
@@ -349,96 +348,6 @@ def send_alert(info, jid):
         except Exception as error:
             print(error)
             pass
-
-
-def send_message_aijaz(subject, info, jid):
-    """
-    Send the message in info to a Rainbowbot. This bot will send this message to the jid in parameters
-
-    :param str info:                Message to send to the rainbow bot
-    :param str jid:                 Rainbow jid where the message will be send
-    :return:                        None
-    """
-
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Aijaz"
-    headers = {
-                'Content-type': 'application/json', 
-                "Accept-Charset": "UTF-8",
-                'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
-                'jid1': '{0}'.format(jid), 
-                'tata': '{0}'.format(subject), 
-                'toto': '{0}'.format(info), 
-                'Card': '0'
-                }
-    try:
-        response = requests.get(url, headers=headers, timeout=5)
-        code = re.findall(r"<Response \[(.*?)\]>", str(response))
-        if "200" in code:
-            os.system('logger -t montag -p user.info 200 OK')
-            print("Response  Text from VNA")
-            value = response.text
-            print(value)
-            print(code)
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No", "Decision": "Success"}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-                sys.exit()
-            except Exception as error:
-                print(error)
-                pass
-        else:
-            os.system('logger -t montag -p user.info REST API Timeout')
-            pass
-    except requests.exceptions.ConnectionError as response:
-        print(response)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass
-    except requests.exceptions.Timeout as response:
-        print("Request Timeout when calling URL: " + url)
-        print(response)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass
-    except requests.exceptions.TooManyRedirects as response:
-        print("Too Many Redirects when calling URL: " + url)
-        print(response)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass
-    except requests.exceptions.RequestException as response:
-        print("Request exception when calling URL: " + url)
-        print(response)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_send_notification", "tags": {
-                "HTTP_Request": url, "HTTP_Response": response, "Rainbow Card": "No"}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass
-
 
 def send_message_request(info, jid):
     """ 
@@ -698,9 +607,9 @@ def send_alert_advanced(subject, action, result, jid):
                 'jid1': '{0}'.format(jid),
                 'jid2': '{0}'.format(jid),
                 'jid3': '{0}'.format(jid),              
-                'tata': '{0}'.format(subject),
-                'toto': '{0}'.format(action),
-                'tutu': '{0}'.format(result),
+                'subject': '{0}'.format(subject),
+                'action': '{0}'.format(action),
+                'result': '{0}'.format(result),
                 'Card': '0',
                 'Email': '0',
                 'Advanced': '0'
@@ -788,6 +697,7 @@ def send_file(filename_path, subject, action, result, category, jid):
     :param int Email:                          0 if email is disabled, 1 if email is enabled
     :return:                                   None
     """
+
     company = get_credentials("company")
     url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_"+company
     request_debug = "Call VNA REST API Method POST path %s" % url
@@ -798,9 +708,9 @@ def send_file(filename_path, subject, action, result, category, jid):
                 'Content-Disposition': ("attachment;filename={0}_troubleshooting.log").format(category),
                 'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
                 'jid1': '{0}'.format(jid),
-                'tata': '{0}'.format(subject),
-                'toto': '{0}'.format(action),
-                'tutu': '{0}'.format(result),
+                'subject': '{0}'.format(subject),
+                'action': '{0}'.format(action),
+                'result': '{0}'.format(result),
                 'Card': '0',
                 'Email': '0'}
     try:
@@ -875,3 +785,7 @@ def send_file(filename_path, subject, action, result, category, jid):
         except Exception as error:
             print(error)
             pass
+
+if __name__ == "__main__":
+    switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+    send_message("text", jid)
