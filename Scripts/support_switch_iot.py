@@ -48,13 +48,16 @@ with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file
                 output = output.replace("']","")
                 output = output.replace("['","")
                 print(output)
-            if "Disable" in output:
+            if output == None:
+                service_status = "Disabled"
+                pass
+            elif "Disable" in output:
                 print("IoT Profiling disabled")
                 service_status = "Disabled"
             else:
                 service_status = "Enabled"
 
-            info = ("IoT Profiling module disconnected on the WLAN Stellar AP {0} - IoT Service is {1} on AP").format(ipadd, service_status)
+            info = ("Preventive Maintenance Application - IoT Profiling module disconnected on the WLAN Stellar AP {0} - IoT Service is {1} on AP").format(ipadd, service_status)
             send_message(info,jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "MQTT Status": "mqtt disconnect or is empty"}, "fields": {"count": 1}}])
@@ -75,7 +78,7 @@ with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file
     elif "Unable to connect" in msg:
         try:
             ov_ip = re.findall(r"Unable to connect (.*?):1883", msg)[0]
-            info = ("IoT Profiling module is enabled but OmniSwitch {0} / {1} cannot reach OmniVista IP Address {2} port 1883 - please ensure OmniVista is reachable from default-VRF (Device Profiling feature is not VRF-Aware)").format(ipadd, host, ov_ip)
+            info = ("Preventive Maintenance Application - IoT Profiling module is enabled but OmniSwitch {0} / {1} cannot reach OmniVista IP Address {2} port 1883 - please ensure OmniVista is reachable from default-VRF (Device Profiling feature is not VRF-Aware)").format(ipadd, host, ov_ip)
             send_message(info,jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "MQTT Status": "Unable to connect"}, "fields": {"count": 1}}])
