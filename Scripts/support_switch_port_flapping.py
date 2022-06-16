@@ -92,7 +92,7 @@ def process(ip, hostname, port, link):
             ssh_connectivity_check(switch_user, switch_password, ip, cmd)
             os.system('logger -t montag -p user.info Port {0} of OmniSwitch {1}/{2} disable'.format(port, ip, hostname))
 
-            info = "A port flapping has been detected on your network and the port {0} is administratively down  of OmniSwitch {1}/{2}".format(port, ip, hostname)
+            info = "A port flapping has been detected on your network and the port {0} is administratively down  on OmniSwitch {1}/{2}".format(port, ip, hostname)
             send_message(info, jid)
 
             # disable_debugging
