@@ -52,7 +52,7 @@ if save_resp == "0":
 #            info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply, ipadd)
 #            send_message(info, jid)
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ". Do you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
             answer = send_message_request(notif, jid)
             print(answer)
             if answer == "2":
@@ -85,7 +85,7 @@ if save_resp == "0":
 #            info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply, ipadd)
 #            send_message(info, jid)
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ". Do you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
             answer = send_message_request(notif, jid)
             print(answer)
             if answer == "2":
@@ -118,7 +118,7 @@ if save_resp == "0":
 #            info = "A default on Power supply \"Power Supply operational state changed to UNPOWERED\" from device {} has been detected".format(ipadd)
 #            send_message(info, jid)
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ". Do you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
             answer = send_message_request(notif, jid)
             print(answer)
             if answer == "2":
