@@ -43,9 +43,12 @@ with open("/var/log/devices/lastlog_bgp.json", "r", errors='ignore') as log_file
         print("Index error in regex")
         exit()
 
-
-info = "Preventive Maintenance Application - BGP Peering state change on OmniSwitch {0} / {1}\n\nDetails:\n- BGP Peer IP Address/AS : {2} / {3}\n- State : {4}\n\nPlease check the BGP Peer Node connectivity.".format(host, ip, bgp_peer, bgp_as, final_state)
-send_message(info, jid)
+if "ESTABLISHED" in final_state:
+    info = "Preventive Maintenance Application - BGP Peering state change on OmniSwitch {0} / {1}\n\nDetails:\n- BGP Peer IP Address/AS : {2} / {3}\n- State : {4}".format(host, ip, bgp_peer, bgp_as, final_state)
+    send_message(info, jid)
+else:
+    info = "Preventive Maintenance Application - BGP Peering state change on OmniSwitch {0} / {1}\n\nDetails:\n- BGP Peer IP Address/AS : {2} / {3}\n- State : {4}\n\nPlease check the BGP Peer Node connectivity.".format(host, ip, bgp_peer, bgp_as, final_state)
+    send_message(info, jid)    
 
 sleep(1)
 open('/var/log/devices/lastlog_bgp.json', 'w', errors='ignore').close()
