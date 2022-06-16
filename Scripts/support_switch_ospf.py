@@ -46,10 +46,12 @@ with open("/var/log/devices/lastlog_ospf.json", "r", errors='ignore') as log_fil
     except IndexError:
         print("Index error in regex")
         exit()
-
-notif = ("Preventive Maintenance Application - OSPF Neighbor state change on OmniSwitch {0} / {1}.\n\nDetails:\n- Router-ID: {2}\n- Neighbor-ID {3}\n- Initial State: {4}\n- Final State: {5}.").format(host,ip,router_id,neighbor_ip,initial_state,final_state)
-#notif = "Preventive Maintenance Application - OSPF Neighbor state change on OmniSwitch \"" + host + "\" IP: " + ip + " Router-ID/Interface " + router_id + "/" + neighbor_ip + " from " + initial_state + " to " + final_state
-send_message(notif, jid)
+if "FULL" in final_state:
+    notif = ("Preventive Maintenance Application - OSPF Neighbor state change on OmniSwitch {0} / {1}.\n\nDetails:\n- Router-ID: {2}\n- Neighbor-ID {3}\n- Initial State: {4}\n- Final State: {5}.").format(host,ip,router_id,neighbor_ip,initial_state,final_state)
+    send_message(notif, jid)
+else:
+    notif = ("Preventive Maintenance Application - OSPF Neighbor state change on OmniSwitch {0} / {1}.\n\nDetails:\n- Router-ID: {2}\n- Neighbor-ID {3}\n- Initial State: {4}\n- Final State: {5}\nPlease check the OSPF Neighbor node connectivity.").format(host,ip,router_id,neighbor_ip,initial_state,final_state)
+    send_message(notif, jid)   
 
 try:
     write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {

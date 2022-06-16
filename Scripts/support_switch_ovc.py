@@ -194,7 +194,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
         try:
             reason = "Fatal TLS error"
             vpn_ip = "0"
-            info = "A Fatal TLS error has been detected in OmniSwitch (IP : {0} / {1}) syslogs on the OPENVPN task".format(ipadd, host)
+            info = "Preventive Maintenance Application - A Fatal TLS error has been detected on OmniSwitch (IP : {0} / {1}) syslogs on the OPENVPN task.\nPlease check the certificate status (must be Consistent).\nAs a workaround you can restart the cloud-agent (cloud-agent admin-state restart).".format(ipadd, host)
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
@@ -225,7 +225,7 @@ save_resp = check_save(ipadd, "0", "cloud_agent")
 if save_resp == "0":
         if reason == "S_errno_EHOSTUNREACH" or reason == "S_errno_ETIMEDOUT":
             feature = "Restart Cloud-Agent"
-            notif = "An OpenVPN issue is detected on OmniSwitch " + host + " reason: " + reason + ". Do you want to disable the Cloud-Agent on this switch? This command will result in device being disconnected from OV in cloud." + ip_server
+            notif = "An OpenVPN issue is detected on OmniSwitch " + host + " reason: " + reason + ".\nDo you want to disable the Cloud-Agent on this switch? This command will result in device being disconnected from OV in cloud." + ip_server
             answer = send_message_request_advanced(notif, jid,feature)
             print(answer)
             if answer == "2":
@@ -234,7 +234,7 @@ if save_resp == "0":
                 add_new_save(ipadd, "0", "cloud_agent", choice="never")       
         else:
             feature = "Restart Cloud-Agent"
-            notif = "A Cloud-Agent issue is detected on OmniSwitch " + host + " reason: " + reason + ". Do you want to disable the Cloud-Agent on this switch? This command will result in device being disconnected from OV in cloud. " + ip_server
+            notif = "A Cloud-Agent issue is detected on OmniSwitch " + host + " reason: " + reason + ".\nDo you want to disable the Cloud-Agent on this switch? This command will result in device being disconnected from OV in cloud. " + ip_server
             answer = send_message_request_advanced(notif, jid,feature)
             print(answer)
             if answer == "2":
