@@ -1,13 +1,110 @@
 #!/usr/local/bin/python3.7
 
+from itertools import count
 import sys
-import os
-from support_tools_OmniSwitch import debugging, get_credentials, disable_port, enable_port, add_new_save, check_save, collect_command_output_lldp_port_description
+import json
+
+from prometheus_client import Histogram
+from support_tools_OmniSwitch import collect_command_output_lldp_port_capability, debugging, get_credentials, isUpLink, collect_command_output_lldp_port_description, add_new_save, check_save, collect_command_output_flapping, ssh_connectivity_check
 from time import strftime, localtime, sleep
-import re  # Regex
-from support_send_notification import send_message, send_file, send_message_request
+from datetime import datetime, timedelta
+import re
+from support_send_notification import send_message, send_message_request_advanced
 from database_conf import *
 
+
+def process(ip, hostname, port, link):
+
+    try:
+        write_api.write(bucket, org, [{"measurement": "support_switch_port_flapping.py", "tags": {
+                        "IP_Address": ip, "Port": port}, "fields": {"count": 1}}])
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
+
+    save_resp = check_save(ip, port, "flapping")
+
+    if link == "UPLINK":
+        
+        lldp_port_description, _ = collect_command_output_lldp_port_description(
+        switch_user, switch_password, port, ip)
+
+        status_changes, link_quality = collect_command_output_flapping(switch_user, switch_password, port, ip)
+        info = "A port flapping has been detected on your network on the UPLINK port {0} on OmniSwitch {1}/{2}\nInterface details :\
+        \n- System Description : {3}\n- Number of Status Change : {4}\n- Link-Quality : {5}\n\nPlease check the number of status \
+        change and Link-Quality level (command show interfaces port x/x/x status).\nWe could consider this issue is related to \
+        a Layer 1 connectivity issue and SFP/Cable shall be replaced.\n".format(port, hostname, ip, lldp_port_description, status_changes, link_quality)
+        send_message(info, jid)
+        
+    else:
+
+        if save_resp == "0":
+            lldp_port_description, _ = collect_command_output_lldp_port_description(switch_user, switch_password, port, ip)
+            status_changes, link_quality = collect_command_output_flapping(switch_user, switch_password, port, ip)
+            if lldp_port_description == 0:
+                info = "A port flapping has been detected on your network on the access port {0} - System Description: N/A - Number of Status Change : {2} - Link Quality : {3} on OmniSwitch {4}/{5}.\nIf you click on Yes, the following actions will be done: Port Admin Down/Up.".format(
+                    port, lldp_port_description, status_changes, link_quality, ip, hostname)
+                answer = send_message_request_advanced(info, jid, "Admin down")
+            else:
+                info = "A port flapping has been detected on your network on the access port {0} - System Description: {1} - Number of Status Change : {2} - Link Quality : {3} on OmniSwitch {4}/{5}.\nIf you click on Yes, the following actions will be done: Port Admin Down/Up.".format(
+                    port, lldp_port_description, status_changes, link_quality, ip, hostname)
+                answer = send_message_request_advanced(info, jid, "Admin down")
+            if answer == "2":
+                add_new_save(ip, port, "flapping", choice="always")
+                answer = '1'
+            elif answer == "0":
+                add_new_save(ip, port, "flapping", choice="never")
+        elif save_resp == "-1":
+            sys.exit()
+        else:
+            answer = '1'
+
+        if answer == '1':
+            cmd = "interfaces port " + port + "admin-state disable; sleep 1; interfaces port " + port + "admin-state enable"
+            ssh_connectivity_check(switch_user, switch_password, ip, cmd)
+            os.system(
+                'logger -t montag -p user.info Port {0} of OmniSwitch {1}/{2} updated'.format(port, ip, hostname))
+
+            os.system('logger -t montag -p user.info Process terminated')
+
+
+            info = "A port flapping has been detected on your network and the port {0} is administratively updated  on OmniSwitch {1}/{2}".format(port, ip, hostname)
+            send_message(info, jid)
+
+            # disable_debugging
+            ipadd = ip
+            appid = "bcmd"
+            subapp = "all"
+            level = "info"
+            debugging(switch_user, switch_password,
+                    ipadd, appid, subapp, level)
+            # disable_debugging
+            ipadd = ip
+            debugging(switch_user, switch_password,
+                    ipadd, appid, subapp, level)
+            sleep(2)
+
+        if answer == '3':
+            cmd = "interfaces port " + port + " admin-state disable"
+            ssh_connectivity_check(switch_user, switch_password, ip, cmd)
+            os.system('logger -t montag -p user.info Port {0} of OmniSwitch {1}/{2} disable'.format(port, ip, hostname))
+
+            info = "A port flapping has been detected on your network and the port {0} is administratively down  of OmniSwitch {1}/{2}".format(port, ip, hostname)
+            send_message(info, jid)
+
+            # disable_debugging
+            ipadd = ip
+            appid = "bcmd"
+            subapp = "all"
+            level = "info"
+            debugging(switch_user, switch_password,ipadd, appid, subapp, level)
+            # disable_debugging
+            ipadd = ip
+            debugging(switch_user, switch_password,ipadd, appid, subapp, level)
+            sleep(2)
 
 # Script init
 script_name = sys.argv[0]
@@ -18,299 +115,74 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 subject = "A port flapping was detected in your network !"
 
+counter = 0
+last_time = ""
+last_ip = ""
+last_port = ""
 
-def detect_port_flapping():
-    """ 
-    This function detects if there is flapping in the log.
-    If there is more than 5 logs with 10 seconds apart between each, there is flapping .(10 seconds is for the demo, we can down to 1)
+text_file = ""
 
-    :param:                                  None
-    :return str first_IP:                    First switch's IP Address, if there is no flapping log on this switch, first_IP ="0"
-    :return str second_IP:                   Second switch's IP Address, if there is no flapping log on this switch, second_IP ="0"
-    :return str first_port:                  First switch's port, if there is no flapping log on this switch, first_port ="1/1/0"
-    :return str second_port:                 Second switch's port, if there is no flapping log on this switch, second_port ="1/1/0"
-    """
+with open("/var/log/devices/lastlog_flapping.json", "r", errors='ignore') as log_file:
+    lines = log_file.readlines()
+    for line in reversed(lines):
+        try:
+            line_json = json.loads(line)
+            timestamp = (str(line_json["@timestamp"])[:-6]).replace("T", " ").replace(":", " ").replace("-", " ")
+            time = datetime.strptime(timestamp, "%Y %m %d %H %M %S")
+            if counter == 0:
+                counter = 1
+                last_time = time
+                last_ip = line_json["relayip"]
+                msg = line_json["message"]
+                last_port, _ = re.findall(r"LINKSTS (.*?) (UP|DOWN)", msg)[0]
 
-    # INIT VARIABLE:
-    i_first_IP = 0
-    i_second_IP = 0
-    first_IP = "0"
-    second_IP = "0"
-    first_port = "0"
-    second_port = "0"
-    last_time_first_IP = 0
-    last_time_second_IP = 0
+                text_file = line
+            elif time > (last_time - timedelta(seconds=20)):
+                text_file = line + text_file
+                
+        except json.decoder.JSONDecodeError:
+            print("File /var/log/devices/lastlog_flapping.json empty")
+            exit()
+        except IndexError:
+            print("Index error in regex")
+            exit()
 
-    content_variable = open('/var/log/devices/lastlog_flapping.json', 'r')
-    file_lines = content_variable.readlines()
-    content_variable.close()
+with open("/var/log/devices/lastlog_flapping.json", "w", errors='ignore') as log_file:
+    log_file.write(text_file)
 
-    # for each line in the file
-    print(len(file_lines))
-    if not len(file_lines) > 30:
-        for line in file_lines:
-            f = line.split(',')
-            timestamp_current = f[0]
-           # time in hour into decimal : #else there is en error due to second  changes 60 to 0
-            current_time_split = timestamp_current[-len(
-                timestamp_current)+26:-7].split(':')
-            hour = current_time_split[0]
-            # "%02d" %  force writing on 2 digits
-            minute_deci = "%02d" % int(float(current_time_split[1])*100/60)
-            second_deci = "%02d" % int(float(current_time_split[2])*100/60)
-            current_time = "{0}{1}{2}".format(hour, minute_deci, second_deci)
-            for element in f:  # for all elements in the line :
-                if "relayip" in element:
-                    element_split = element.split(':')
-                    # in the element split the ip address will always be the seconds element.
-                    ipadd_quot = element_split[1]
-                    # delete quotations
-                    ipadd = ipadd_quot[-len(ipadd_quot)+1:-1]
-                    info = "Port flapping detected on OmniSwitch {0}".format(
-                        ipadd)
-                    os.system('logger -t montag -p user.info ' + info)
-                    # we need to discriminate the first ip and the second ip , if there is a third ip address we clear the file.
-                    print(ipadd)
-                    if first_IP == "0":
-                        first_IP = ipadd
-                        # to initiate our last_time_first ip to compare to the other line ( otherwise current time is too high if last_time = 0)
-                        last_time_first_IP = current_time
-                    if second_IP == "0" and first_IP != ipadd:
-                        second_IP = ipadd
-                        last_time_second_IP = current_time
-                    if first_IP != "0" and ipadd != first_IP and second_IP != "0" and ipadd != second_IP:
-                        # clear lastlog file
-                        open('/var/log/devices/lastlog_flapping.json',
-                             'w', errors='ignore').close()
+counter = 0
 
-                if "LINKSTS" in element:
-                    element_split = element.split()
-                    for i in range(len(element_split)):
-                        if element_split[i] == "LINKSTS":
-                            x = element_split[i+1]
-                            # TODO :looking for chassis ID number:
-                            # modify the format of the port number to suit the switch interface
-                            portnumber = x.replace("\\", "")
+with open("/var/log/devices/lastlog_flapping.json", "r", errors='ignore') as log_file:
+    for line in log_file:
+        try:
+            log_json = json.loads(line)
+            ip = log_json["relayip"]
+            hostname = log_json["hostname"]
+            msg = log_json["message"]
+            port, state = re.findall(r"LINKSTS (.*?) (UP|DOWN)", msg)[0]
 
-                            if first_port == "0":
-                                first_port = portnumber
-                            if second_port == "0" and first_IP != ipadd:
-                                second_port = portnumber
+            if(ip == last_ip and port == last_port):
+                counter+= 1
+                print(counter)
 
-                # only on down log to don't make the action twice(UP/DOWN)
-                if 'DOWN' in element:
-                    # print for debug the script
-                    print(current_time, last_time_first_IP, last_time_second_IP)
-                    try:
-                        write_api.write(bucket, org, [{"measurement": "support_switch_port_flapping.py", "tags": {
-                                        "IP_Address": ipadd, "Port": portnumber}, "fields": {"count": 1}}])
-                    except UnboundLocalError as error:
-                        print(error)
-                        sys.exit()
-                    except Exception as error:
-                        print(error)
-                        pass 
-                    if ipadd == first_IP:
-                        # ten seconds for the demo, we simulate a flapping . For the real usecase we can down to 1 seconds
-                        if (int(current_time)-int(last_time_first_IP)) < 20:
-                            i_first_IP = i_first_IP+1  # we count how many link down
-                        last_time_first_IP = current_time
+            if(counter == 5):
 
-                    if ipadd == second_IP:
-                        if (int(current_time)-int(last_time_second_IP)) < 20:
-                            i_second_IP = i_second_IP+1
-                        last_time_second_IP = current_time
+                lldp_port_capability = collect_command_output_lldp_port_capability(
+                switch_user, switch_password, port, ip)
 
-        print(first_IP, second_IP, first_port,
-              second_port, i_first_IP, i_second_IP)
-        if i_first_IP > 5 or i_second_IP > 5:
-            return first_IP, second_IP, first_port, second_port
-        else:
-            return "0", "0", "1/1/0", "1/1/0"
-    else:
-        # clear lastlog file
-        open('/var/log/devices/lastlog_flapping.json',
-             'w', errors='ignore').close()
-        return "0", "0", "1/1/0", "1/1/0"
+                if("Router" in str(lldp_port_capability) or "Bridge" in str(lldp_port_capability)):
+                    process(ip, hostname, port, "UPLINK")
+                elif(isUpLink(switch_user, switch_password, port, ip)):
+                    process(ip, hostname, port, "UPLINK")
 
+                else:
+                    process(ip, hostname, port, "ACCESS")
 
-ip_switch_1, ip_switch_2, port_switch_1, port_switch_2 = detect_port_flapping()
+                break
 
-print(ip_switch_1, ip_switch_2, port_switch_1, port_switch_2)
-# If the portnumber is different than 0,  (not a buffer list is empty log).
-if not re.search(".*\/0", port_switch_1) or not re.search(".*\/0", port_switch_2):
-
-    if ip_switch_1 != "0" and ip_switch_2 != "0":  # if we get logs from 2 switches
-        # request by mail or Rainbow
-        # always 1
-        #never -1
-        # ? 0
-        save_resp = check_save(ip_switch_1, port_switch_1, "flapping")
-
-        if save_resp == "0":
-            lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port_switch_1, ip_switch_1)
-            info = "A port flapping has been detected on your network on  the port {0} - System Description: {1} on device {2} and the port {3}  on device {4}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(
-                port_switch_1, lldp_port_description, ip_switch_1, port_switch_2, ip_switch_2)
-            answer = send_message_request(info, jid)
-            if answer == "2":
-                add_new_save(ip_switch_1, port_switch_1,"flapping", choice="always")
-                answer = '1'
-            elif answer == "0":
-                add_new_save(ip_switch_1, port_switch_1,"flapping", choice="never")
-        elif save_resp == "-1":
-            sys.exit()
-        else:
-            answer = '1'
-
-        if answer == '1':
-            disable_port(switch_user, switch_password,
-                         ip_switch_1, port_switch_1)
-            os.system(
-                'logger -t montag -p user.info Port {1} of device {0} disable'.format(ip_switch_1, port_switch_1))
-            disable_port(switch_user, switch_password,
-                         ip_switch_2, port_switch_2)
-            os.system(
-                'logger -t montag -p user.info Port {1} of device {0} disable'.format(ip_switch_2, port_switch_2))
-            sleep(2)
-            enable_port(switch_user, switch_password,
-                        ip_switch_1, port_switch_1)
-            os.system(
-                'logger -t montag -p user.info Port {1} of device {0} enable'.format(ip_switch_1, port_switch_1))
-            enable_port(switch_user, switch_password,
-                        ip_switch_2, port_switch_2)
-            os.system(
-                'logger -t montag -p user.info Port {1} of device {0} enable'.format(ip_switch_2, port_switch_2))
-
-            os.system('logger -t montag -p user.info Process terminated')
-
-            if jid != '':
-                #info = "Log of device : {0}".format(ip_switch_1)
-                #send_file(info, jid, ip_switch_1)
-                sleep(1)
-                #info = "Log of device : {0}".format(ip_switch_2)
-                #send_file(info, jid, ip_switch_2)
-                info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}, the port {2}  is administratively updated  on device {3}".format(
-                    port_switch_1, ip_switch_1, port_switch_2, ip_switch_2)
-                send_message(info, jid)
-
-            # disable_debugging
-            ipadd = ip_switch_1
-            appid = "bcmd"
-            subapp = "all"
-            level = "info"
-            debugging(switch_user, switch_password,
-                      ipadd, appid, subapp, level)
-            # disable_debugging
-            ipadd = ip_switch_2
-            debugging(switch_user, switch_password,
-                      ipadd, appid, subapp, level)
-            sleep(2)
-        # clear lastlog file
-            open('/var/log/devices/lastlog_flapping.json', 'w').close()
-
-    if ip_switch_1 != "0" and ip_switch_2 == "0":
-        # always 1
-        #never -1
-        # ? 0
-        save_resp = check_save(ip_switch_1, port_switch_1, "flapping")
-
-        if save_resp == "0":
-            lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port_switch_1, ip_switch_1)
-            info = "A port flapping has been detected on your network on  the port {0} - System Description: {1} on device {2} and the port {3}  on device {4}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(
-                port_switch_1, lldp_port_description, ip_switch_1, port_switch_2, ip_switch_2)
-            answer = send_message_request(info, jid)
-            if answer == "2":
-                add_new_save(ip_switch_1, port_switch_1,
-                             "flapping", choice="always")
-                answer = '1'
-            elif answer == "0":
-                add_new_save(ip_switch_1, port_switch_1,
-                             "flapping", choice="never")
-        elif save_resp == "-1":
-            sys.exit()
-        else:
-            answer = '1'
-
-        if answer == '1':
-            disable_port(switch_user, switch_password,
-                         ip_switch_1, port_switch_1)
-            os.system(
-                'logger -t montag -p user.info Port {1} of device {0} disable'.format(ip_switch_1, port_switch_1))
-
-            sleep(2)
-            enable_port(switch_user, switch_password,
-                        ip_switch_1, port_switch_1)
-            os.system(
-                'logger -t montag -p user.info Port {1} of device {0} enable'.format(ip_switch_1, port_switch_1))
-
-            os.system('logger -t montag -p user.info Process terminated')
-
-            if jid != '':
-                #info = "Log of device : {0}".format(ip_switch_1)
-                #send_file(info, jid, ip_switch_1)
-                info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}." .format(
-                    port_switch_1, ip_switch_1)
-                send_message(info, jid)
-
-            # disable_debugging
-            ipadd = ip_switch_1
-            appid = "bcmd"
-            subapp = "all"
-            level = "info"
-            debugging(switch_user, switch_password,
-                      ipadd, appid, subapp, level)
-            sleep(2)
-            # clear lastlog file
-            open('/var/log/devices/lastlog_flapping.json', 'w').close()
-
-    if ip_switch_1 == "0" and ip_switch_2 != "0":
-        # always 1
-        #never -1
-        # ? 0
-        save_resp = check_save(ip_switch_2, port_switch_2, "flapping")
-
-        if save_resp == "0":
-            lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port_switch_1, ip_switch_1)
-            info = "A port flapping has been detected on your network on  the port {0} - System Description: {1} on device {2} and the port {3}  on device {4}. (if you click on Yes, the following actions will be done: Port Admin Down/Up)".format(
-                port_switch_1, lldp_port_description, ip_switch_1, port_switch_2, ip_switch_2)
-            answer = send_message_request(info, jid)
-            if answer == "2":
-                add_new_save(ip_switch_2, port_switch_2,
-                             "flapping", choice="always")
-                answer = '1'
-            elif answer == "0":
-                add_new_save(ip_switch_2, port_switch_2,
-                             "flapping", choice="never")
-        elif save_resp == "-1":
-            sys.exit()
-        else:
-            answer = '1'
-
-        if answer == '1':
-            disable_port(switch_user, switch_password,
-                         ip_switch_2, port_switch_2)
-            os.system(
-                'logger -t montag -p user.info Port {1} of device {0} disable'.format(ip_switch_2, port_switch_2))
-
-            sleep(2)
-            enable_port(switch_user, switch_password,
-                        ip_switch_2, port_switch_2)
-            os.system(
-                'logger -t montag -p user.info Port {1} of device {0} anable'.format(ip_switch_1, port_switch_1))
-
-            os.system('logger -t montag -p user.info Process terminated')
-            if jid != '':
-                #info = "Log of device : {0}".format(ip_switch_2)
-                #send_file(info, jid, ip_switch_2)
-                info = "A port flapping has been detected on your network and the port {0} is administratively updated  on device {1}" .format(
-                    port_switch_2, ip_switch_2)
-                send_message(info, jid)
-
-            # disable_debugging
-            ipadd = ip_switch_2
-            appid = "bcmd"
-            subapp = "all"
-            level = "info"
-            debugging(switch_user, switch_password,
-                      ipadd, appid, subapp, level)
-            sleep(2)
+        except json.decoder.JSONDecodeError:
+            print("File /var/log/devices/lastlog_flapping.json empty")
+            exit()
+        except IndexError:
+            print("Index error in regex")
+            exit()
