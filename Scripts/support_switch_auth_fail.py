@@ -49,7 +49,7 @@ info = "Preventive Maintenance Application - Authentication failed on OmniSwitch
 send_message(info, jid)
 
 sleep(1)
-open('/var/log/devices/lastlog_auth_fail.json', 'w').close()
+open('/var/log/devices/lastlog_authfail.json', 'w').close()
 
 try:
     write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
