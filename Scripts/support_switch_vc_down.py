@@ -59,8 +59,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
         try:
             nb_vc = re.findall(
                 r"CSLIB_EVENT_NIDOWN event for chassis=(.*?) slot", msg)[0]
-            info = "The Virtual Chassis Unit " + nb_vc + \
-                " of OmniSwitch \"" + host + "\" IP: " + ipadd + " is DOWN"
+            info = ("Preventive Maintenance Application - The Virtual Chassis Unit {0} of OmniSwitch {1} / {2} is DOWN.\nWe received NI Down event from this unit.").format(nb_vc,host,ipadd)
             send_message(info, jid)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
@@ -80,8 +79,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
     # Sample log
     # swlogd ChassisSupervisor bootMgr EVENT: CUSTLOG CMM Sending VC Takeover to NIs and applications
     elif "VC Takeover" in msg:
-        info = "The Virtual Chassis \"" + host + \
-            "\" IP: " + ipadd + " is doing a TakeOver"
+        info = ("Preventive Maintenance Application - The Virtual Chassis Unit of OmniSwitch {0} / {1} is doing a TakeOver.").format(host,ipadd)
         send_message(info, jid)
         try:
             write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
@@ -98,8 +96,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
     elif "The switch was restarted by" in msg:
         try:
             reason = re.findall(r"The switch was restarted by (.*)", msg)[0]
-            info = "The Virtual Chassis \"" + host + \
-                "\" IP: " + ipadd + " did reload by " + reason
+            info = ("Preventive Maintenance Application - The Virtual Chassis Unit of OmniSwitch {0} / {1} is reloading by {2}.").format(host,ipadd,reason)
             print(info)
             send_message(info, jid)
             try:
