@@ -194,7 +194,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
     elif answer == '3':
         os.system('logger -t montag -p user.info Process terminated')
         # DISABLE Port
-        cmd = "interfaces port " + port + "admin-state disable"
+        cmd = "interfaces port " + port + " admin-state disable"
         ssh_connectivity_check(switch_user, switch_password, ip_switch, cmd)
         filename_path = "/var/log/devices/" + host + "/syslog.log"
         category = "ddos"

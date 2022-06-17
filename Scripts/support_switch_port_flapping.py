@@ -63,7 +63,7 @@ def process(ip, hostname, port, link):
             answer = '1'
 
         if answer == '1':
-            cmd = "interfaces port " + port + "admin-state disable; sleep 1; interfaces port " + port + "admin-state enable"
+            cmd = "interfaces port " + port + " admin-state disable; sleep 1; interfaces port " + port + " admin-state enable"
             ssh_connectivity_check(switch_user, switch_password, ip, cmd)
             os.system(
                 'logger -t montag -p user.info Port {0} of OmniSwitch {1}/{2} updated'.format(port, ip, hostname))

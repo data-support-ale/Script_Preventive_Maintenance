@@ -120,7 +120,7 @@ save_resp = check_save(ip, port, "violation")
 
 if save_resp == "0":
     if agg_id == "0":
-        notif = "A port violation occurs on OmniSwitch " + host + " port " + port + ", source: " + reason + ". Do you want to clear the violation? " + ip_server
+        notif = ("Preventive Maintenance Application - A port violation occurs on OmniSwitch {0} / {1}.\n\nDetails:\n- Port : {2}\n- Source : {3}\nDo you want to clear the violation?").format()
         answer = send_message_request(notif, jid)
         print(answer)
         if answer == "2":
@@ -128,7 +128,7 @@ if save_resp == "0":
         elif answer == "0":
             add_new_save(ip, port, "violation", choice="never")
     else:
-        notif = "A port violation occurs on OmniSwitch " + host + " LinkAgg ID " + agg_id + ", source: " + reason + ". Do you want to clear the violation? " + ip_server
+        notif = "Preventive Maintenance Application - A port violation occurs on OmniSwitch " + host + " LinkAgg ID " + agg_id + ", source: " + reason + ". Do you want to clear the violation? " + ip_server
         answer = send_message_request(notif, jid)
         print(answer)
         if answer == "2":
@@ -164,7 +164,7 @@ if answer == '1':
     sleep(2)
     filename_path = "/var/log/devices/" + host + "/syslog.log"
     category = "port_violation"
-    subject = "A port violation is detected:".format(host, ip)
+    subject = "Preventive Maintenance Application - A port violation is detected:".format(host, ip)
     action = "Violation on OmniSwitch {0}, port {1} has been cleared up".format(host, port)
     result = "Find enclosed to this notification the log collection"
     send_file(filename_path, subject, action, result, category, jid)
