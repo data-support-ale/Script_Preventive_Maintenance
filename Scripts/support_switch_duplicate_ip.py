@@ -146,12 +146,12 @@ save_resp = check_save(ip, port, "duplicate")
 if save_resp == "0":
     if not ("Lag")in port: 
         feature = "Disable port " + port
-        notif = "Preventive Maintenance Application - An IP address duplication (Duplicate IP: {0}) on port {1} of OmniSwitch {2} / {3} has been detected.\nDo you want to blacklist the MAC Address: {4} ?".format(ip_dup,port,host,ip,mac)
+        notif = "Preventive Maintenance Application - An IP address duplication (Duplicate IP: {0}) on port {1} of OmniSwitch {2} / {3} has been detected.\nDo you want to blocklist the MAC Address: {4} ?".format(ip_dup,port,host,ip,mac)
         answer = send_message_request_advanced(notif, jid,feature)
         print(answer)
 
     else:
-        notif = "Preventive Maintenance Application - An IP address duplication (Duplicate IP: {0}) on port {1} of OmniSwitch {2} / {3} has been detected.\nDo you want to blacklist the MAC Address: {4} ?".format(ip_dup,port,host,ip,mac)
+        notif = "Preventive Maintenance Application - An IP address duplication (Duplicate IP: {0}) on port {1} of OmniSwitch {2} / {3} has been detected.\nDo you want to blocklist the MAC Address: {4} ?".format(ip_dup,port,host,ip,mac)
         answer = send_message_request(notif, jid)  
 
     if isEssential(ip_dup):
