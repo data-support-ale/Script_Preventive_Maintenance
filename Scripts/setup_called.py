@@ -15,9 +15,11 @@ script_name = sys.argv[0]
 os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
+path = os.path.dirname(__file__)
+
 # Get informations from ALE_script.conf (mails, mails_raw, company name)
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 if(get_credentials("room_id") != ""):
     sys.exit()
@@ -27,10 +29,15 @@ subject = (
     "NBD Preventive Maintenance - There is a new Setup, End Customer: \"{0}\"").format(company)
 body = "Attached to this message the configuration file, please setup the VNA accordingly"
 url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Setup_File"
-headers = {'Content-type': "text/plain", 'Content-Disposition': "attachment;filename=ALE_script.conf",
-           'jid1': '{0}'.format(jid), 'toto': '{0}'.format(subject), 'tata': '{0}'.format(body)}
+headers = {	
+    'Content-type': "text/plain", 	
+    'Content-Disposition': "attachment;filename=ALE_script.conf",	
+    'jid1': '{0}'.format(jid1), 	
+    'toto': '{0}'.format(subject), 	
+    'tata': '{0}'.format(body)	
+}
 # ALE_Script.conf is attached in the ALE Admin Rainbow bubble
-files = {'file': open('/opt/ALE_Script/ALE_script.conf', 'r')}
+files = {'file': open(path + '/ALE_script.conf', 'r')}
 response = requests.post(url, files=files, headers=headers)
 # mails_raw format: email_1;email_2;email_3
 try:
@@ -49,22 +56,22 @@ try:
         company = company
         name = "TECH_SUPPORT_NOTIF_" + company
 
-        with open("/opt/ALE_Script/ALE_script.conf", "r", errors='ignore') as ALE_conf:
+        with open(path + "/ALE_script.conf", "r", errors='ignore') as ALE_conf:
             data_conf = ALE_conf.read()
-        with open("/opt/ALE_Script/ALE_script.conf", "w+", errors='ignore') as ALE_conf:
+        with open(path + "/ALE_script.conf", "w+", errors='ignore') as ALE_conf:
             ALE_conf.write((str(data_conf)+str(room).strip()
                             ).replace("\n", "").replace(" ", "") + ",\n")
 
     # All generic fields (Rainbow bubble, emails, workflow name) are replaced based on ALE_script.conf file and Room_ID received from api/flows/NBDNotif_New_Bubble
-        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic.json", "r", errors='ignore') as file_json:
+        with open(path + "/VNA_Workflow/json/workflow_generic.json", "r", errors='ignore') as file_json:
             json_result = str(file_json.read())
             json_result = re.sub(r"\$room", room, json_result)
             json_result = re.sub(r"\$email", mail, json_result)
             json_result = re.sub(r"\$company", company, json_result)
             json_result = re.sub(r"\$name", name, json_result)
-        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic_result.json", "w", errors='ignore') as file_json:
+        with open(path + "/VNA_Workflow/json/workflow_generic_result.json", "w", errors='ignore') as file_json:
             file_json.write(json_result)
-        with open("/opt/ALE_Script/VNA_Workflow/json/workflow_generic_result.json", "r", errors='ignore') as file_json:
+        with open(path + "/VNA_Workflow/json/workflow_generic_result.json", "r", errors='ignore') as file_json:
             data = str(file_json.read())
 
     # REST-API method GET for Login to VNA
@@ -140,14 +147,17 @@ try:
             print("VNA Workflow depoyment failed")
 
     # REST-API for sending Welcome gif to Rainbow bubble
-        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}".format(
-            company)
-        payload = open("/opt/ALE_Script/VNA_Workflow/images/giphy.gif", "rb")
-        headers = {
-            'jid1': '{0}'.format(jid),
-            'toto': 'Welcome to the Club',
-            'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',
-            'Content-Type': 'image/gif'
+        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}".format(company)
+        payload = open(path + "/VNA_Workflow/images/giphy.gif", "rb")
+        headers = {	
+            'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',	
+            'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",	
+            'Content-Type': 'image/gif',	
+            'jid1': '{0}'.format(jid1), 	
+            'subject': '{0}'.format('sending Welcome gif to Rainbow bubble'),	
+            'action': '{0}'.format('Welcome to the Club'),	
+            'result': '{0}'.format('Status: Success'),	
+            'Email': '0'	
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
