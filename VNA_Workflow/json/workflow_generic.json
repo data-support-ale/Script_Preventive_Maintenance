@@ -5,9 +5,9 @@
 		{
 			"note": "",
 			"feature": "end",
-			"x": 1356,
+			"x": 1032,
 			"name": "End",
-			"y": 1284,
+			"y": 1380,
 			"id": "%uuid_1%",
 			"category": "dev",
 			"params": {},
@@ -17,9 +17,9 @@
 		{
 			"note": "",
 			"feature": "httpResponse",
-			"x": 312,
-			"name": "HTTP Answer (classic)",
-			"y": 1044,
+			"x": 816,
+			"name": "HTTP Answer",
+			"y": 1092,
 			"id": "%uuid_2%",
 			"category": "http",
 			"params": {
@@ -48,9 +48,9 @@
 		{
 			"note": "",
 			"feature": "onHttp",
-			"x": 360,
-			"name": "On HTTP (Notif or card)",
-			"y": 24,
+			"x": 564,
+			"name": "On HTTP",
+			"y": 36,
 			"id": "%uuid_4%",
 			"category": "http",
 			"params": {
@@ -62,20 +62,20 @@
 					"type": "VariablesList",
 					"value": [
 						{
-							"name": "body",
-							"parameter": "body",
 							"displayed": true,
-							"editable": true,
-							"originEditable": false,
 							"nameEditable": true,
-							"parameterEditable": false,
+							"originEditable": false,
+							"editable": true,
 							"removable": false,
+							"parameter": "body",
+							"name": "body",
+							"parameterEditable": false,
 							"type": "object"
 						},
 						{
 							"origin": "headers",
-							"parameter": "toto",
-							"name": "toto",
+							"parameter": "action",
+							"name": "action",
 							"type": "string",
 							"mandatory": false
 						},
@@ -106,6 +106,27 @@
 							"name": "card",
 							"type": "string",
 							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "subject",
+							"name": "subject",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "result",
+							"name": "result",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "advanced",
+							"name": "advanced",
+							"type": "string",
+							"mandatory": false
 						}
 					]
 				},
@@ -117,15 +138,16 @@
 					"type": "choice",
 					"value": "GET"
 				},
+				"securityComment": {
+					"type": "comment"
+				},
 				"url": {
 					"type": "string",
 					"value": "/api/flows/$tenantName1"
 				},
 				"token": {
-					"type": "token"
-				},
-				"securityComment": {
-					"type": "comment"
+					"type": "token",
+					"value": "VAR(4aa2e736-0a1c-46f0-abcd-96baa2b4d2e9)"
 				}
 			},
 			"featureVersion": "2.6",
@@ -140,7 +162,7 @@
 		{
 			"note": "",
 			"feature": "condition",
-			"x": 180,
+			"x": 240,
 			"name": "Condition",
 			"y": 168,
 			"id": "%uuid_5%",
@@ -164,6 +186,10 @@
 						{
 							"id": "0",
 							"value": "0"
+						},
+						{
+							"id": "2",
+							"value": "2"
 						}
 					]
 				}
@@ -176,9 +202,14 @@
 					"targetNodeId": "%uuid_6%"
 				},
 				{
+					"inputId": "input",
 					"outputId": "1",
-					"targetNodeId": "%uuid_7%",
-					"inputId": "input"
+					"targetNodeId": "%uuid_7%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "2",
+					"targetNodeId": "%uuid_8%"
 				}
 			]
 		},
@@ -189,6 +220,1243 @@
 			"name": "Split",
 			"y": 228,
 			"id": "%uuid_6%",
+			"category": "dev",
+			"params": {
+				"output": {
+					"type": "outputsNumber",
+					"value": 5
+				},
+				"comment": {
+					"type": "comment",
+					"value": null
+				}
+			},
+			"featureVersion": "1.1",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "split2",
+					"targetNodeId": "%uuid_9%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "split3",
+					"targetNodeId": "%uuid_10%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "split0",
+					"targetNodeId": "%uuid_11%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "split1",
+					"targetNodeId": "%uuid_12%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "split4",
+					"targetNodeId": "%uuid_13%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "onHttp",
+			"x": 1836,
+			"name": "On HTTP",
+			"y": 36,
+			"id": "%uuid_14%",
+			"category": "http",
+			"params": {
+				"response_timeout": {
+					"type": "int",
+					"value": 60
+				},
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": true,
+							"nameEditable": true,
+							"originEditable": false,
+							"editable": true,
+							"removable": false,
+							"parameter": "body",
+							"name": "body",
+							"parameterEditable": false,
+							"type": "file"
+						},
+						{
+							"origin": "headers",
+							"parameter": "action",
+							"name": "action",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "jid1",
+							"name": "jid1",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "subject",
+							"name": "subject",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "result",
+							"name": "result",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "email",
+							"name": "email",
+							"type": "string",
+							"mandatory": false
+						}
+					]
+				},
+				"immediate_response": {
+					"type": "bool",
+					"value": false
+				},
+				"method": {
+					"type": "choice",
+					"value": "POST"
+				},
+				"securityComment": {
+					"type": "comment"
+				},
+				"url": {
+					"type": "string",
+					"value": "/api/flows/$tenantName2"
+				},
+				"token": {
+					"type": "token",
+					"value": "VAR(4aa2e736-0a1c-46f0-abcd-96baa2b4d2e9)"
+				}
+			},
+			"featureVersion": "2.6",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "request",
+					"targetNodeId": "%uuid_15%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "rainbowCardMessage",
+			"x": 120,
+			"name": "Rainbow Card",
+			"y": 600,
+			"id": "%uuid_16%",
+			"category": "rainbow",
+			"params": {
+				"cardData": {
+					"type": "json",
+					"value": "{\"hasMenu\":[{\"name\":\"Yes\"},{\"name\":\"No\"},{\"name\":\"Yes, and remember\"}],\"ParticipantInfoForm\":{\"log\":\"VAR(action)\"}}"
+				},
+				"bubbleList": {
+					"type": "bubble",
+					"value": {
+						"jid": "room_03e3f2595f3f4498b5c5117a5f73840c@muc.openrainbow.com",
+						"name": "$name"
+					}
+				},
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.fromJid",
+							"name": "rainbowReceivedFromJid",
+							"type": "string"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.content",
+							"name": "rainbowReceivedContent",
+							"type": "string"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.alternativeContent",
+							"name": "alternativeContent",
+							"type": "object"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.fromUser",
+							"name": "rainbowReceivedFromUser",
+							"type": "object"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "status",
+							"name": "status",
+							"type": "object"
+						}
+					]
+				},
+				"jid": {
+					"type": "textMentions",
+					"value": ""
+				},
+				"messageType": {
+					"type": "choice"
+				},
+				"cardPayload": {
+					"type": "adaptiveCard",
+					"value": "{\"$schema\":\"http://adaptivecards.io/schemas/adaptive-card.json\",\"type\":\"AdaptiveCard\",\"body\":[{\"type\":\"Image\",\"url\":\"https://raw.githubusercontent.com/data-support-ale/Script_Preventive_Maintenance/main/Preventive_Maintenance_banner.png\",\"size\":\"High\"},{\"type\":\"TextBlock\",\"text\":\"Dear Network Admin,\",\"size\":\"Low\",\"horizontalAlignment\":\"left\"},{\"type\":\"TextBlock\",\"text\":\"Log: ${ParticipantInfoForm.log}\",\"size\":\"Low\",\"wrap\":true,\"weight\":\"bolder\"}],\"actions\":[{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[0].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[0].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"yes\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[1].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[1].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"no\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[2].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[2].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"save\"}}}}],\"version\":\"1.0\"}"
+				},
+				"title": {
+					"type": "textMentions"
+				},
+				"value": {
+					"type": "variableValues",
+					"value": [
+						{
+							"removable": false,
+							"id": "yes",
+							"value": "yes"
+						},
+						{
+							"removable": false,
+							"id": "no",
+							"value": "no"
+						},
+						{
+							"removable": false,
+							"id": "save",
+							"value": "save"
+						}
+					]
+				},
+				"timeout": {
+					"type": "int",
+					"value": 90
+				},
+				"users": {
+					"type": "users"
+				}
+			},
+			"featureVersion": "3.0",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "no",
+					"targetNodeId": "%uuid_17%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "yes",
+					"targetNodeId": "%uuid_18%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "save",
+					"targetNodeId": "%uuid_19%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "httpResponse",
+			"x": 1656,
+			"name": "HTTP Answer",
+			"y": 552,
+			"id": "%uuid_20%",
+			"category": "http",
+			"params": {
+				"headers": {
+					"type": "keyValueList",
+					"value": {}
+				},
+				"response": {
+					"type": "textareaMentions",
+					"value": "Done."
+				},
+				"statusCode": {
+					"type": "int",
+					"value": 200
+				}
+			},
+			"featureVersion": "2.1",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "done",
+					"targetNodeId": "%uuid_3%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "err",
+					"targetNodeId": "%uuid_21%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "sendRainbowMessage",
+			"x": 1704,
+			"name": "Bubble",
+			"y": 336,
+			"id": "%uuid_22%",
+			"category": "rainbow",
+			"params": {
+				"bubbleList": {
+					"type": "bubble",
+					"value": [
+						{
+							"jid": "$room",
+							"name": "$name"
+						}
+					]
+				},
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "status",
+							"name": "status",
+							"type": "object"
+						}
+					]
+				},
+				"attachments": {
+					"type": "attachments",
+					"value": [
+						"VAR(body)"
+					]
+				},
+				"messageType": {
+					"type": "choice",
+					"value": "Standard"
+				},
+				"jid": {
+					"type": "textMentions",
+					"value": ""
+				},
+				"format": {
+					"type": "choice",
+					"value": "text"
+				},
+				"groups": {
+					"type": "groups",
+					"value": null
+				},
+				"comment": {
+					"type": "comment"
+				},
+				"message": {
+					"type": "textareaMentions",
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
+				},
+				"users": {
+					"type": "users",
+					"value": null
+				}
+			},
+			"featureVersion": "2.5",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "sent",
+					"targetNodeId": "%uuid_20%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "err",
+					"targetNodeId": "%uuid_20%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "sendRainbowMessage",
+			"x": 456,
+			"name": "Rainbow IM",
+			"y": 456,
+			"id": "%uuid_12%",
+			"category": "rainbow",
+			"params": {
+				"bubbleList": {
+					"type": "bubble",
+					"value": [
+						{
+							"jid": "$room",
+							"name": "$name"
+						}
+					]
+				},
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "status",
+							"name": "status",
+							"type": "object"
+						}
+					]
+				},
+				"attachments": {
+					"type": "attachments",
+					"value": null
+				},
+				"messageType": {
+					"type": "choice",
+					"value": "Standard"
+				},
+				"jid": {
+					"type": "textMentions",
+					"value": ""
+				},
+				"format": {
+					"type": "choice",
+					"value": "text"
+				},
+				"groups": {
+					"type": "groups",
+					"value": null
+				},
+				"comment": {
+					"type": "comment"
+				},
+				"message": {
+					"type": "textareaMentions",
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
+				},
+				"users": {
+					"type": "users",
+					"value": null
+				}
+			},
+			"featureVersion": "2.5",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "sent",
+					"targetNodeId": "%uuid_2%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "sendRainbowMessage",
+			"x": 696,
+			"name": "Rainbow IM",
+			"y": 456,
+			"id": "%uuid_9%",
+			"category": "rainbow",
+			"params": {
+				"bubbleList": {
+					"type": "bubble",
+					"value": []
+				},
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "status",
+							"name": "status",
+							"type": "object"
+						}
+					]
+				},
+				"attachments": {
+					"type": "attachments",
+					"value": null
+				},
+				"messageType": {
+					"type": "choice",
+					"value": "Standard"
+				},
+				"jid": {
+					"type": "textMentions",
+					"value": "VAR(jid1)"
+				},
+				"format": {
+					"type": "choice",
+					"value": "text"
+				},
+				"groups": {
+					"type": "groups",
+					"value": null
+				},
+				"comment": {
+					"type": "comment"
+				},
+				"message": {
+					"type": "textareaMentions",
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
+				},
+				"users": {
+					"type": "users",
+					"value": null
+				}
+			},
+			"featureVersion": "2.5",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "sent",
+					"targetNodeId": "%uuid_2%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "sendRainbowMessage",
+			"x": 948,
+			"name": "Rainbow IM",
+			"y": 456,
+			"id": "%uuid_10%",
+			"category": "rainbow",
+			"params": {
+				"bubbleList": {
+					"type": "bubble",
+					"value": null
+				},
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "status",
+							"name": "status",
+							"type": "object"
+						}
+					]
+				},
+				"attachments": {
+					"type": "attachments",
+					"value": null
+				},
+				"messageType": {
+					"type": "choice",
+					"value": "Standard"
+				},
+				"jid": {
+					"type": "textMentions",
+					"value": "VAR(jid3)"
+				},
+				"format": {
+					"type": "choice",
+					"value": "text"
+				},
+				"groups": {
+					"type": "groups",
+					"value": null
+				},
+				"comment": {
+					"type": "comment"
+				},
+				"message": {
+					"type": "textareaMentions",
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
+				},
+				"users": {
+					"type": "users",
+					"value": null
+				}
+			},
+			"featureVersion": "2.5",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "sent",
+					"targetNodeId": "%uuid_2%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "variable",
+			"x": 624,
+			"name": "Answer Timeout",
+			"y": 936,
+			"id": "%uuid_23%",
+			"category": "dev",
+			"params": {
+				"variable": {
+					"type": "variableMgt",
+					"value": [
+						{
+							"name": "answer",
+							"type": "string",
+							"value": "1"
+						}
+					]
+				},
+				"comment": {
+					"type": "comment",
+					"value": null
+				}
+			},
+			"featureVersion": "3.1",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "done",
+					"targetNodeId": "%uuid_2%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "variable",
+			"x": 48,
+			"name": "Answer Yes",
+			"y": 936,
+			"id": "%uuid_18%",
+			"category": "dev",
+			"params": {
+				"variable": {
+					"type": "variableMgt",
+					"value": [
+						{
+							"name": "answer",
+							"type": "string",
+							"value": "1"
+						}
+					]
+				},
+				"comment": {
+					"type": "comment",
+					"value": null
+				}
+			},
+			"featureVersion": "3.1",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "done",
+					"targetNodeId": "%uuid_2%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "variable",
+			"x": 240,
+			"name": "Answer No",
+			"y": 936,
+			"id": "%uuid_17%",
+			"category": "dev",
+			"params": {
+				"variable": {
+					"type": "variableMgt",
+					"value": [
+						{
+							"name": "answer",
+							"type": "string",
+							"value": "0"
+						}
+					]
+				},
+				"comment": {
+					"type": "comment",
+					"value": null
+				}
+			},
+			"featureVersion": "3.1",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "done",
+					"targetNodeId": "%uuid_2%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "variable",
+			"x": 432,
+			"name": "Answer Save",
+			"y": 936,
+			"id": "%uuid_19%",
+			"category": "dev",
+			"params": {
+				"variable": {
+					"type": "variableMgt",
+					"value": [
+						{
+							"name": "answer",
+							"type": "string",
+							"value": "2"
+						}
+					]
+				},
+				"comment": {
+					"type": "comment",
+					"value": null
+				}
+			},
+			"featureVersion": "3.1",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "done",
+					"targetNodeId": "%uuid_2%"
+				}
+			]
+		},
+		{
+			"note": "This building block to test the feature Send Email on VNA for comparison with Email sending by Python scripting",
+			"feature": "sendEmail",
+			"x": 1008,
+			"name": "Send Email",
+			"y": 228,
+			"id": "%uuid_11%",
+			"category": "email",
+			"params": {
+				"tootheremailusers": {
+					"type": "otheremailusers",
+					"value": [
+						{
+							"email": "$email"
+						}
+					]
+				},
+				"attachments": {
+					"type": "attachments",
+					"value": null
+				},
+				"togroups": {
+					"type": "groups",
+					"value": null
+				},
+				"subject": {
+					"type": "textMentions",
+					"value": "Preventive Maintenance Notification - VAR(subject)"
+				},
+				"from": {
+					"type": "mail",
+					"value": ""
+				},
+				"text": {
+					"type": "textareaMentions",
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
+				},
+				"tousers": {
+					"type": "users",
+					"value": null
+				}
+			},
+			"featureVersion": "3.1",
+			"connections": []
+		},
+		{
+			"note": "",
+			"feature": "sendEmail",
+			"x": 1500,
+			"name": "Send Email",
+			"y": 780,
+			"id": "%uuid_21%",
+			"category": "email",
+			"params": {
+				"tootheremailusers": {
+					"type": "otheremailusers",
+					"value": [
+						{
+							"email": "$email"
+						}
+					]
+				},
+				"attachments": {
+					"type": "attachments",
+					"value": [
+						"VAR(body)"
+					]
+				},
+				"togroups": {
+					"type": "groups",
+					"value": null
+				},
+				"subject": {
+					"type": "textMentions",
+					"value": "Preventive Maintenance Notification - VAR(subject)"
+				},
+				"from": {
+					"type": "mail",
+					"value": ""
+				},
+				"text": {
+					"type": "textareaMentions",
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
+				},
+				"tousers": {
+					"type": "users",
+					"value": null
+				}
+			},
+			"featureVersion": "3.1",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "done",
+					"targetNodeId": "%uuid_3%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "onHttp",
+			"x": 2316,
+			"name": "On HTTP",
+			"y": 48,
+			"id": "%uuid_24%",
+			"category": "http",
+			"params": {
+				"response_timeout": {
+					"type": "int",
+					"value": 60
+				},
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": true,
+							"nameEditable": true,
+							"originEditable": false,
+							"editable": true,
+							"removable": false,
+							"parameter": "body",
+							"name": "body",
+							"parameterEditable": false,
+							"type": "object"
+						},
+						{
+							"origin": "headers",
+							"parameter": "action",
+							"name": "action",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "jid1",
+							"name": "jid1",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "subject",
+							"name": "subject",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "result",
+							"name": "result",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "email",
+							"name": "email",
+							"type": "string",
+							"mandatory": false
+						}
+					]
+				},
+				"immediate_response": {
+					"type": "bool",
+					"value": true
+				},
+				"method": {
+					"type": "choice",
+					"value": "GET"
+				},
+				"securityComment": {
+					"type": "comment"
+				},
+				"url": {
+					"type": "string",
+					"value": "/api/flows/$tenantName3"
+				},
+				"token": {
+					"type": "token",
+					"value": "VAR(4aa2e736-0a1c-46f0-abcd-96baa2b4d2e9)"
+				}
+			},
+			"featureVersion": "2.6",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "request",
+					"targetNodeId": "%uuid_25%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "sendRainbowMessage",
+			"x": 2292,
+			"name": "Bubble",
+			"y": 336,
+			"id": "%uuid_26%",
+			"category": "rainbow",
+			"params": {
+				"bubbleList": {
+					"type": "bubble",
+					"value": [
+						{
+							"jid": "$room",
+							"name": "$name"
+						}
+					]
+				},
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "status",
+							"name": "status",
+							"type": "object"
+						}
+					]
+				},
+				"attachments": {
+					"type": "attachments",
+					"value": null
+				},
+				"messageType": {
+					"type": "choice",
+					"value": "Important"
+				},
+				"jid": {
+					"type": "textMentions",
+					"value": ""
+				},
+				"format": {
+					"type": "choice",
+					"value": "text"
+				},
+				"groups": {
+					"type": "groups",
+					"value": null
+				},
+				"comment": {
+					"type": "comment",
+					"value": null
+				},
+				"message": {
+					"type": "textareaMentions",
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
+				},
+				"users": {
+					"type": "users",
+					"value": null
+				}
+			},
+			"featureVersion": "2.5",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "sent",
+					"targetNodeId": "%uuid_20%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "err",
+					"targetNodeId": "%uuid_20%"
+				}
+			]
+		},
+		{
+			"note": "Attente pour ne pas supprimer le fichier avant la fin du split",
+			"feature": "wait",
+			"x": 1008,
+			"name": "Sleep",
+			"y": 1236,
+			"id": "%uuid_3%",
+			"category": "dev",
+			"params": {
+				"time": {
+					"type": "int",
+					"value": 30
+				}
+			},
+			"featureVersion": "1.1",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "next",
+					"targetNodeId": "%uuid_1%"
+				}
+			]
+		},
+		{
+			"note": "Test email",
+			"feature": "onHttp",
+			"x": 2316,
+			"name": "On HTTP  \"Test\" for Service Ability",
+			"y": 732,
+			"id": "%uuid_27%",
+			"category": "http",
+			"params": {
+				"response_timeout": {
+					"type": "int",
+					"value": 60
+				},
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": true,
+							"nameEditable": true,
+							"originEditable": false,
+							"editable": true,
+							"removable": false,
+							"parameter": "body",
+							"name": "body",
+							"parameterEditable": false,
+							"type": "file"
+						},
+						{
+							"origin": "headers",
+							"parameter": "subject",
+							"name": "subject",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "action",
+							"name": "action",
+							"type": "string",
+							"mandatory": false
+						},
+						{
+							"origin": "headers",
+							"parameter": "result",
+							"name": "result",
+							"type": "string",
+							"mandatory": false
+						}
+					]
+				},
+				"immediate_response": {
+					"type": "bool",
+					"value": true
+				},
+				"method": {
+					"type": "choice",
+					"value": "GET"
+				},
+				"securityComment": {
+					"type": "comment"
+				},
+				"url": {
+					"type": "string",
+					"value": "/api/flows/$tenantName4"
+				},
+				"token": {
+					"type": "token",
+					"value": "VAR(4aa2e736-0a1c-46f0-abcd-96baa2b4d2e9)"
+				}
+			},
+			"featureVersion": "2.6",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "request",
+					"targetNodeId": "%uuid_28%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "sendRainbowMessage",
+			"x": 2352,
+			"name": "Rainbow IM",
+			"y": 912,
+			"id": "%uuid_28%",
+			"category": "rainbow",
+			"params": {
+				"bubbleList": {
+					"type": "bubble",
+					"value": [
+						{
+							"jid": "$room",
+							"name": "$name"
+						}
+					]
+				},
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "status",
+							"name": "status",
+							"type": "object"
+						},
+						{
+							"parameter": "answer",
+							"name": "answer",
+							"type": "string",
+							"mandatory": false
+						}
+					]
+				},
+				"attachments": {
+					"type": "attachments",
+					"value": null
+				},
+				"messageType": {
+					"type": "choice",
+					"value": "Standard"
+				},
+				"jid": {
+					"type": "textMentions",
+					"value": ""
+				},
+				"format": {
+					"type": "choice",
+					"value": "text"
+				},
+				"groups": {
+					"type": "groups",
+					"value": null
+				},
+				"comment": {
+					"type": "comment",
+					"value": null
+				},
+				"message": {
+					"type": "textareaMentions",
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
+				},
+				"users": {
+					"type": "users",
+					"value": null
+				}
+			},
+			"featureVersion": "2.5",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "sent",
+					"targetNodeId": "%uuid_29%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "err",
+					"targetNodeId": "%uuid_30%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "httpResponse",
+			"x": 2196,
+			"name": "Http Response",
+			"y": 1092,
+			"id": "%uuid_29%",
+			"category": "http",
+			"params": {
+				"headers": {
+					"type": "keyValueList",
+					"value": {}
+				},
+				"response": {
+					"type": "textareaMentions",
+					"value": "VAR(answer) == 1"
+				},
+				"statusCode": {
+					"type": "int",
+					"value": 200
+				}
+			},
+			"featureVersion": "2.1",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "done",
+					"targetNodeId": "%uuid_31%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "end",
+			"x": 2328,
+			"name": "End",
+			"y": 1296,
+			"id": "%uuid_31%",
+			"category": "dev",
+			"params": {},
+			"featureVersion": "1.1",
+			"connections": []
+		},
+		{
+			"note": "",
+			"feature": "httpResponse",
+			"x": 2484,
+			"name": "Http Response",
+			"y": 1092,
+			"id": "%uuid_30%",
+			"category": "http",
+			"params": {
+				"headers": {
+					"type": "keyValueList",
+					"value": {}
+				},
+				"response": {
+					"type": "textareaMentions",
+					"value": null
+				},
+				"statusCode": {
+					"type": "int",
+					"value": 404
+				}
+			},
+			"featureVersion": "2.1",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "done",
+					"targetNodeId": "%uuid_31%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "split",
+			"x": 132,
+			"name": "Split",
+			"y": 348,
+			"id": "%uuid_7%",
 			"category": "dev",
 			"params": {
 				"output": {
@@ -205,131 +1473,92 @@
 				{
 					"inputId": "input",
 					"outputId": "split1",
-					"targetNodeId": "%uuid_8%"
-				},
-				{
-					"inputId": "input",
-					"outputId": "split2",
-					"targetNodeId": "%uuid_9%"
-				},
-				{
-					"inputId": "input",
-					"outputId": "split3",
-					"targetNodeId": "%uuid_10%"
+					"targetNodeId": "%uuid_32%"
 				},
 				{
 					"inputId": "input",
 					"outputId": "split0",
-					"targetNodeId": "%uuid_11%"
+					"targetNodeId": "%uuid_16%"
 				}
 			]
 		},
 		{
 			"note": "",
-			"feature": "onHttp",
-			"x": 1872,
-			"name": "On HTTP (Send_file)",
-			"y": 48,
-			"id": "%uuid_12%",
-			"category": "http",
+			"feature": "sendRainbowMessage",
+			"x": 1212,
+			"name": "Rainbow IM",
+			"y": 456,
+			"id": "%uuid_13%",
+			"category": "rainbow",
 			"params": {
-				"response_timeout": {
-					"type": "int",
-					"value": 60
+				"bubbleList": {
+					"type": "bubble",
+					"value": null
 				},
 				"variables": {
 					"type": "VariablesList",
 					"value": [
 						{
-							"name": "body",
-							"parameter": "body",
-							"displayed": true,
-							"editable": true,
-							"originEditable": false,
-							"nameEditable": true,
-							"parameterEditable": false,
-							"removable": false,
-							"type": "file"
-						},
-						{
-							"origin": "headers",
-							"parameter": "toto",
-							"name": "toto",
-							"type": "string",
-							"mandatory": false
-						},
-						{
-							"origin": "headers",
-							"parameter": "jid1",
-							"name": "jid1",
-							"type": "string",
-							"mandatory": false
-						},
-						{
-							"origin": "headers",
-							"type": "string",
-							"name": "tata",
-							"parameter": "tata",
-							"mandatory": false
-						},
-						{
-							"origin": "headers",
-							"type": "string",
-							"name": "tutu",
-							"parameter": "tutu",
-							"mandatory": false
+							"displayed": false,
+							"editable": false,
+							"parameter": "status",
+							"name": "status",
+							"type": "object"
 						}
 					]
 				},
-				"immediate_response": {
-					"type": "bool",
-					"value": false
+				"attachments": {
+					"type": "attachments",
+					"value": null
 				},
-				"method": {
+				"messageType": {
 					"type": "choice",
-					"value": "POST"
+					"value": "Standard"
 				},
-				"url": {
-					"type": "string",
-					"value": "/api/flows/$tenantName2"
+				"jid": {
+					"type": "textMentions",
+					"value": "VAR(jid1)"
 				},
-				"token": {
-					"type": "token"
+				"format": {
+					"type": "choice",
+					"value": "text"
 				},
-				"securityComment": {
-					"type": "comment"
+				"groups": {
+					"type": "groups",
+					"value": null
+				},
+				"comment": {
+					"type": "comment",
+					"value": null
+				},
+				"message": {
+					"type": "textareaMentions",
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
+				},
+				"users": {
+					"type": "users",
+					"value": null
 				}
 			},
-			"featureVersion": "2.6",
-			"connections": [
-				{
-					"outputId": "request",
-					"targetNodeId": "%uuid_13%",
-					"inputId": "input"
-				}
-			]
+			"featureVersion": "2.5",
+			"connections": []
 		},
 		{
 			"note": "",
 			"feature": "rainbowCardMessage",
-			"x": 120,
+			"x": 552,
 			"name": "Rainbow Card",
-			"y": 456,
-			"id": "%uuid_7%",
+			"y": 612,
+			"id": "%uuid_32%",
 			"category": "rainbow",
 			"params": {
 				"cardData": {
 					"type": "json",
-					"value": "{\"hasMenu\":[{\"name\":\"Yes\"},{\"name\":\"No\"},{\"name\":\"Yes, and remember\"}],\"ParticipantInfoForm\":{\"log\":\"VAR(toto)\"}}"
+					"value": "{\"hasMenu\":[{\"name\":\"Yes\"},{\"name\":\"No\"},{\"name\":\"Yes, and remember\"}],\"ParticipantInfoForm\":{\"log\":\"VAR(action)\"}}"
 				},
 				"bubbleList": {
 					"type": "bubble",
-					"value": [
-						{
-							"jid": "$room",
-							"name": "$name"
-						}
-					]
+					"value": null
 				},
 				"variables": {
 					"type": "VariablesList",
@@ -375,595 +1604,117 @@
 					"type": "textMentions",
 					"value": "VAR(jid1)"
 				},
+				"messageType": {
+					"type": "choice"
+				},
 				"cardPayload": {
-					"type": "AdaptiveCard",
-					"value": "{\"$schema\":\"http://adaptivecards.io/schemas/adaptive-card.json\",\"body\":[{\"type\":\"TextBlock\",\"text\":\"Log: ${ParticipantInfoForm.log}\",\"size\":\"medium\",\"wrap\":true,\"weight\":\"bolder\"}],\"actions\":[{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[0].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[0].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"yes\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[1].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[1].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"no\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[2].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[2].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"save\"}}}}],\"version\":\"1.0\"}"
+					"type": "adaptiveCard",
+					"value": "{\"$schema\":\"http://adaptivecards.io/schemas/adaptive-card.json\",\"type\":\"AdaptiveCard\",\"body\":[{\"type\":\"Image\",\"url\":\"https://raw.githubusercontent.com/data-support-ale/Script_Preventive_Maintenance/main/Preventive_Maintenance_banner.png\",\"size\":\"High\"},{\"type\":\"TextBlock\",\"text\":\"Dear Network Admin,\",\"size\":\"Low\",\"horizontalAlignment\":\"left\"},{\"type\":\"TextBlock\",\"text\":\"Log: ${ParticipantInfoForm.log}\",\"size\":\"medium\",\"wrap\":true,\"weight\":\"bolder\"}],\"actions\":[{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[0].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[0].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"yes\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[1].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[1].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"no\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[2].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[2].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"save\"}}}}],\"version\":\"1.0\"}"
+				},
+				"title": {
+					"type": "textMentions"
 				},
 				"value": {
 					"type": "variableValues",
 					"value": [
 						{
+							"removable": false,
 							"id": "yes",
-							"value": "yes",
-							"removable": false
+							"value": "yes"
 						},
 						{
+							"removable": false,
 							"id": "no",
-							"value": "no",
-							"removable": false
+							"value": "no"
 						},
 						{
+							"removable": false,
 							"id": "save",
-							"value": "save",
-							"removable": false
-						},
-						{
-							"id": "timeout",
-							"color": "#004a6b",
-							"label": "Timeout",
-							"value": "timeout",
-							"isError": true,
-							"removable": false
+							"value": "save"
 						}
 					]
 				},
 				"timeout": {
 					"type": "int",
-					"value": 90
+					"value": 30
+				},
+				"users": {
+					"type": "users"
 				}
 			},
-			"featureVersion": "2.5",
+			"featureVersion": "3.0",
 			"connections": [
 				{
-					"outputId": "no",
-					"targetNodeId": "%uuid_14%",
-					"inputId": "input"
-				},
-				{
+					"inputId": "input",
 					"outputId": "yes",
-					"targetNodeId": "%uuid_15%",
-					"inputId": "input"
+					"targetNodeId": "%uuid_18%"
 				},
 				{
+					"inputId": "input",
+					"outputId": "no",
+					"targetNodeId": "%uuid_17%"
+				},
+				{
+					"inputId": "input",
 					"outputId": "save",
-					"targetNodeId": "%uuid_16%",
-					"inputId": "input"
-				},
-				{
-					"outputId": "timeout",
-					"targetNodeId": "%uuid_17%",
-					"inputId": "input"
-				},
-				{
-					"outputId": "err",
-					"targetNodeId": "%uuid_17%",
-					"inputId": "input"
+					"targetNodeId": "%uuid_19%"
 				}
 			]
 		},
 		{
 			"note": "",
-			"feature": "httpResponse",
-			"x": 1596,
-			"name": "HTTP Answer (send file)",
-			"y": 672,
-			"id": "%uuid_18%",
-			"category": "http",
-			"params": {
-				"headers": {
-					"type": "keyValueList",
-					"value": {}
-				},
-				"response": {
-					"type": "textareaMentions",
-					"value": "Success"
-				},
-				"statusCode": {
-					"type": "int",
-					"value": 200
-				}
-			},
-			"featureVersion": "2.1",
-			"connections": [
-				{
-					"inputId": "input",
-					"outputId": "done",
-					"targetNodeId": "%uuid_3%"
-				},
-				{
-					"outputId": "err",
-					"targetNodeId": "%uuid_3%",
-					"inputId": "input"
-				}
-			]
-		},
-		{
-			"note": "",
-			"feature": "sendRainbowMessage",
-			"x": 1788,
-			"name": "Bubble (with file)",
-			"y": 492,
-			"id": "%uuid_19%",
-			"category": "rainbow",
-			"params": {
-				"bubbleList": {
-					"type": "bubble",
-					"value": [
-						{
-							"jid": "$room",
-							"name": "$name"
-						}
-					]
-				},
-				"variables": {
-					"type": "VariablesList",
-					"value": [
-						{
-							"displayed": false,
-							"editable": false,
-							"parameter": "status",
-							"name": "status",
-							"type": "object"
-						}
-					]
-				},
-				"attachments": {
-					"type": "attachments",
-					"value": [
-						"VAR(body)"
-					]
-				},
-				"messageType": {
-					"type": "choice",
-					"value": "Standard"
-				},
-				"jid": {
-					"type": "textMentions",
-					"value": "VAR(jid1)"
-				},
-				"format": {
-					"type": "choice",
-					"value": "text"
-				},
-				"groups": {
-					"type": "groups",
-					"value": null
-				},
-				"comment": {
-					"type": "comment"
-				},
-				"message": {
-					"type": "textareaMentions",
-					"value": "Dear Network Admin,\n\nVAR(tata)\nVAR(toto)\nVAR(tutu)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
-				},
-				"users": {
-					"type": "users",
-					"value": null
-				}
-			},
-			"featureVersion": "2.5",
-			"connections": [
-				{
-					"inputId": "input",
-					"outputId": "sent",
-					"targetNodeId": "%uuid_18%"
-				},
-				{
-					"inputId": "input",
-					"outputId": "err",
-					"targetNodeId": "%uuid_18%"
-				}
-			]
-		},
-		{
-			"note": "",
-			"feature": "sendRainbowMessage",
-			"x": 840,
-			"name": "Rainbow IM (JID1)",
-			"y": 528,
-			"id": "%uuid_8%",
-			"category": "rainbow",
-			"params": {
-				"bubbleList": {
-					"type": "bubble",
-					"value": [
-						{
-							"jid": "$room",
-							"name": "$name"
-						}
-					]
-				},
-				"variables": {
-					"type": "VariablesList",
-					"value": [
-						{
-							"displayed": false,
-							"editable": false,
-							"parameter": "status",
-							"name": "status",
-							"type": "object"
-						}
-					]
-				},
-				"attachments": {
-					"type": "attachments",
-					"value": null
-				},
-				"messageType": {
-					"type": "choice",
-					"value": "Standard"
-				},
-				"jid": {
-					"type": "textMentions",
-					"value": "VAR(jid1)"
-				},
-				"format": {
-					"type": "choice",
-					"value": "text"
-				},
-				"groups": {
-					"type": "groups",
-					"value": null
-				},
-				"comment": {
-					"type": "comment"
-				},
-				"message": {
-					"type": "textareaMentions",
-					"value": "VAR(toto)"
-				},
-				"users": {
-					"type": "users",
-					"value": null
-				}
-			},
-			"featureVersion": "2.5",
-			"connections": [
-				{
-					"outputId": "err",
-					"targetNodeId": "%uuid_20%",
-					"inputId": "input"
-				},
-				{
-					"outputId": "sent",
-					"targetNodeId": "%uuid_20%",
-					"inputId": "input"
-				}
-			]
-		},
-		{
-			"note": "",
-			"feature": "sendRainbowMessage",
-			"x": 1092,
-			"name": "Rainbow IM (JID2)",
-			"y": 528,
-			"id": "%uuid_9%",
-			"category": "rainbow",
-			"params": {
-				"bubbleList": {
-					"type": "bubble",
-					"value": null
-				},
-				"variables": {
-					"type": "VariablesList",
-					"value": [
-						{
-							"displayed": false,
-							"editable": false,
-							"parameter": "status",
-							"name": "status",
-							"type": "object"
-						}
-					]
-				},
-				"attachments": {
-					"type": "attachments",
-					"value": null
-				},
-				"messageType": {
-					"type": "choice",
-					"value": "Standard"
-				},
-				"jid": {
-					"type": "textMentions",
-					"value": "VAR(jid2)"
-				},
-				"format": {
-					"type": "choice",
-					"value": "text"
-				},
-				"groups": {
-					"type": "groups",
-					"value": null
-				},
-				"comment": {
-					"type": "comment"
-				},
-				"message": {
-					"type": "textareaMentions",
-					"value": "VAR(toto)"
-				},
-				"users": {
-					"type": "users",
-					"value": null
-				}
-			},
-			"featureVersion": "2.5",
-			"connections": [
-				{
-					"outputId": "err",
-					"targetNodeId": "%uuid_20%",
-					"inputId": "input"
-				},
-				{
-					"outputId": "sent",
-					"targetNodeId": "%uuid_20%",
-					"inputId": "input"
-				}
-			]
-		},
-		{
-			"note": "",
-			"feature": "sendRainbowMessage",
-			"x": 1368,
-			"name": "Rainbow IM (JID3)",
-			"y": 528,
-			"id": "%uuid_10%",
-			"category": "rainbow",
-			"params": {
-				"bubbleList": {
-					"type": "bubble",
-					"value": null
-				},
-				"variables": {
-					"type": "VariablesList",
-					"value": [
-						{
-							"displayed": false,
-							"editable": false,
-							"parameter": "status",
-							"name": "status",
-							"type": "object"
-						}
-					]
-				},
-				"attachments": {
-					"type": "attachments",
-					"value": null
-				},
-				"messageType": {
-					"type": "choice",
-					"value": "Standard"
-				},
-				"jid": {
-					"type": "textMentions",
-					"value": "VAR(jid3)"
-				},
-				"format": {
-					"type": "choice",
-					"value": "text"
-				},
-				"groups": {
-					"type": "groups",
-					"value": null
-				},
-				"comment": {
-					"type": "comment"
-				},
-				"message": {
-					"type": "textareaMentions",
-					"value": "VAR(toto)"
-				},
-				"users": {
-					"type": "users",
-					"value": null
-				}
-			},
-			"featureVersion": "2.5",
-			"connections": [
-				{
-					"outputId": "err",
-					"targetNodeId": "%uuid_20%",
-					"inputId": "input"
-				},
-				{
-					"outputId": "sent",
-					"targetNodeId": "%uuid_20%",
-					"inputId": "input"
-				}
-			]
-		},
-		{
-			"note": "",
-			"feature": "variable",
-			"x": 684,
-			"name": "Answer Timeout",
-			"y": 792,
-			"id": "%uuid_17%",
-			"category": "dev",
-			"params": {
-				"variable": {
-					"type": "variableMgt",
-					"value": [
-						{
-							"name": "answer",
-							"type": "string",
-							"value": "1"
-						}
-					]
-				},
-				"comment": {
-					"type": "comment",
-					"value": null
-				}
-			},
-			"featureVersion": "3.1",
-			"connections": [
-				{
-					"outputId": "done",
-					"targetNodeId": "%uuid_2%",
-					"inputId": "input"
-				}
-			]
-		},
-		{
-			"note": "",
-			"feature": "variable",
-			"x": 48,
-			"name": "Answer Yes",
-			"y": 792,
+			"feature": "split",
+			"x": 1920,
+			"name": "Split",
+			"y": 180,
 			"id": "%uuid_15%",
 			"category": "dev",
 			"params": {
-				"variable": {
-					"type": "variableMgt",
-					"value": [
-						{
-							"name": "answer",
-							"type": "string",
-							"value": "1"
-						}
-					]
+				"output": {
+					"type": "outputsNumber",
+					"value": null
 				},
 				"comment": {
 					"type": "comment",
 					"value": null
 				}
 			},
-			"featureVersion": "3.1",
+			"featureVersion": "1.1",
 			"connections": [
 				{
 					"inputId": "input",
-					"outputId": "done",
-					"targetNodeId": "%uuid_2%"
+					"outputId": "split0",
+					"targetNodeId": "%uuid_22%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "split1",
+					"targetNodeId": "%uuid_33%"
 				}
 			]
 		},
 		{
 			"note": "",
-			"feature": "variable",
-			"x": 252,
-			"name": "Answer No",
-			"y": 792,
-			"id": "%uuid_14%",
-			"category": "dev",
+			"feature": "sendRainbowMessage",
+			"x": 2004,
+			"name": "Rainbow IM",
+			"y": 336,
+			"id": "%uuid_33%",
+			"category": "rainbow",
 			"params": {
-				"variable": {
-					"type": "variableMgt",
+				"bubbleList": {
+					"type": "bubble",
+					"value": null
+				},
+				"variables": {
+					"type": "VariablesList",
 					"value": [
 						{
-							"name": "answer",
-							"type": "string",
-							"value": "0"
-						}
-					]
-				},
-				"comment": {
-					"type": "comment",
-					"value": null
-				}
-			},
-			"featureVersion": "3.1",
-			"connections": [
-				{
-					"inputId": "input",
-					"outputId": "done",
-					"targetNodeId": "%uuid_2%"
-				}
-			]
-		},
-		{
-			"note": "",
-			"feature": "variable",
-			"x": 468,
-			"name": "Answer Save",
-			"y": 792,
-			"id": "%uuid_16%",
-			"category": "dev",
-			"params": {
-				"variable": {
-					"type": "variableMgt",
-					"value": [
-						{
-							"name": "answer",
-							"type": "string",
-							"value": "2"
-						}
-					]
-				},
-				"comment": {
-					"type": "comment",
-					"value": null
-				}
-			},
-			"featureVersion": "3.1",
-			"connections": [
-				{
-					"inputId": "input",
-					"outputId": "done",
-					"targetNodeId": "%uuid_2%"
-				}
-			]
-		},
-		{
-			"note": "This building block to test the feature Send Email on VNA for comparison with Email sending by Python scripting",
-			"feature": "sendEmail",
-			"x": 1224,
-			"name": "Send Email (classic)",
-			"y": 276,
-			"id": "%uuid_11%",
-			"category": "email",
-			"params": {
-				"tootheremailusers": {
-					"type": "otheremailusers",
-					"value": [
-						{
-							"email": "$email"
-						}
-					]
-				},
-				"attachments": {
-					"type": "attachments",
-					"value": null
-				},
-				"togroups": {
-					"type": "groups",
-					"value": null
-				},
-				"subject": {
-					"type": "textMentions",
-					"value": "Preventive Maintenance Notification - TSLAB"
-				},
-				"from": {
-					"type": "mail",
-					"value": "vna.custo@gmail.com"
-				},
-				"text": {
-					"type": "textareaMentions",
-					"value": "VAR(toto)"
-				},
-				"tousers": {
-					"type": "users",
-					"value": null
-				}
-			},
-			"featureVersion": "3.1",
-			"connections": []
-		},
-		{
-			"note": "",
-			"feature": "sendEmail",
-			"x": 2112,
-			"name": "Send Email (with file)",
-			"y": 648,
-			"id": "%uuid_21%",
-			"category": "email",
-			"params": {
-				"tootheremailusers": {
-					"type": "otheremailusers",
-					"value": [
-						{
-							"email": "$email"
+							"displayed": false,
+							"editable": false,
+							"parameter": "status",
+							"name": "status",
+							"type": "object"
 						}
 					]
 				},
@@ -973,124 +1724,93 @@
 						"VAR(body)"
 					]
 				},
-				"togroups": {
+				"messageType": {
+					"type": "choice",
+					"value": "Standard"
+				},
+				"jid": {
+					"type": "textMentions",
+					"value": "VAR(jid1)"
+				},
+				"format": {
+					"type": "choice",
+					"value": "text"
+				},
+				"groups": {
 					"type": "groups",
 					"value": null
 				},
-				"subject": {
-					"type": "textMentions",
-					"value": "VAR(tata)"
+				"comment": {
+					"type": "comment",
+					"value": null
 				},
-				"from": {
-					"type": "mail",
-					"value": "vna.custo@gmail.com"
-				},
-				"text": {
+				"message": {
 					"type": "textareaMentions",
-					"value": "Dear Network Admin,\n\nSubject: VAR(tata)\n \nAction done: VAR(toto)\n \nResult: VAR(tutu)\n \nEnd of message\n\nRegards\nPreventive Maintenance team"
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
 				},
-				"tousers": {
+				"users": {
 					"type": "users",
 					"value": null
 				}
 			},
-			"featureVersion": "3.1",
+			"featureVersion": "2.5",
 			"connections": [
 				{
 					"inputId": "input",
-					"outputId": "done",
-					"targetNodeId": "%uuid_3%"
+					"outputId": "sent",
+					"targetNodeId": "%uuid_20%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "err",
+					"targetNodeId": "%uuid_20%"
 				}
 			]
 		},
 		{
 			"note": "",
-			"feature": "onHttp",
-			"x": 2364,
-			"name": "On HTTP (Alert)",
-			"y": 84,
-			"id": "%uuid_22%",
-			"category": "http",
+			"feature": "split",
+			"x": 2412,
+			"name": "Split",
+			"y": 180,
+			"id": "%uuid_25%",
+			"category": "dev",
 			"params": {
-				"response_timeout": {
-					"type": "int",
-					"value": 60
+				"output": {
+					"type": "outputsNumber",
+					"value": null
 				},
-				"variables": {
-					"type": "VariablesList",
-					"value": [
-						{
-							"name": "body",
-							"parameter": "body",
-							"displayed": true,
-							"editable": true,
-							"originEditable": false,
-							"nameEditable": true,
-							"parameterEditable": false,
-							"removable": false,
-							"type": "object"
-						},
-						{
-							"origin": "headers",
-							"parameter": "toto",
-							"name": "toto",
-							"type": "string",
-							"mandatory": false
-						},
-						{
-							"origin": "headers",
-							"parameter": "jid1",
-							"name": "jid1",
-							"type": "string",
-							"mandatory": false
-						}
-					]
-				},
-				"immediate_response": {
-					"type": "bool",
-					"value": true
-				},
-				"method": {
-					"type": "choice",
-					"value": "GET"
-				},
-				"url": {
-					"type": "string",
-					"value": "/api/flows/$tenantName3"
-				},
-				"token": {
-					"type": "token"
-				},
-				"securityComment": {
-					"type": "comment"
+				"comment": {
+					"type": "comment",
+					"value": null
 				}
 			},
-			"featureVersion": "2.6",
+			"featureVersion": "1.1",
 			"connections": [
 				{
 					"inputId": "input",
-					"outputId": "request",
-					"targetNodeId": "%uuid_23%"
+					"outputId": "split0",
+					"targetNodeId": "%uuid_26%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "split1",
+					"targetNodeId": "%uuid_34%"
 				}
 			]
 		},
 		{
 			"note": "",
 			"feature": "sendRainbowMessage",
-			"x": 2424,
-			"name": "Rainbow IM (alert)",
-			"y": 264,
-			"id": "%uuid_23%",
+			"x": 2580,
+			"name": "Rainbow IM",
+			"y": 336,
+			"id": "%uuid_34%",
 			"category": "rainbow",
 			"params": {
 				"bubbleList": {
 					"type": "bubble",
-					"value": [
-						{
-							"jid": "$room",
-							"name": "$name"
-						}
-					]
+					"value": null
 				},
 				"variables": {
 					"type": "VariablesList",
@@ -1130,7 +1850,7 @@
 				},
 				"message": {
 					"type": "textareaMentions",
-					"value": "VAR(toto)"
+					"value": "Dear Network Admin,\n\nVAR(subject)\nVAR(action)\nVAR(result)\n\nEnd of message\n\nRegards\nPreventive Maintenance team"
 				},
 				"users": {
 					"type": "users",
@@ -1138,130 +1858,70 @@
 				}
 			},
 			"featureVersion": "2.5",
-			"connections": []
-		},
-		{
-			"note": "Attente pour ne pas supprimer le fichier avant la fin du split",
-			"feature": "wait",
-			"x": 1152,
-			"name": "Sleep",
-			"y": 1140,
-			"id": "%uuid_3%",
-			"category": "dev",
-			"params": {
-				"time": {
-					"type": "int",
-					"value": 30
-				}
-			},
-			"featureVersion": "1.1",
 			"connections": [
 				{
 					"inputId": "input",
-					"outputId": "next",
-					"targetNodeId": "%uuid_1%"
-				}
-			]
-		},
-		{
-			"note": "Test email",
-			"feature": "onHttp",
-			"x": 2412,
-			"name": "On HTTP  \"Test\" for Service Ability",
-			"y": 480,
-			"id": "%uuid_24%",
-			"category": "http",
-			"params": {
-				"response_timeout": {
-					"type": "int",
-					"value": 60
+					"outputId": "sent",
+					"targetNodeId": "%uuid_20%"
 				},
-				"variables": {
-					"type": "VariablesList",
-					"value": [
-						{
-							"name": "body",
-							"parameter": "body",
-							"displayed": true,
-							"editable": true,
-							"originEditable": false,
-							"nameEditable": true,
-							"parameterEditable": false,
-							"removable": false,
-							"type": "object"
-						},
-						{
-							"origin": "headers",
-							"parameter": "toto",
-							"name": "toto",
-							"type": "string",
-							"mandatory": false
-						},
-						{
-							"origin": "headers",
-							"parameter": "tata",
-							"name": "tata",
-							"type": "string",
-							"mandatory": false
-						},
-						{
-							"origin": "headers",
-							"parameter": "jid1",
-							"name": "jid1",
-							"type": "string",
-							"mandatory": false
-						}
-					]
-				},
-				"immediate_response": {
-					"type": "bool",
-					"value": true
-				},
-				"method": {
-					"type": "choice",
-					"value": "GET"
-				},
-				"url": {
-					"type": "string",
-					"value": "/api/flows/$tenantName4"
-				},
-				"token": {
-					"type": "token"
-				},
-				"securityComment": {
-					"type": "comment"
-				}
-			},
-			"featureVersion": "2.6",
-			"connections": [
 				{
 					"inputId": "input",
-					"outputId": "request",
-					"targetNodeId": "%uuid_25%"
+					"outputId": "err",
+					"targetNodeId": "%uuid_20%"
 				}
 			]
 		},
 		{
 			"note": "",
-			"feature": "sendRainbowMessage",
-			"x": 2472,
-			"name": "Rainbow IM (test)",
-			"y": 684,
-			"id": "%uuid_25%",
+			"feature": "rainbowCardMessage",
+			"x": 132,
+			"name": "Carte Rainbow",
+			"y": 1272,
+			"id": "%uuid_35%",
 			"category": "rainbow",
 			"params": {
+				"cardData": {
+					"type": "json",
+					"value": "{\"hasMenu\":[{\"name\":\"Yes\"},{\"name\":\"No\"},{\"name\":\"Yes, and remember\"},{\"name\":\"VAR(advanced)\"}],\"ParticipantInfoForm\":{\"log\":\"VAR(action)\"}}"
+				},
 				"bubbleList": {
 					"type": "bubble",
-					"value": [
-						{
-							"jid": "$room",
-							"name": "$name"
-						}
-					]
+					"value": {
+						"jid": "room_03e3f2595f3f4498b5c5117a5f73840c@muc.openrainbow.com",
+						"name": "$name"
+					}
 				},
 				"variables": {
 					"type": "VariablesList",
 					"value": [
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.fromJid",
+							"name": "rainbowReceivedFromJid",
+							"type": "string"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.content",
+							"name": "rainbowReceivedContent",
+							"type": "string"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.alternativeContent",
+							"name": "alternativeContent",
+							"type": "object"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.fromUser",
+							"name": "rainbowReceivedFromUser",
+							"type": "object"
+						},
 						{
 							"displayed": false,
 							"editable": false,
@@ -1271,148 +1931,271 @@
 						}
 					]
 				},
-				"attachments": {
-					"type": "attachments",
-					"value": null
+				"jid": {
+					"type": "textMentions",
+					"value": ""
 				},
 				"messageType": {
 					"type": "choice",
-					"value": "Standard"
+					"value": null
 				},
-				"jid": {
-					"type": "textMentions",
-					"value": "VAR(jid1)"
+				"cardPayload": {
+					"type": "adaptiveCard",
+					"value": "{\"$schema\":\"http://adaptivecards.io/schemas/adaptive-card.json\",\"type\":\"AdaptiveCard\",\"body\":[{\"type\":\"Image\",\"url\":\"https://raw.githubusercontent.com/data-support-ale/Script_Preventive_Maintenance/main/Preventive_Maintenance_banner.png\",\"size\":\"High\"},{\"type\":\"TextBlock\",\"text\":\"Dear Network Admin,\",\"size\":\"Low\",\"horizontalAlignment\":\"left\"},{\"type\":\"TextBlock\",\"text\":\"Log: ${ParticipantInfoForm.log}\",\"size\":\"medium\",\"wrap\":true,\"weight\":\"bolder\"}],\"actions\":[{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[0].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[0].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"yes\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[1].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[1].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"no\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[2].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[2].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"save\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[3].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[3].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"advanced\"}}}}],\"version\":\"1.0\"}"
 				},
-				"format": {
-					"type": "choice",
-					"value": "text"
+				"title": {
+					"type": "textMentions"
 				},
-				"groups": {
-					"type": "groups",
+				"value": {
+					"type": "variableValues",
+					"value": [
+						{
+							"removable": false,
+							"id": "yes",
+							"value": "yes"
+						},
+						{
+							"removable": false,
+							"id": "no",
+							"value": "no"
+						},
+						{
+							"removable": false,
+							"id": "save",
+							"value": "save"
+						},
+						{
+							"removable": false,
+							"id": "advanced",
+							"value": "advanced"
+						}
+					]
+				},
+				"timeout": {
+					"type": "int",
+					"value": 30
+				},
+				"users": {
+					"type": "users"
+				}
+			},
+			"featureVersion": "3.0",
+			"connections": [
+				{
+					"inputId": "input",
+					"outputId": "yes",
+					"targetNodeId": "%uuid_18%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "no",
+					"targetNodeId": "%uuid_17%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "save",
+					"targetNodeId": "%uuid_19%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "advanced",
+					"targetNodeId": "%uuid_36%"
+				}
+			]
+		},
+		{
+			"note": "",
+			"feature": "split",
+			"x": 156,
+			"name": "Split",
+			"y": 1092,
+			"id": "%uuid_8%",
+			"category": "dev",
+			"params": {
+				"output": {
+					"type": "outputsNumber",
 					"value": null
 				},
 				"comment": {
 					"type": "comment",
 					"value": null
-				},
-				"message": {
-					"type": "textareaMentions",
-					"value": "VAR(toto)"
-				},
-				"users": {
-					"type": "users",
-					"value": null
 				}
 			},
-			"featureVersion": "2.5",
+			"featureVersion": "1.1",
 			"connections": [
 				{
-					"outputId": "sent",
-					"targetNodeId": "%uuid_26%",
-					"inputId": "input"
+					"inputId": "input",
+					"outputId": "split0",
+					"targetNodeId": "%uuid_35%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "split1",
+					"targetNodeId": "%uuid_37%"
 				}
 			]
 		},
 		{
-			"id": "%uuid_13%",
-			"feature": "split",
+			"note": "",
+			"feature": "variable",
+			"x": 432,
+			"name": "Variable Advanced",
+			"y": 1128,
+			"id": "%uuid_36%",
 			"category": "dev",
-			"featureVersion": "1.1",
-			"x": 2004,
-			"y": 264,
 			"params": {
-				"output": {
-					"value": null,
-					"type": "outputsNumber"
+				"variable": {
+					"type": "variableMgt",
+					"value": [
+						{
+							"name": "answer",
+							"type": "string",
+							"value": "3"
+						}
+					]
 				},
 				"comment": {
-					"value": null,
-					"type": "comment"
+					"type": "comment",
+					"value": null
 				}
 			},
+			"featureVersion": "3.1",
 			"connections": [
 				{
-					"outputId": "split0",
-					"targetNodeId": "%uuid_19%",
-					"inputId": "input"
-				},
-				{
-					"outputId": "split1",
-					"targetNodeId": "%uuid_21%",
-					"inputId": "input"
+					"inputId": "input",
+					"outputId": "done",
+					"targetNodeId": "%uuid_2%"
 				}
-			],
-			"name": "Split",
-			"note": ""
+			]
 		},
 		{
-			"id": "%uuid_20%",
-			"feature": "httpResponse",
-			"category": "http",
-			"featureVersion": "2.1",
-			"x": 864,
-			"y": 1176,
+			"note": "",
+			"feature": "rainbowCardMessage",
+			"x": 552,
+			"name": "Carte Rainbow",
+			"y": 1272,
+			"id": "%uuid_37%",
+			"category": "rainbow",
 			"params": {
-				"response": {
-					"value": "Success",
-					"type": "textareaMentions"
+				"cardData": {
+					"type": "json",
+					"value": "{\"hasMenu\":[{\"name\":\"Yes\"},{\"name\":\"No\"},{\"name\":\"Yes, and remember\"},{\"name\":\"VAR(advanced)\"}],\"ParticipantInfoForm\":{\"log\":\"VAR(action)\"}}"
 				},
-				"statusCode": {
-					"value": 200,
-					"type": "int"
+				"bubbleList": {
+					"type": "bubble",
+					"value": null
 				},
-				"headers": {
-					"value": {},
-					"type": "keyValueList"
+				"variables": {
+					"type": "VariablesList",
+					"value": [
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.fromJid",
+							"name": "rainbowReceivedFromJid",
+							"type": "string"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.content",
+							"name": "rainbowReceivedContent",
+							"type": "string"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.alternativeContent",
+							"name": "alternativeContent",
+							"type": "object"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "rainbowMessageReceived.fromUser",
+							"name": "rainbowReceivedFromUser",
+							"type": "object"
+						},
+						{
+							"displayed": false,
+							"editable": false,
+							"parameter": "status",
+							"name": "status",
+							"type": "object"
+						}
+					]
+				},
+				"jid": {
+					"type": "textMentions",
+					"value": "VAR(jid1)"
+				},
+				"messageType": {
+					"type": "choice",
+					"value": null
+				},
+				"cardPayload": {
+					"type": "adaptiveCard",
+					"value": "{\"$schema\":\"http://adaptivecards.io/schemas/adaptive-card.json\",\"type\":\"AdaptiveCard\",\"body\":[{\"type\":\"Image\",\"url\":\"https://raw.githubusercontent.com/data-support-ale/Script_Preventive_Maintenance/main/Preventive_Maintenance_banner.png\",\"size\":\"High\"},{\"type\":\"TextBlock\",\"text\":\"Dear Network Admin,\",\"size\":\"Low\",\"horizontalAlignment\":\"left\"},{\"type\":\"TextBlock\",\"text\":\"Log: ${ParticipantInfoForm.log}\",\"size\":\"medium\",\"wrap\":true,\"weight\":\"bolder\"}],\"actions\":[{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[0].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[0].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"yes\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[1].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[1].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"no\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[2].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[2].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"save\"}}}},{\"type\":\"Action.Submit\",\"title\":\"${hasMenu[3].name}\",\"data\":{\"rainbow\":{\"text\":\"${hasMenu[3].name}\",\"type\":\"messageBack\",\"value\":{\"response\":\"advanced\"}}}}],\"version\":\"1.0\"}"
+				},
+				"title": {
+					"type": "textMentions"
+				},
+				"value": {
+					"type": "variableValues",
+					"value": [
+						{
+							"removable": false,
+							"id": "yes",
+							"value": "yes"
+						},
+						{
+							"removable": false,
+							"id": "no",
+							"value": "no"
+						},
+						{
+							"removable": false,
+							"id": "save",
+							"value": "save"
+						},
+						{
+							"removable": false,
+							"id": "advanced",
+							"value": "advanced"
+						}
+					]
+				},
+				"timeout": {
+					"type": "int",
+					"value": 30
+				},
+				"users": {
+					"type": "users"
 				}
 			},
+			"featureVersion": "3.0",
 			"connections": [
 				{
-					"outputId": "done",
-					"targetNodeId": "%uuid_1%",
-					"inputId": "input"
-				}
-			],
-			"name": "Http Response (if error)",
-			"note": ""
-		},
-		{
-			"id": "%uuid_26%",
-			"feature": "httpResponse",
-			"category": "http",
-			"featureVersion": "2.1",
-			"x": 2376,
-			"y": 900,
-			"params": {
-				"response": {
-					"value": "",
-					"type": "textareaMentions"
-				},
-				"statusCode": {
-					"value": 200,
-					"type": "int"
-				},
-				"headers": {
-					"value": {
-						"result": "success"
-					},
-					"type": "keyValueList"
-				}
-			},
-			"connections": [
-				{
-					"outputId": "done",
-					"targetNodeId": "%uuid_1%",
-					"inputId": "input"
+					"inputId": "input",
+					"outputId": "yes",
+					"targetNodeId": "%uuid_18%"
 				},
 				{
-					"outputId": "err",
-					"targetNodeId": "%uuid_1%",
-					"inputId": "input"
+					"inputId": "input",
+					"outputId": "no",
+					"targetNodeId": "%uuid_17%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "save",
+					"targetNodeId": "%uuid_19%"
+				},
+				{
+					"inputId": "input",
+					"outputId": "advanced",
+					"targetNodeId": "%uuid_36%"
 				}
-			],
-			"name": "Http Response",
-			"note": ""
+			]
 		}
 	]
 }
