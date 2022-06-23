@@ -4,8 +4,8 @@ import sys
 import os
 import json
 from time import strftime, localtime
-from support_tools_OmniSwitch import get_credentials, send_file, collect_command_output_ps, check_save, add_new_save
-from support_send_notification import send_message, send_message_request
+from support_tools_OmniSwitch import get_credentials, collect_command_output_ps, check_save, add_new_save
+from support_send_notification import send_message, send_message_request, send_file
 from database_conf import *
 import re
 

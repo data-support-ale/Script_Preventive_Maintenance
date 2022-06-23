@@ -775,4 +775,4 @@ def send_file(filename_path, subject, action, result, category, jid):
 
 if __name__ == "__main__":
     switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
-    send_message("text", jid)
+    send_message("OHHHH ALLLLEDDDD", jid)

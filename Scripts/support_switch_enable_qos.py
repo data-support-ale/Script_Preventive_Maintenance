@@ -117,7 +117,11 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         ip_switch_ddos = re.findall(r" ([.0-9]*)$", msg)[0]
         try:
             # Log sample if DDOS Attack of type invalid-ip
-            # OS6860E-P24-VC-ACAT swlogd ipni dos WARN: VRF 0: DoS type invalid ip from 158.42.253.193/e8:e7:32:fb:47:4b on port 1/1/22
+            # OS6860E swlogd ipni dos WARN: VRF 0: DoS type invalid ip from 158.42.253.193/e8:e7:32:fb:47:4b on port 1/1/22
+            # Log sample if DDOS Attack of type loopback-src
+            # 6860E swlogd ipv4 dos EVENT: CUSTLOG CMM Denial of Service attack detected: <loopback-src>
+            # OS6860E swlogd ipni dos WARN: VRF 0: DoS type loopback-src from 127.10.1.65\/2c:fa:a2:c0:fd:a3 on port 1\/1\/6
+
             ddos_type, ip_switch_ddos, mac_switch_ddos, port = re.findall(r"DoS type (.*?) from (.*?)/(.*?) on port (.*)", msg)[0]
             print(port)
         except:

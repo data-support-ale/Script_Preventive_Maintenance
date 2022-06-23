@@ -118,6 +118,11 @@ with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_fi
         try:
             ip_dup, port, mac = re.findall(r"duplicate IP address (.*?) from port (.*?) eth addr (.*)", msg)[0]
         except IndexError:
+            try:
+                ip_dup, port, mac = re.findall(r"duplicate IP address (.*?) from port (.*?) eth-addr (.*)", msg)[0]
+            except IndexError:
+                print("Index error in regex")
+                exit()
             print("Index error in regex")
             exit()
     # CORE swlogd ipni arp INFO: arp info overwritten for 172.16.29.30 by 78e3b5:054b08 port Lag 1
