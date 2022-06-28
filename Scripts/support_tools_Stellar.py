@@ -219,7 +219,7 @@ def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):
     :return:                               filename_path,subject,action,result,category
     """
     l_stellar_cmd = []
-    l_stellar_cmd.append("ssudo tech_support_command 13")
+    l_stellar_cmd.append("echo -e \"\n Collecting tech_support_command 13 output: \n\"; ssudo tech_support_command 13")
     for stellar_cmd in l_stellar_cmd:
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, neighbor_ip, stellar_cmd)
         try:
@@ -274,7 +274,7 @@ def  channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization)
     :return:                               filename_path,subject,action,result,category, channel, band
     """
     l_stellar_cmd = []
-    l_stellar_cmd.append("ssudo tech_support_command 13")
+    l_stellar_cmd.append("echo -e \"\n Collecting tech_support_command 13 output: \n\"; ssudo tech_support_command 13")
     for stellar_cmd in l_stellar_cmd:
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, ipadd, stellar_cmd)
         try:
@@ -338,11 +338,17 @@ def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
     text = "More logs about the WLAN Stellar AP : {0} \n\n\n".format(ipadd)
 
     l_stellar_cmd = []
-    l_stellar_cmd.append("ssudo tech_support_command 1")
-    l_stellar_cmd.append("ssudo tech_support_command 2")
-    l_stellar_cmd.append("ssudo tech_support_command 16")
-    l_stellar_cmd.append("ssudo tech_support_command 27")
-    l_stellar_cmd.append("ssudo tech_support_command 12 " + ip_server)
+    l_stellar_cmd.append("echo -e \"\n Collecting tech_support_command 1 output: \n\"; ssudo tech_support_command 1; \
+       echo -e \"\n Collecting tech_support_command 2 output: \n\"; ssudo tech_support_command 2; \
+       echo -e \"\n Collecting tech_support_command 4 output: \n\"; ssudo tech_support_command 4; \
+       echo -e \"\n Collecting tech_support_command 10 output: \n\"; ssudo tech_support_command 10; \
+       echo -e \"\n Collecting tech_support_command 13 output: \n\"; ssudo tech_support_command 13; \
+       echo -e \"\n Collecting tech_support_command 16 output: \n\"; ssudo tech_support_command 16; \
+       echo -e \"\n Collecting tech_support_command 19 output: \n\"; ssudo tech_support_command 19; \
+       echo -e \"\n Collecting tech_support_command 21 output: \n\"; ssudo tech_support_command 21; \
+       echo -e \"\n Collecting tech_support_command 27 output: \n\"; ssudo tech_support_command 27")
+    l_stellar_cmd.append("echo -e \"\n Collecting WLAN Stellar AP Snapshot logs thru TFTP \n\";ssudo tech_support_command 12 " + ip_server)
+
     for stellar_cmd in l_stellar_cmd:
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, ipadd, stellar_cmd)
         try:
@@ -409,13 +415,17 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
     text = "More logs about the WLAN Stellar AP : {0} \n\n\n".format(ipadd)
 
     l_stellar_cmd = []
-    l_stellar_cmd.append("ssudo tech_support_command 1")
-    l_stellar_cmd.append("ssudo tech_support_command 2")
-    l_stellar_cmd.append("ssudo tech_support_command 16")
-    l_stellar_cmd.append("ssudo tech_support_command 21")
-    l_stellar_cmd.append("ssudo tech_support_command 27")
-    l_stellar_cmd.append("cat /var/config/access_role.conf")
-    l_stellar_cmd.append("ssudo tech_support_command 12 " + ip_server)
+    l_stellar_cmd.append("echo -e \"\n Collecting tech_support_command 1 output: \n\"; ssudo tech_support_command 1; \
+       echo -e \"\n Collecting tech_support_command 2 output: \n\"; ssudo tech_support_command 2; \
+       echo -e \"\n Collecting tech_support_command 4 output: \n\"; ssudo tech_support_command 4; \
+       echo -e \"\n Collecting tech_support_command 10 output: \n\"; ssudo tech_support_command 10; \
+       echo -e \"\n Collecting tech_support_command 13 output: \n\"; ssudo tech_support_command 13; \
+       echo -e \"\n Collecting tech_support_command 16 output: \n\"; ssudo tech_support_command 16; \
+       echo -e \"\n Collecting tech_support_command 19 output: \n\"; ssudo tech_support_command 19; \
+       echo -e \"\n Collecting tech_support_command 21 output: \n\"; ssudo tech_support_command 21; \
+       echo -e \"\n Collecting tech_support_command 27 output: \n\"; ssudo tech_support_command 27; \
+       echo -e \"\n Collecting Access Role Profile config file: \n\"; cat /var/config/access_role.conf")
+    l_stellar_cmd.append("echo -e \"\n Collecting WLAN Stellar AP Snapshot logs thru TFTP \n\";ssudo tech_support_command 12 " + ip_server)
     for stellar_cmd in l_stellar_cmd:
         cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, ipadd, stellar_cmd)
         try:
