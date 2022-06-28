@@ -515,6 +515,12 @@ template (name=\"devicelogchanneluse\" type=\"string\"
 template (name=\"deviceloglinkagg\" type=\"string\"
      string=\"/var/log/devices/lastlog_linkagg.json\")
 
+template (name=\"wlanlogoperations\" type=\"string\"
+     string=\"/var/log/devices/lastlog_wlan_operations.json\")
+
+template (name=\"wlanlogexceptions\" type=\"string\"
+     string=\"/var/log/devices/lastlog_wlan_exceptions.json\")
+
 template(name=\"json_syslog\"
   type=\"list\") {
     constant(value=\"{\")
@@ -730,21 +736,21 @@ if \$msg contains 'Received deauth' and \$msg contains 'calog' then {
 if \$msg contains 'sysreboot' then {
      \$RepeatedMsgReduction on
      if \$msg contains 'Power Off' then {
-       action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\"  binary=\"/opt/ALE_Script/support_wlan_generic.py unexpected_reboot\")
+       action(type=\"omfile\" DynaFile=\"wlanlogoperations\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\"  binary=\"/opt/ALE_Script/support_wlan_operations.py\")
        stop
      }
      else {
-     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_wlan_generic_reboot\" binary=\"/opt/ALE_Script/support_wlan_generic.py reboot\")
+     action(type=\"omfile\" DynaFile=\"wlanlogoperations\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_wlan_generic_reboot\" binary=\"/opt/ALE_Script/support_wlan_operations.py\")
      stop
      }
 }
 
 if \$msg contains 'osupgrade' and \$msg contains 'sysupgrade' then {
      \$RepeatedMsgReduction on
-     action(type=\"omfile\" DynaFile=\"devicelogdeauth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_wlan_generic_upgrade\" binary=\"/opt/ALE_Script/support_wlan_generic.py upgrade\")
+     action(type=\"omfile\" DynaFile=\"wlanlogoperations\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_wlan_generic_upgrade\" binary=\"/opt/ALE_Script/support_wlan_generic.py\")
      stop
 }
 
