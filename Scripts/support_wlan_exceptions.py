@@ -5,6 +5,7 @@ import os
 from time import strftime, localtime
 import re
 from support_tools_OmniSwitch import get_credentials
+from support_tools_Stellar import collect_logs
 from support_send_notification import *
 import json
 import time
@@ -74,10 +75,11 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     if "TARGET ASSERTED" in msg:
         try:
             os.system('logger -t montag -p user.info target asserted detected')
+            pattern = "TARGET ASSERTED"
+            filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - There is a Target Asserted error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
-            result = "This is a known issue fixed in AWOS 4.0.0 MR-3, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058976"
-            filename_path = "/var/log/devices/lastlog_wlan_exceptions.json"
+            result = "Attached to this notification the log collection, please contact ALE Customer Support"
             category = "TARGET_ASSERTED"
             send_file(filename_path, subject, action, result, category, jid)
         except UnboundLocalError as error:
@@ -93,10 +95,11 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     elif "Internal error" in msg:
         try:
             os.system('logger -t montag -p user.info internal error detected')
+            pattern = "Internal error"
+            filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - There is an Internal Error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
-            result = "If WLAN Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737"
-            filename_path = "/var/log/devices/lastlog_wlan_exceptions.json"
+            result = "Attached to this notification the log collection, please contact ALE Customer Support"
             category = "Internal_error"
             send_file(filename_path, subject, action, result, category, jid)
         except UnboundLocalError as error:
@@ -112,10 +115,11 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     elif "Kernel panic" or "Fatal exception" or "KERNEL PANIC" in msg:
         try:
             os.system('logger -t montag -p user.info Kernel Panic detected')
+            pattern = "Exception"
+            filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - There is a Kernel Panic error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
             result = "This is a known issue fixed in AWOS 4.0.4 MR-4, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000067381"
-            filename_path = "/var/log/devices/lastlog_wlan_exceptions.json"
             category = "Exception"
             send_file(filename_path, subject, action, result, category, jid)
         except UnboundLocalError as error:
@@ -131,10 +135,11 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     elif "Exception stack" or "core-monitor reboot" or "parse condition rule is error" in msg:
         try:
             os.system('logger -t montag -p user.info Kernel Panic detected')
+            pattern = "Exception"
+            filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - An unhandled exception occurred on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
-            result = "Please contact ALE Customer Support"
-            filename_path = "/var/log/devices/lastlog_wlan_exceptions.json"
+            result = "Attached to this notification the log collection, please contact ALE Customer Support"
             category = "Exception"
             send_file(filename_path, subject, action, result, category, jid)
         except UnboundLocalError as error:
@@ -148,10 +153,11 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     elif "Unable to handle kernel" in msg:
         try: 
             os.system('logger -t montag -p user.info Kernel Panic detected')
+            pattern = "Exception"
+            filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - An unhandled exception occurred on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
-            result = "Please contact ALE Customer Support"
-            filename_path = "/var/log/devices/lastlog_wlan_exceptions.json"
+            result = "Attached to this notification the log collection, please contact ALE Customer Support"
             category = "Exception"
             send_file(filename_path, subject, action, result, category, jid)
         except UnboundLocalError as error:

@@ -289,7 +289,7 @@ def  channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization)
                 os.system('logger -t montag -p user.info ' + info)
                 send_message(info, jid)
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": neighbor_ip, "Exception": exception}, "fields": {"count": 1}}])
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
                     print(error)
                 except Exception as error:
@@ -302,7 +302,7 @@ def  channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization)
             os.system('logger -t montag -p user.info ' + info)
             send_message(info, jid)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": neighbor_ip, "Exception": exception}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
                 print(error)
             except Exception as error:
@@ -465,6 +465,93 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
     category = "vlan_limit"
     return filename_path, subject, action, result, category
 
+def collect_logs(login_AP, pass_AP, ipadd, pattern):
+    """ 
+    This function collect snapshot logs and additionnal logs on Stellar AP when specific pattern is noticed
+
+    :param str login_AP:                   WLAN Stellar AP support login
+    :param str pass_AP:                    WLAN Stellar AP support password
+    :param str ipadd:                      WLAN Stellar AP IP address
+    :return:                               filename_path,subject,action,result,category
+    """
+    text = "More logs about the WLAN Stellar AP : {0} \n\n\n".format(ipadd)
+
+    l_stellar_cmd = []
+    l_stellar_cmd.append("echo -e \"\n Collecting tech_support_command 1 output: \n\"; ssudo tech_support_command 1; \
+       echo -e \"\n Collecting tech_support_command 2 output: \n\"; ssudo tech_support_command 2; \
+       echo -e \"\n Collecting tech_support_command 4 output: \n\"; ssudo tech_support_command 4; \
+       echo -e \"\n Collecting tech_support_command 10 output: \n\"; ssudo tech_support_command 10; \
+       echo -e \"\n Collecting tech_support_command 13 output: \n\"; ssudo tech_support_command 13; \
+       echo -e \"\n Collecting tech_support_command 16 output: \n\"; ssudo tech_support_command 16; \
+       echo -e \"\n Collecting tech_support_command 19 output: \n\"; ssudo tech_support_command 19; \
+       echo -e \"\n Collecting tech_support_command 21 output: \n\"; ssudo tech_support_command 21; \
+       echo -e \"\n Collecting tech_support_command 27 output: \n\"; ssudo tech_support_command 27")
+    l_stellar_cmd.append("echo -e \"\n Collecting WLAN Stellar AP Snapshot logs thru TFTP \n\";ssudo tech_support_command 12 " + ip_server)
+    for stellar_cmd in l_stellar_cmd:
+        try:
+            output = ssh_connectivity_check(login_AP, pass_AP, ipadd, stellar_cmd)
+            if output != None:
+                output = str(output)
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
+                text = "{0}{1}: \n{2}\n\n".format(text, stellar_cmd, output_decode)
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                    
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+                
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+        except subprocess.SubprocessError as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+                
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass  
+            sys.exit()
+    date = datetime.date.today()
+    date_hm = datetime.datetime.today()
+
+    filename = "{0}_{1}-{2}_{3}_snapshot_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
+    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    f_logs = open(filename_path, 'w')
+    f_logs.write(text)
+    f_logs.close()
+    subject = ("Preventive Maintenance Application - The following pattern \"{0}\" is noticed on WLAN Stellar AP {1}").format(pattern,ipadd)
+    action = ("A Pattern \"{0}\" has been detected in WLAN Stellar AP syslogs (IP Address : {1}). A WLAN Stellar AP snapshot log is collected and stored in the server: {2}, directory : /tftpboot/").format(pattern, ipadd, ip_server)
+    result = "Find attached to this notification additionnal logs"
+    category = "pattern"
+    return filename_path, subject, action, result, category
+
+
 if __name__ == "__main__":
     jid = "570e12872d768e9b52a8b975@openrainbow.com"
     pass_AP = "Letacla01*"
@@ -473,8 +560,10 @@ if __name__ == "__main__":
     cmd = "/usr/sbin/showsysinfo"
     host = "10.130.7.186"
     pass_root = ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd)
-#    get_snapshot_tftp(pass_root, ipadd)
     filename_path, subject, action, result, category = sta_limit_reached_tools(login_AP, pass_AP, ipadd)
     send_file(filename_path, subject, action, result, category, jid)
     filename_path, subject, action, result, category = vlan_limit_reached_tools(login_AP, pass_AP, ipadd)
     send_file(filename_path, subject, action, result, category, jid)
+
+else:
+    print("Support_Tools_Stellar Script called by another script")
