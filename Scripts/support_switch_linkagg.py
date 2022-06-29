@@ -38,6 +38,7 @@ with open("/var/log/devices/lastlog_linkagg.json", "r", errors='ignore') as log_
         ip = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_linkagg.json empty")
         exit()
@@ -48,13 +49,22 @@ with open("/var/log/devices/lastlog_linkagg.json", "r", errors='ignore') as log_
     ## Sample Log
     ## OS6860E_VC_Core swlogd linkAggCmm main INFO: Receive agg port leave request: agg: 1, port: 1/1/1(0)
     os.system('logger -t montag -p user.info Executing script support_switch_linkagg - start')
-    try:
-        agg, port = re.findall(r"Receive agg port leave request: agg: (.*?), port:(.*?)\(", msg)[0]
-        print(port)
-    except IndexError:
-        print("Index error in regex")
-        os.system('logger -t montag -p user.info Executing script support_switch_linkagg - Index error in regex')
-        exit()
+    if "Aggregate Down" in msg:
+        try:
+            port, snmp_port_id, agg, link_status, linkagg_status = re.findall(r"Receive agg port leave request:   Aggregate Down, LACP port: (.*?)\((.*?)\) agg: (.*?) link:(.*?) agg_admin:(.*?)", msg)[0]
+            print(port)
+        except IndexError:
+            print("Index error in regex")
+            os.system('logger -t montag -p user.info Executing script support_switch_linkagg - Index error in regex')
+            exit()
+    if "leave request: agg" in msg:
+        try:
+            agg, port = re.findall(r"Receive agg port leave request: agg: (.*?), port:(.*?)\(", msg)[0]
+            print(port)
+        except IndexError:
+            print("Index error in regex")
+            os.system('logger -t montag -p user.info Executing script support_switch_linkagg - Index error in regex')
+            exit()
         
 # always 1
 #never -1
@@ -100,6 +110,9 @@ if save_resp == "0":
     localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ip,filename)
     try: 
        get_file_sftp(switch_user, switch_password, ip, remoteFilePath, localFilePath)
+    except FileNotFoundError:
+        print("/flash/pmonitor.enc file not found on OmniSwitch")
+        pass
     except:
         pass
     if answer == "2":
