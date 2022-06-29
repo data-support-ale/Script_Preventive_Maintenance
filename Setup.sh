@@ -993,6 +993,24 @@ if \$msg contains ''Receive agg port leave request' and not (\$msg contains 'Por
 }
 
 #### PS Unit DOWN - LAN ####
+if \$msg contains 'All power supplies'  then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     stop
+}
+
+
+if \$msg contains 'fan' and \$msg contains 'airFlow unknown yet'  then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"$dir/support_switch_power_supply.py\")
+     stop
+}
+
+
 if \$msg contains 'Power Supply' and \$msg contains 'Removed'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")

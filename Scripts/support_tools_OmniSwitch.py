@@ -168,9 +168,13 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         except Exception as error:
             print(error)
         pass
-    exception = stderr.readlines()
-    exception = str(exception)
-    connection_status = stdout.channel.recv_exit_status()
+    
+    try:
+        exception = stderr.readlines()
+        exception = str(exception)
+        connection_status = stdout.channel.recv_exit_status()
+    except:
+        connection_status = 1
     print(connection_status)
     print(exception)
     if connection_status != 0:
@@ -226,6 +230,10 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
             th.join(60)
         except threading.ThreadError as error:
             print(error)
+            pass
+        except FileNotFoundError as error:
+            print(error)
+            pass
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
         print("Authentication failed enter valid user name and password")
@@ -1504,7 +1512,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show chassis; show system; show powersupply; show powersupply total; show hardware-info")
+    l_switch_cmd.append("show chassis; show system; show fan; show powersupply; show powersupply total; show hardware-info")
 #    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x80\" | su')
 #    sleep(1)
 #    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x00\" | su')
@@ -1554,6 +1562,10 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
 
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
+    ps_status = "UP"
+    if "UNPLUG" in output_decode:
+        print("Power Supply is in UNPLUGGED state")
+        ps_status = "UNPLUGGED"
 
     filename = "{0}_{1}-{2}_{3}_ps_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
@@ -1561,11 +1573,15 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     f_logs.write(text)
     f_logs.close()
     subject = ("Preventive Maintenance Application - Power Supply issue detected on OmniSwitch: {0} / {1}").format(host,ipadd)
-    if psid == "Unknown":
+    if ps_status == "UNPLUGGED":
+        action = ("The Power Supply unit {0}  is UNPLUGGED on OmniSwitch (Hostname: {1}). Plug the Power Supply if not done and check the Fan and Power supply have the same Airflow direction (Airflow of both power supply and fan tray has to be in the same direction for the switch to cool down).").format(psid,host)
+        result = "Find enclosed to this notification the log collection for further analysis."
+    elif psid == "Unknown":
         action = ("A Power Supply unit  is Down or running abnormal \"Power Supply operational state changed to UNPOWERED\" on OmniSwitch (Hostname: {0})").format(host)
+        result = "Find enclosed to this notification the log collection for further analysis"
     else:
         action = ("The Power Supply unit {0} is Down or running abnormal on OmniSwitch (Hostname: {1})").format(psid, host)
-    result = "Find enclosed to this notification the log collection for further analysis"
+        result = "Find enclosed to this notification the log collection for further analysis"
     category = "ps"
     return filename_path, subject, action, result, category
 
@@ -2224,7 +2240,7 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
     :return:                              lldp_port_description
     """
     lldp_port_description = lldp_mac_address = 0
-
+    lldp_port = ""
     switch_cmd = "show lldp port {0} remote-system".format(port)
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)

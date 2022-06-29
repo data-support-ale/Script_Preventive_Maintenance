@@ -42,6 +42,62 @@ save_resp = check_save(ipadd, "2", "power_supply")
 save_resp = check_save(ipadd, "Unknown", "power_supply")
 
 if save_resp == "0":
+   # Sample log
+    # OS6860 swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM chassisTrapsAlert - All power supplies OK
+    if "All power supplies" in msg:
+        try:
+            ps_status = re.findall(r"All power supplies (.*)", msg)[0]
+            subject = ("Preventive Maintenance Application - Power Supply check detected on OmniSwitch: {0} / {1}").format(host,ipadd)
+            action = ("All Power Supplies are {0} on OmniSwitch (Hostname: {1})").format(ps_status,host)
+            result = "This log is generated after an unplug/plug of the Power Supply"
+            category = "ps"
+            filename_path = "/var/log/devices/lastlog_power_supply_down.json"
+            send_file(filename_path, subject, action, result, category, jid)
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except IndexError as error:
+            print(error)
+            sys.exit()
+        sys.exit()
+
+    # Sample log
+    # OS6860 swlogd ChassisSupervisor fan & temp Mgr INFO: Alert: PS1 airFlow unknown yet
+    if "airFlow unknown yet" in msg:
+        try:
+            nb_power_supply = re.findall(r"Alert: (.*?) airFlow unknown yet", msg)[0]
+            if nb_power_supply == "PS1":
+                nb_power_supply = 1
+            if nb_power_supply == "PS2":
+                nb_power_supply = 2
+            filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, nb_power_supply, host, ipadd)
+            send_file(filename_path, subject, action, result, category, jid)
+#            info = "A default on Power supply {} from device {} has been detected".format(nb_power_supply, ipadd)
+#            send_message(info, jid)
+
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            answer = send_message_request(notif, jid)
+            print(answer)
+            if answer == "2":
+                add_new_save(ipadd, nb_power_supply, "power_supply", choice="always")
+            elif answer == "0":
+                add_new_save(ipadd, nb_power_supply, "power_supply", choice="never")
+
+            try:
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
+                                "IP": ipadd, "PS_Unit": nb_power_supply}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+               print(error)
+               pass 
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except IndexError as error:
+            print(error)
+            sys.exit()
     # Sample log
     # OS6860E swlogd ChassisSupervisor Power Mgr INFO: Power Supply 1 Removed
     if "Removed" in msg:
