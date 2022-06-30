@@ -482,14 +482,8 @@ template (name=\"devicelogradius\" type=\"string\"
 template (name=\"devicelogstorm\" type=\"string\"
      string=\"/var/log/devices/lastlog_storm.json\")
 
-template (name=\"devicelogfan\" type=\"string\"
-     string=\"/var/log/devices/lastlog_fan.json\")
-
 template (name=\"devicelogstp\" type=\"string\"
      string=\"/var/log/devices/lastlog_stp.json\")
-
-template (name=\"deviceloghealth\" type=\"string\"
-     string=\"/var/log/devices/lastlog_switch_health.json\")
 
 template (name=\"deviceloghealth\" type=\"string\"
      string=\"/var/log/devices/lastlog_switch_health.json\")
@@ -584,6 +578,13 @@ user.*                          -/var/log/user.log
 
 if \$msg contains 'ConsLog' then {
      action(type=\"omfile\" File=\"/var/log/devices/Console_Logs.log\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     if \$msg contains 'temperature read failed' then {
+        \$RepeatedMsgReduction on
+        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+        action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+        action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+        stop
+     }
      stop
 }
 
@@ -974,14 +975,6 @@ if \$msg contains 'stpCmm' and \$msg contains 'may not be stp enabled'  then {
      stop
 }
 
-#### FAN DOWN - LAN ####
-if \$msg contains 'Fan Failure'  then {
-     \$RepeatedMsgReduction on
-     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omfile\" DynaFile=\"devicelogfan\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_fan\" binary=\"$dir/support_switch_fan.py\")
-     stop
-}
 
 #### LINKAGG DOWN - LAN ####
 if \$msg contains ''Receive agg port leave request' and not (\$msg contains 'Port Leave') then {
@@ -992,7 +985,7 @@ if \$msg contains ''Receive agg port leave request' and not (\$msg contains 'Por
      stop
 }
 
-#### PS Unit DOWN - LAN ####
+#### FAN or Power Supply Unit DOWN - LAN ####
 if \$msg contains 'All power supplies'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
@@ -1001,39 +994,62 @@ if \$msg contains 'All power supplies'  then {
      stop
 }
 
-
-if \$msg contains 'fan' and \$msg contains 'airFlow unknown yet'  then {
+if \$msg contains 'ChassisSupervisor' and \$msg contains 'ALRT' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"$dir/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
      stop
 }
 
-
-if \$msg contains 'Power Supply' and \$msg contains 'Removed'  then {
+if \$msg contains 'ChassisSupervisor' and \$msg contains 'ERR' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"$dir/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
      stop
 }
 
-if \$msg contains 'Power supply' and \$msg contains 'inoperable'  then {
+if \$msg contains 'ChassisSupervisor' and \$msg contains 'Alert' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_switch_queue_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
      stop
 }
 
-if \$msg contains 'operational state changed to UNPOWERED' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" name=\"support_switch_queue_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
-       stop
+if \$msg contains 'ChassisSupervisor' and \$msg contains 'Removed' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     stop
 }
+
+if \$msg contains 'ChassisSupervisor' and \$msg contains 'inoperable' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     stop
+}
+
+if \$msg contains 'ChassisSupervisor' and \$msg contains 'UNPOWERED' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     stop
+}
+
+if \$msg contains 'temperature read failed' then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     stop
+}
+
 
 #### SPB Adjacency DOWN - LAN ####
 if \$msg contains 'ADJACENCY INFO: Lost L1 adjacency' then {

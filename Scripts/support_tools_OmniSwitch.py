@@ -1369,10 +1369,11 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
 
 
 # Function to collect several command outputs related to FAN failure
-def collect_command_output_fan(switch_user, switch_password, host, ipadd):
+def collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd):
     """ 
     This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
 
+    :param str fan_id:                FAN Unit Identifier
     :param str host:                  Switch Hostname
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category, chassis_id
@@ -1380,7 +1381,7 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append('show microcode; show system; show fan; show temperature')
+    l_switch_cmd.append('show chassis; show microcode; show system; show fan; show temperature; show powersupply; show powersupply total; show hardware-info')
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -1491,11 +1492,15 @@ def collect_command_output_fan(switch_user, switch_password, host, ipadd):
         print("FAN Chassis ID Not found we set value Unknown")
         chassis_id="Unknown"
 
-    subject = ("Preventive Maintenance Application - FAN issue detected on OmniSwitch: {0}").format(ipadd)
-    action = ("The FAN Unit {0} is inoperable on OmniSwitch (Hostname: {1})").format(chassis_id,host)
-    result = "Find enclosed to this notification the log collection for further analysis. Please replace the faulty FAN as soon as possible."
+    subject = ("Preventive Maintenance Application - FAN issue issue detected on OmniSwitch: {0} / {1}").format(host,ipadd)
+    if chassis_id == "Unknown":
+        action = ("A Fan unit  is inoperable OmniSwitch (Hostname: {0})").format(host)
+        result = "Find enclosed to this notification the log collection for further analysis. Please replace the faulty FAN as soon as possible."
+    else:
+        action = ("The Fan unit {0} is Down or running abnormal on OmniSwitch (Hostname: {1})").format(chassis_id, host)
+        result = "Find enclosed to this notification the log collection for further analysis"
     category = "fan"
-    return filename_path, subject, action, result, category, chassis_id
+    return filename_path, subject, action, result, category
 
 
 # Function to collect several command outputs related to Power Supply
@@ -1512,14 +1517,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show chassis; show system; show fan; show powersupply; show powersupply total; show hardware-info")
-#    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x80\" | su')
-#    sleep(1)
-#    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cset -y -f 1 0x60 0x92 0x00\" | su')
-#    sleep(2)
-#    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cget -y -f 1 0x60 0x90\" | su')
-#    sleep(1)
-#    l_switch_cmd.append('echo \"i2cset -y -f 1 0x77 0x1;i2cget -y -f 1 0x60 0x92\" | su')
+    l_switch_cmd.append("show chassis; show microcode; show system; show fan; show temperature; show powersupply; show powersupply total; show hardware-info")
 
     for switch_cmd in l_switch_cmd:
         try:
