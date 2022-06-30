@@ -49,7 +49,11 @@ sys.path.insert(1,os.path.abspath(os.path.join(path,os.pardir)))
 _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
 script_name = sys.argv[0]
-os.system('logger -t montag -p user.info Executing script ' + script_name)
+logging = "logger -t montag -p user.info Executing script {0}".format(script_name)
+try:
+    os.system('logger -t montag -p user.info ' + logging)
+except:
+    pass
 
 switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
@@ -76,6 +80,11 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
         try:
             os.system('logger -t montag -p user.info target asserted detected')
             pattern = "TARGET ASSERTED"
+            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
+            try:
+                os.system('logger -t montag -p user.info ' + logging)
+            except:
+                pass
             filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - There is a Target Asserted error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
@@ -96,6 +105,11 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
         try:
             os.system('logger -t montag -p user.info internal error detected')
             pattern = "Internal error"
+            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
+            try:
+                os.system('logger -t montag -p user.info ' + logging)
+            except:
+                pass
             filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - There is an Internal Error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
@@ -115,7 +129,12 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     elif "Kernel panic" or "Fatal exception" or "KERNEL PANIC" in msg:
         try:
             os.system('logger -t montag -p user.info Kernel Panic detected')
-            pattern = "Exception"
+            pattern = "Kernel panic"
+            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
+            try:
+                os.system('logger -t montag -p user.info ' + logging)
+            except:
+                pass
             filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - There is a Kernel Panic error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
@@ -136,6 +155,11 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
         try:
             os.system('logger -t montag -p user.info Kernel Panic detected')
             pattern = "Exception"
+            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
+            try:
+                os.system('logger -t montag -p user.info ' + logging)
+            except:
+                pass
             filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - An unhandled exception occurred on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
@@ -153,7 +177,12 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     elif "Unable to handle kernel" in msg:
         try: 
             os.system('logger -t montag -p user.info Kernel Panic detected')
-            pattern = "Exception"
+            pattern = "Unable to handle kernel"
+            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
+            try:
+                os.system('logger -t montag -p user.info ' + logging)
+            except:
+                pass
             filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - An unhandled exception occurred on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
