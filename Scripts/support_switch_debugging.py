@@ -5,14 +5,15 @@ import os
 import json
 from support_tools_OmniSwitch import get_credentials, debugging
 from time import strftime, localtime
-# Script init
-script_name = sys.argv[0]
-os.system('logger -t montag -p user.info Executing script ' + script_name)
+import syslog
+
+syslog.openlog('support_switch_debugging_network_loop')
+syslog.syslog(syslog.LOG_INFO, "Executing script")
+
+
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+script_name = sys.argv[0]
 
-print(sys.executable)
-
-# Get informations from logs.
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
@@ -29,8 +30,17 @@ with open("/var/log/devices/lastlog.json", "r", errors='ignore') as log_file:
         ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog.json empty")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog.json - JSONDecodeError")
+        exit()
+    except IndexError:
+        print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog.json - JSONDecodeError")
         exit()
 
 # Enable debugging logs for getting IP Attacker's IP Address "swlog appid slNI subapp 20 level debug2"
@@ -40,8 +50,9 @@ subapp = "20"
 level = "debug2"
 # Call debugging function from support_tools_OmniSwitch
 print("call function enable debugging")
+syslog.syslog(syslog.LOG_INFO, "Call debugging function from support_tools_OmniSwitch - swlog appid slNI subapp 20 level debug2")
 debugging(switch_user, switch_password, ipadd, appid, subapp, level)
-os.system('logger -t montag -p user.info Process terminated')
+syslog.syslog(syslog.LOG_INFO, "Debugging applied")
 
 # clear lastlog file
 open('/var/log/devices/lastlog.json', 'w').close()

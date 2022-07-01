@@ -10,6 +10,7 @@ from database_conf import *
 import re
 import syslog
 
+syslog.openlog('support_switch_ChassisSupervisor')
 syslog.syslog(syslog.LOG_INFO, "Executing script")
 
 
@@ -42,7 +43,7 @@ with open("/var/log/devices/lastlog_power_supply_down.json", "r", errors='ignore
         exit()
     except IndexError:
         print("Index error in regex")
-        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_power_supply_down.json - JSONDecodeError")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_power_supply_down.json - Index error in regex")
         exit()
 
 # always 1
@@ -667,8 +668,8 @@ if save_resp == "0":
             print(error)
             sys.exit()
     else:
-        print("no pattern match - exiting script")
-        syslog.syslog(syslog.LOG_INFO, "no pattern match - exiting script")
+        print("No pattern match - exiting script")
+        syslog.syslog(syslog.LOG_INFO, "No pattern match - exiting script")
         sys.exit()      
 
 elif save_resp == "-1":
@@ -685,6 +686,10 @@ else:
     syslog.syslog(syslog.LOG_INFO, "No answer - Decision set to Yes - Script exit - will be called by next occurence")    
 
 syslog.syslog(syslog.LOG_INFO, "Rainbow Acaptive Card answer: " + answer)
+
+if answer == '1':
+    syslog.syslog(syslog.LOG_INFO, "Decision set to Yes - Script exit - will be called by next occurence")
+    sys.exit    
 
 if answer == '2':
     syslog.syslog(syslog.LOG_INFO, "Decision is Yes and Remember - We are doing log collection")

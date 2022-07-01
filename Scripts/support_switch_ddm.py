@@ -9,13 +9,14 @@ from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, co
 from time import strftime, localtime, sleep
 from support_send_notification import send_message
 from database_conf import *
+import syslog
 
-# Script init
-script_name = sys.argv[0]
-os.system('logger -t montag -p user.info Executing script ' + script_name)
+syslog.openlog('support_switch_ddm')
+syslog.syslog(syslog.LOG_INFO, "Executing script")
+
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+script_name = sys.argv[0]
 
-# Get informations from logs.
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Log sample
@@ -35,11 +36,17 @@ with open("/var/log/devices/lastlog_ddm.json", "r", errors='ignore') as log_file
         ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_ddm.json empty")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_ddm.json - JSONDecodeError")
         exit()
     except IndexError:
         print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_ddm.json - Index error in regex")
         exit()
    # Log sample: cmmEsmCheckDDMThresholdViolations: SFP/XFP Supply Current=8.6 mA on slot=1 port=34, crossed DDM threshold high warning
     try:
@@ -47,23 +54,27 @@ with open("/var/log/devices/lastlog_ddm.json", "r", errors='ignore') as log_file
         # Log sample cmmEsmCheckDDMThresholdViolations: SFP/XFP Tx Optical Power=-inf dBm on slot=1 port=28, crossed DDM threshold low alarm
         if sfp_power == "-inf dBm":
             print("DDM event generated when interface is administratively DOWN")
-            os.system('logger -t montag -p user.info Executing script support_switch_ddm - DDM event generated when interface is administratively DOWN - exit')
+            syslog.syslog(syslog.LOG_INFO, "DDM event generated when interface is administratively DOWN - exit")
             exit()
     except IndexError:
         print("Index error in regex")
-        os.system('logger -t montag -p user.info Executing script support_switch_ddm - Index error in regex - exit')
+        syslog.syslog(syslog.LOG_INFO, "Index error in Regex - exit")
         exit()
 
 filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power)
+syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API")
 send_file(filename_path, subject, action, result, category, jid)
-
+syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 try:
     write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": slot + '/' + port, "Threshold": threshold, ddm_type: sfp_power}, "fields": {"count": 1}}])
+    syslog.syslog(syslog.LOG_INFO, "Statistics saved")
 except UnboundLocalError as error:
     print(error)
     sys.exit()
 except Exception as error:
     print(error)
     pass
-

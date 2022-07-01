@@ -8,13 +8,15 @@ from support_tools_OmniSwitch import get_credentials, debugging, script_has_run_
 from time import gmtime, strftime, localtime, sleep
 from support_send_notification import send_message
 from database_conf import *
+import syslog
 
-# Script init
-script_name = sys.argv[0]
-os.system('logger -t montag -p user.info Executing script ' + script_name)
+syslog.openlog('support_switch_debugging_ddos')
+syslog.syslog(syslog.LOG_INFO, "Executing script")
+
+
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+script_name = sys.argv[0]
 
-# Get informations from logs.
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
@@ -28,35 +30,42 @@ with open("/var/log/devices/lastlog_ddos.json", "w", errors='ignore') as log_fil
 with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_file:
     try:
         log_json = json.load(log_file)
-        ip = log_json["relayip"]
+        ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_ddos.json empty")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_ddos.json - JSONDecodeError")
         exit()
     except IndexError:
         print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_ddos.json - Index error in regex")
         exit()
 
     try:
         ddos_type = re.findall(r"Denial of Service attack detected: <(.*?)>", msg)[0]
     except IndexError:
         print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_power_supply_down.json - Index error in regex")
         exit()
 
     function = "ddos"
-    if script_has_run_recently(300,ip,function):
+    if script_has_run_recently(300,ipadd,function):
         print('you need to wait before you can run this again')
-        os.system('logger -t montag -p user.info Executing script exit because executed within 5 minutes time period')
+        syslog.syslog(syslog.LOG_INFO, "Executing script exit because executed within 5 minutes time period")
         exit()
 
 if jid != '':
-    notif = "A Denial of Service Attack is detected on OmniSwitch \"" + \
-        host + "\" IP: " + ip + " of type " + ddos_type
+    notif = "A Denial of Service Attack is detected on OmniSwitch \"" + host + "\" IP: " + ipadd + " of type " + ddos_type
+    syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
     #send_message(notif, jid)
     try:
-        write_api.write(bucket, org, [{"measurement": str(os.path.basename(
-            __file__)), "tags": {"IP": ip, "DDOS_Type": ddos_type}, "fields": {"count": 1}}])
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "DDOS_Type": ddos_type}, "fields": {"count": 1}}])
+        syslog.syslog(syslog.LOG_INFO, "Statistics saved")
     except UnboundLocalError as error:
         print(error)
         sys.exit()
@@ -69,9 +78,10 @@ appid = "ipv4"
 subapp = "all"
 level = "debug3"
 # Call debugging function from support_tools_OmniSwitch
-debugging(switch_user, switch_password, ip, appid, subapp, level)
+syslog.syslog(syslog.LOG_INFO, "Call debugging function from support_tools_OmniSwitch - swlog appid ipv4 subapp all level debug3")
+debugging(switch_user, switch_password, ipadd, appid, subapp, level)
+syslog.syslog(syslog.LOG_INFO, "Debugging applied")
 
-os.system('logger -t montag -p user.info Process terminated')
 # clear lastlog file
 open('/var/log/devices/lastlog_ddos.json', 'w').close()
 
