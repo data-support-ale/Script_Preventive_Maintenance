@@ -12,9 +12,9 @@ from database_conf import *
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
-logging = "logger -t montag -p user.info Executing script {0}".format(script_name)
+logging = "Executing script {0}".format(script_name)
 try:
-    os.system('logger -t montag -p user.info ' + logging)
+    os.system('logger -t ChassisSupervisor -p user.info ' + logging)
 except:
     pass
 
@@ -35,22 +35,38 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
         msg = log_json["message"]
         print(msg)
     except json.decoder.JSONDecodeError:
-        print("File /var/log/devices/lastlog_switch_health.json empty")
+        print("File /var/log/devices/lastlog_switch_health.json JSONDecodeError")
+        logging = "Executing script {0}".format(script_name)
+        try:
+            os.system('logger -t ChassisSupervisor -p user.info ' + logging)
+        except:
+            pass
+        exit()
+    except IndexError:
+        print("Index error in regex")
+        logging = "Executing script {0}".format(script_name)
+        try:
+            os.system('logger -t ChassisSupervisor -p user.info ' + logging)
+        except:
+            pass
         exit()
     # Sample log
     # {"@timestamp":"2021-11-22T21:57:06+01:00","type":"syslog_json","relayip":"10.130.7.243","hostname":"sw5-bcb","message":"<134>Nov 22 21:57:06 OS6860E_VC_Core swlogd healthCmm main EVENT: CUSTLOG CMM NI 1/1 rising above CPU threshold","end_msg":""}
     if "CMM NI" in msg:
         try:
             pattern = "CMM NI"
-            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
-            try:
-                os.system('logger -t montag -p user.info ' + logging)
-            except:
-                pass
+            os.system('logger -t ChassisSupervisor -p user.info ' + pattern)
+
             nb_vc, topic = re.findall(r"CMM NI (.*?) rising above (.*?) threshold", msg)[0]
+            os.system('logger -t ChassisSupervisor -p user.info Executing function collect_command_output_health_cpu')
             filename_path, subject, action, result, category = collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
-#            get_tech_support_sftp(switch_user, switch_password, host, ipadd)
+            os.system('logger -t ChassisSupervisor -p user.info Subject:' + subject)
+            os.system('logger -t ChassisSupervisor -p user.info Action: A High CPU issue has been detected in switch' + ipadd + ' and we have collected logs as well as Tech-Support eng complete archive')
+            os.system('logger -t ChassisSupervisor -p user.info Result: Find enclosed to this notification the log collection for further analysis')
+            get_tech_support_sftp(switch_user, switch_password, host, ipadd)
+            os.system('logger -t ChassisSupervisor -p user.info - Logs collected - Calling VNA API')
             send_file(filename_path, subject, action, result, category, jid)
+            os.system('logger -t ChassisSupervisor -p user.info Notification sent')
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Health": topic, "VC_Unit": nb_vc}, "fields": {"count": 1}}])
             except UnboundLocalError as error:
@@ -70,15 +86,15 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
     elif "top 20 memory" in msg:
         try:
             pattern = "top 20 memory"
-            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
-            try:
-                os.system('logger -t montag -p user.info ' + logging)
-            except:
-                pass
+            os.system('logger -t ChassisSupervisor -p user.info ' + pattern)
+            os.system('logger -t ChassisSupervisor -p user.info Executing function collect_command_output_health_memory')            
             filename_path, subject, action, result, category = collect_command_output_health_memory(switch_user, switch_password, host, ipadd)
+            os.system('logger -t ChassisSupervisor -p user.info Subject:' + subject)
+            os.system('logger -t ChassisSupervisor -p user.info Action: A High Memory issue has been detected in switch' + ipadd + ' and we have collected logs as well as Tech-Support eng complete archive')
+            os.system('logger -t ChassisSupervisor -p user.info Result: Find enclosed to this notification the log collection for further analysis')
             get_tech_support_sftp(switch_user, switch_password, host, ipadd)
+            os.system('logger -t ChassisSupervisor -p user.info - Logs collected - Calling VNA API')
             send_file(filename_path, subject, action, result, category, jid)
-            print(log_file.readlines()[1])
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Health": "MEMORY"}, "fields": {"count": 1}}])
             except UnboundLocalError as error:

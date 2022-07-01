@@ -15,7 +15,7 @@ script_name = sys.argv[0]
 os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
-path = os.path.dirname(__file__)
+path = "/opt/ALE_Script"
 
 # Get informations from ALE_script.conf (mails, mails_raw, company name)
 

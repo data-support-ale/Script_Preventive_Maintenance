@@ -374,6 +374,7 @@ def send_message_request(info, jid):
                     'text9': '{0}'.format(text[8]), 
                     'Card': '1'
                     }
+        print("Sending request")
         response = requests.get(url, headers=headers, timeout=600)
         print("Response from VNA")
         print(response)
@@ -775,4 +776,4 @@ def send_file(filename_path, subject, action, result, category, jid):
 
 if __name__ == "__main__":
     switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
-    send_message("OHHHH ALLLLEDDDD", jid)
+    send_message_request("Test card", jid)

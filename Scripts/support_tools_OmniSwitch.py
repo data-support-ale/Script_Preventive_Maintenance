@@ -147,6 +147,9 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             print(error)
             pass 
     try:
+        stderr = ""
+        stdout = ""
+        stdin = ""
         stdin, stdout, stderr = p.exec_command(cmd, timeout=120)
         #stdin, stdout, stderr = threading.Thread(target=p.exec_command,args=(cmd,))
         # stdout.start()
@@ -1502,6 +1505,74 @@ def collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd
     category = "fan"
     return filename_path, subject, action, result, category
 
+# Function to collect several command outputs related to NI module
+def collect_command_output_ni(switch_user, switch_password, ni_id, host, ipadd):
+    """ 
+    This function takes entries arguments the  Network Interface module ID. This function is called when an issue is observed on NI module hardware
+    This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
+
+    :param str ni_id:                 Switch Network Interface module ID
+    :param str host:                  Switch Hostname
+    :param str ipadd:                 Switch IP address
+    :return:                          filename_path,subject,action,result,category
+    """
+    text = "More logs about the switch : {0} \n\n\n".format(ipadd)
+
+    l_switch_cmd = []
+    l_switch_cmd.append("show chassis; show microcode; show system; show module; show module long; show hardware-info")
+
+    for switch_cmd in l_switch_cmd:
+        try:
+            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            
+            if output != None:
+                output = str(output)
+                output_decode = bytes(output, "utf-8").decode("unicode_escape")
+                output_decode = output_decode.replace("', '","")
+                output_decode = output_decode.replace("']","")
+                output_decode = output_decode.replace("['","")
+                text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                
+                os.system('logger -t montag -p user.info ' + info)
+                send_message(info, jid)
+                try:
+                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            
+            os.system('logger -t montag -p user.info ' + info)
+            send_message(info, jid)
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+
+    date = datetime.date.today()
+    date_hm = datetime.datetime.today()
+
+    filename = "{0}_{1}-{2}_{3}_ni_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
+    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    f_logs = open(filename_path, 'w')
+    f_logs.write(text)
+    f_logs.close()
+    subject = ("Preventive Maintenance Application - NI Hardware Module issue detected on OmniSwitch: {0} / {1}").format(host,ipadd)
+    action = ("The NI unit {0}  is Powered Down on OmniSwitch (Hostname: {1}). Please refer to the hardware guide, when NI module is replaced by exact same model, hotswap is supported, otherwise a reboot is required.").format(ni_id,host)
+    result = "Find enclosed to this notification the log collection for further analysis."
+    category = "ni"
+    return filename_path, subject, action, result, category
 
 # Function to collect several command outputs related to Power Supply
 def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
@@ -1517,7 +1588,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show chassis; show microcode; show system; show fan; show temperature; show powersupply; show powersupply total; show hardware-info")
+    l_switch_cmd.append("show chassis; show microcode; show system; show virtual-chassis topology; show fan; show temperature; show powersupply; show powersupply total;  show powersupply chassis-id 1 1; show powersupply chassis-id 1 2; show powersupply chassis-id 2 1; show powersupply chassis-id 2 2; show hardware-info")
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -1564,6 +1635,15 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     if "UNPLUG" in output_decode:
         print("Power Supply is in UNPLUGGED state")
         ps_status = "UNPLUGGED"
+    if "904072-90" in output_decode:
+        if "Failure-Shutdown" in output_decode:
+            print("Power Supply Part number is 903747-90")
+            ps_status = "UNSUPPORTED"
+
+    if "902916-90" in output_decode:
+        if "Running" in output_decode:
+            print("Power Supply Part number is 903747-90")
+            ps_status = "SUPPORTED"
 
     filename = "{0}_{1}-{2}_{3}_ps_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
     filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
@@ -1574,12 +1654,15 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     if ps_status == "UNPLUGGED":
         action = ("The Power Supply unit {0}  is UNPLUGGED on OmniSwitch (Hostname: {1}). Plug the Power Supply if not done and check the Fan and Power supply have the same Airflow direction (Airflow of both power supply and fan tray has to be in the same direction for the switch to cool down).").format(psid,host)
         result = "Find enclosed to this notification the log collection for further analysis."
+    elif ps_status == "UNSUPPORTED":
+        action = ("The Power Supply unit {0}  is DOWN on OmniSwitch (Hostname: {1}). If the Power Supply Part Number is 904072-90 you have to upgrade AOS software to 8.8R01 in order to resolve this issue.").format(psid,host)
+        result = "Find enclosed to this notification the log collection for further analysis. More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000066475."
     elif psid == "Unknown":
         action = ("A Power Supply unit  is Down or running abnormal \"Power Supply operational state changed to UNPOWERED\" on OmniSwitch (Hostname: {0})").format(host)
-        result = "Find enclosed to this notification the log collection for further analysis"
+        result = "Find enclosed to this notification the log collection for further analysis."
     else:
         action = ("The Power Supply unit {0} is Down or running abnormal on OmniSwitch (Hostname: {1})").format(psid, host)
-        result = "Find enclosed to this notification the log collection for further analysis"
+        result = "Find enclosed to this notification the log collection for further analysis."
     category = "ps"
     return filename_path, subject, action, result, category
 
