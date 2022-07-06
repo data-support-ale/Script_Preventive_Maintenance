@@ -57,7 +57,7 @@ if "Failed to start LSB" in msg:
         pattern = "TFTP Service issue"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
         notif = ("Preventive Maintenance Application - TFTP Service issue detected on Server server {0}.\nThis service is used for log collection of WLAN Stellar AP.\nDo you want to restart the TFTP Service?").format(ip_server)        #send_message(info, jid)
-        syslog.syslog(syslog.LOG_INFO, "Notificattion: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
         answer = send_message_request(notif, jid)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
@@ -78,7 +78,7 @@ elif "Failed password" in msg:
         login,user_ip,port,service = re.findall(r"Failed password for (.*?) from (.*?) port (.*?) (.*)", msg)[0]
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
         notif = ("Preventive Maintenance Application - SSH Authentication failure when connecting to server {0} .\n\nDetails: \n- User: {1}\n- IP Address: {2}.").format(ip_server,login,user_ip)      #send_message(info, jid)
-        syslog.syslog(syslog.LOG_INFO, "Notificattion: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
         send_message(notif, jid)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
@@ -93,7 +93,7 @@ else:
     try:
         service_issue_reason = re.findall(r"Failed to start (.*)", msg)[0]
         notif = ("Preventive Maintenance Application - Service failure detected on server {0} .\n\nDetails: \n- Reason: {1}").format(ip_server,service_issue_reason)      #send_message(info, jid)
-        syslog.syslog(syslog.LOG_INFO, "Notificattion: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Notification")
         send_message(notif, jid)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")

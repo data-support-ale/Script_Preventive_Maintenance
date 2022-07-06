@@ -52,7 +52,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
             syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             nb_vc = re.findall(r"bootMgrVCMTopoDataEventHandler: remote chassis (.*?) no longer in the topology", msg)[0]
             notif = ("Preventive Maintenance Application - The Virtual Chassis Unit {0} of OmniSwitch {1} / {2} is DOWN.\nRemote Chassis no longer in the topology.").format(nb_vc,host,ipadd)
-            syslog.syslog(syslog.LOG_INFO, "Notificattion: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send notification")
             send_message(notif, jid)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
@@ -79,7 +79,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
             syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             nb_vc = re.findall(r"CSLIB_EVENT_NIDOWN event for chassis=(.*?) slot", msg)[0]
             notif = ("Preventive Maintenance Application - The Virtual Chassis Unit {0} of OmniSwitch {1} / {2} is DOWN.\nWe received NI Down event from this unit.").format(nb_vc,host,ipadd)
-            syslog.syslog(syslog.LOG_INFO, "Notificattion: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send notification")
             send_message(notif, jid)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
@@ -105,7 +105,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
         pattern = "VC Takeover"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
         notif = ("Preventive Maintenance Application - The Virtual Chassis Unit of OmniSwitch {0} / {1} is doing a TakeOver.").format(host,ipadd)
-        syslog.syslog(syslog.LOG_INFO, "Notificattion: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send notification")
         send_message(notif, jid)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
@@ -128,7 +128,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
             syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             reason = re.findall(r"The switch was restarted by (.*)", msg)[0]
             notif = ("Preventive Maintenance Application - The Virtual Chassis Unit of OmniSwitch {0} / {1} is reloading by {2}.").format(host,ipadd,reason)
-            syslog.syslog(syslog.LOG_INFO, "Notificattion: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send notification")
             send_message(notif, jid)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")

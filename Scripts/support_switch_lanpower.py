@@ -8,12 +8,14 @@ from support_tools_OmniSwitch import get_credentials, send_file, collect_command
 from support_send_notification import send_message, send_message_request, send_message_request_advanced
 from database_conf import *
 import re
+import syslog
+
+syslog.openlog('support_switch_lanpower')
+syslog.syslog(syslog.LOG_INFO, "Executing script")
+
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
-
-# Script init
 script_name = sys.argv[0]
-os.system('logger -t montag -p user.info Executing script ' + script_name)
 
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
@@ -31,29 +33,46 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
         ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_lanpower.json empty")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_lanpower.json - JSONDecodeError")
         exit()
     except IndexError:
         print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_lanpower.json - JSONDecodeError")
         exit()
 
     # Sample log
     # OS6860E swlogd lpNi LanNi INFO: Port 46 FAULT State change 1b to 24 desc: Port is off: Voltage injection into the port (Port fails due to voltage being applied to the port from external source)
     if "FAULT State change 1b to 24" in msg:
         try:
+            pattern = "FAULT state change 1b to 24"
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 24 desc: Port is off: Voltage injection into the port (.*)", msg)[0]
+
+            syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
             save_resp = check_save(ipadd, port, "lanpower")
             if save_resp == "-1":
                 print("Decision saved set to Never")
+                syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - exit")
                 sys.exit()
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -67,18 +86,27 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
     # OS6860E swlogd lpNi LanNi INFO: Port 15 FAULT State change 1b to 25 desc: Port is off: Improper Capacitor Detection results or Detection values indicating short (Fail due to out-of-range capacitor value or Fail due to detected short
     elif "FAULT State change 1b to 25" in msg:
         try:
+            pattern = "FAULT state change 1b to 25"
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 25 desc: Port is off: Improper Capacitor Detection results or Detection values indicating short \((.*) or Fail due to detec", msg)[0]
+            syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
             save_resp = check_save(ipadd, port, "lanpower")
             if save_resp == "-1":
                 print("Decision saved set to Never")
+                syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - exit")
                 sys.exit()
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -95,18 +123,28 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
     # OS6860E swlogd lpNi LanNi INFO: Port 46 FAULT State change 1b to 1e desc: Port is off: Underload state (Underload state according to 802.3AF\/AT, current is below Imin)
     elif "FAULT State change 1b to 1e" in msg:
         try:
+            pattern = "FAULT state change 1b to 1e"
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 1e desc: Port is off: Underload state (.*)", msg)[0]
+            syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
             save_resp = check_save(ipadd, port, "lanpower")
             if save_resp == "-1":
                 print("Decision saved set to Never")
+                syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - exit")
                 sys.exit()
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -120,18 +158,28 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
     # OS6860E swlogd lpNi LanNi INFO: Port 44 FAULT State change 1b to 1c desc: Port is off: Non-802.3AF/AT powered device (Non-standard PD connected)
     elif "FAULT State change 1b to 1c" in msg:
         try:
+            pattern = "FAULT state change 1b to 1c"
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 1c desc: Port is off: Non-802.3AF/AT powered device ((.*?))", msg)[0]
+            syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
             save_resp = check_save(ipadd, port, "lanpower")
             if save_resp == "-1":
                 print("Decision saved set to Never")
+                syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - exit")
                 sys.exit()
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -145,18 +193,27 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
     # OS6860E_VC_Core swlogd lpNi LanNi INFO: Port 1 FAULT State change 1b to 43 desc: Port is off: Class Error (Illegal class)
     elif "FAULT State change 1b to 43" in msg:
         try:
+            pattern = "FAULT state change 1b to 43"
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 43 desc: Port is off: Class Error (.*)", msg)[0]
+            syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
             save_resp = check_save(ipadd, port, "lanpower")
             if save_resp == "-1":
                 print("Decision saved set to Never")
+                syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - exit")
                 sys.exit()
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -170,18 +227,28 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
     # OS6465 swlogd lpNi LanNi INFO: Port 8 FAULT State change 11 to 35 desc: Port is off: Over temperature at the port (Port temperature protection mechanism was activated)
     elif "FAULT State change 11 to 35" in msg:
         try:
+            pattern = "FAULT state change 11 to 35"
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             port, reason = re.findall(r"Port (.*?) FAULT State change 11 to 35 desc: Port is off: Over temperature at the port (.*)", msg)[0]
+            syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
             save_resp = check_save(ipadd, port, "lanpower")
             if save_resp == "-1":
                 print("Decision saved set to Never")
+                syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - exit")
                 sys.exit()
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -193,18 +260,27 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             sys.exit()
     else:
         try:
+            syslog.syslog(syslog.LOG_INFO, "No pattern matching")
             port, state_a, state_b, reason = re.findall(r"Port (.*?) FAULT State change (.*?) to (.*?) desc: (.*)", msg)[0]
+            syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
             save_resp = check_save(ipadd, port, "lanpower")
             if save_resp == "-1":
                 print("Decision saved set to Never")
+                syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - exit")
                 sys.exit()
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
@@ -218,42 +294,60 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
 # always 1
 #never -1
 # ? 0
+syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
 save_resp = check_save(ipadd, port, "lanpower")
 
 if save_resp == "0":
+        syslog.syslog(syslog.LOG_INFO, "No Decision saved")
         if capacitor_detection_status == "enabled" or high_resistance_detection_status == "enabled" or reason == "(Illegal class)":
             if capacitor_detection_status == "enabled":
-               feature = "Disable Capacitor-Detection"
+                syslog.syslog(syslog.LOG_INFO, "capacitor_detection is enabled")
+                feature = "Disable Capacitor-Detection"
             elif high_resistance_detection_status == "enabled":
+                syslog.syslog(syslog.LOG_INFO, "High-Resistance-Detection is enabled")
                 feature = "Disable High-Resistance-Detection"
             elif reason == "(Illegal class)":
+                syslog.syslog(syslog.LOG_INFO, "Reason is Illegal Class")
                 feature = "Disable 4Pair"
             notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} \
             , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
-            answer = send_message_request_advanced(notif, jid,feature)
+            syslog.syslog(syslog.LOG_INFO, notif)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+            answer = send_message_request(notif, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
             print(answer)
             if answer == "2":
                 add_new_save(ipadd, port, "lanpower", choice="always")
+                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Port: " + port + " Choice: " + " Always")
+
             elif answer == "0":
-                add_new_save(ipadd, port, "lanpower", choice="never")       
+                add_new_save(ipadd, port, "lanpower", choice="never")
+                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Port: " + port + " Choice: " + " Never")
+       
         else:
             feature = "Reload PoE on port"
             notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} \
             , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
+            syslog.syslog(syslog.LOG_INFO, notif)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
             answer = send_message_request_advanced(notif, jid, feature)
-            print(answer)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             if answer == "2":
                 add_new_save(ipadd, port, "lanpower", choice="always")
+                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Port: " + port + " Choice: " + " Always")
+
             elif answer == "0":
                 add_new_save(ipadd, port, "lanpower", choice="never")
+                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Port: " + port + " Choice: " + " Never")
+ 
 
 elif save_resp == "-1":
     try:
-        print(port)
-        print(reason)
-        print(ipadd)
-        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])        
+        print("Decision saved to No - script exit")
+        syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])        
+        syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         sys.exit()   
     except UnboundLocalError as error:
        print(error)
@@ -264,70 +358,103 @@ elif save_resp == "-1":
 
 elif save_resp == "1":
     answer = '2'
+    print("Decision saved to Yes and remember")
+    syslog.syslog(syslog.LOG_INFO, "Decision saved to Yes and remember")
 else:
     answer = '1'
+    syslog.syslog(syslog.LOG_INFO, "No answer - Decision set to Yes - Script exit - will be called by next occurence")    
+
+syslog.syslog(syslog.LOG_INFO, "Rainbow Acaptive Card answer: " + answer)
 
 if answer == '1':
-    os.system('logger -t montag -p user.info Process terminated')
+    syslog.syslog(syslog.LOG_INFO, "Decision set to Yes - We disable the PoE on port")
     # DISABLE PoE on Port
     cmd = "lanpower port 1/1/" + port + " admin-state disable"
+    syslog.syslog(syslog.LOG_INFO, "SSH Session start")
+    syslog.syslog(syslog.LOG_INFO, "Command executed: " + cmd)    
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
+    syslog.syslog(syslog.LOG_INFO, "SSH Session end")
+    #os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
      
     if jid != '':
-        info = "PoE is administratively disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
-        send_message(info, jid)
+        notif = "Preventive Maintenance Application - PoE is administratively disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 elif answer == '2':
-    os.system('logger -t montag -p user.info Process terminated')
+    syslog.syslog(syslog.LOG_INFO, "Decision is Yes and Remember - PoE is administratively disabled on port")
     # DISABLE PoE on Port
     cmd = "lanpower port 1/1/" + port + " admin-state disable"
+    syslog.syslog(syslog.LOG_INFO, "SSH Session start")
+    syslog.syslog(syslog.LOG_INFO, "Command executed: " + cmd) 
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+    syslog.syslog(syslog.LOG_INFO, "SSH Session end")
 #    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
 
 ## Value 3 when we return advanced value like Capacitor Detection or High Resistance Capacity
 elif answer == '3':
-    os.system('logger -t montag -p user.info Process terminated')
+
     # DISABLE PoE on Port
     if capacitor_detection_status == "enabled":
+        syslog.syslog(syslog.LOG_INFO, "Capacitor Detection is enabled and received answer 3")
         cmd = "lanpower slot 1/1 capacitor-detection disable"
+        syslog.syslog(syslog.LOG_INFO, "SSH Session start")
+        syslog.syslog(syslog.LOG_INFO, "Command executed: " + cmd) 
         ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-        info = "Capacitor-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
-        send_message(info, jid)
+        syslog.syslog(syslog.LOG_INFO, "SSH Session end")
+        notif = "Capacitor-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     elif high_resistance_detection_status == "enabled":
+        syslog.syslog(syslog.LOG_INFO, "High Resistance Detection is enabled and received answer 3")
         cmd = "lanpower slot 1/1 high-resistance-detection disable"
-        info = "High-Resistance-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
+        syslog.syslog(syslog.LOG_INFO, "SSH Session start")
+        syslog.syslog(syslog.LOG_INFO, "Command executed: " + cmd) 
         ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-        send_message(info, jid)
+        syslog.syslog(syslog.LOG_INFO, "SSH Session end")
+        notif = "High-Resistance-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     elif reason == "(Illegal class)":
+        syslog.syslog(syslog.LOG_INFO, "Illegal class and received answer 3")
         cmd = "lanpower port 1/1/" + port + " 4pair disable"
-        info = "4Pair is disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
+        syslog.syslog(syslog.LOG_INFO, "SSH Session start")
+        syslog.syslog(syslog.LOG_INFO, "Command executed: " + cmd) 
         ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-        send_message(info, jid)        
+        syslog.syslog(syslog.LOG_INFO, "SSH Session end")
+        notif = "4Pair is disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")       
     ### else it corresponds to PoE Reload
     else:
+        syslog.syslog(syslog.LOG_INFO, "PoE Reload received answer 3")
         l_switch_cmd = []
         l_switch_cmd.append(("lanpower port 1/1/{0} admin-state disable; sleep 2; lanpower port 1/1/{0} admin-state enable").format(port))
 #        l_switch_cmd.append("sleep 2")
 #        l_switch_cmd.append("lanpower port 1/1/" + port + " admin-state enable")
         for switch_cmd in l_switch_cmd:
+            syslog.syslog(syslog.LOG_INFO, "SSH Session start")
+            syslog.syslog(syslog.LOG_INFO, "Command executed: " + switch_cmd) 
             ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-        info = "PoE is reloaded on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
-        send_message(info, jid)        
+            syslog.syslog(syslog.LOG_INFO, "SSH Session end")
+        notif = "PoE is reloaded on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")     
 #    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
 
 
 else:
-    print("Mail request set as no")
-    os.system('logger -t montag -p user.info Mail request set as no')
+    print("No decision matching - script exit")
+    syslog.syslog(syslog.LOG_INFO, "No decision matching - script exit")
     sleep(1)
-
-try:
-    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                                "IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
-except UnboundLocalError as error:
-    print(error)
-    sys.exit()
-except Exception as error:
-    print(error)
-    sys.exit()     
+    sys.exit()    

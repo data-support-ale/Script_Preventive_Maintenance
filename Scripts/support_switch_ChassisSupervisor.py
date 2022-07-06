@@ -49,6 +49,7 @@ with open("/var/log/devices/lastlog_power_supply_down.json", "r", errors='ignore
 # always 1
 #never -1
 # ? 0
+syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
 save_resp = check_save(ipadd, "1", "power_supply")
 save_resp = check_save(ipadd, "2", "power_supply")
 save_resp = check_save(ipadd, "Unknown", "power_supply")
@@ -90,7 +91,7 @@ if save_resp == "0":
             pattern = "Fan Failure"
             syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             fan_id = "Unknown"
-            syslog.syslog(syslog.LOG_INFO, " Executing function collect_command_output_fan")
+            syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_fan")
             filename_path, subject, action, result, category = collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd)
             syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)

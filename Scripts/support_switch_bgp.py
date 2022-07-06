@@ -57,7 +57,7 @@ if "ESTABLISHED" in final_state:
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 else:
     notif = "Preventive Maintenance Application - BGP Peering state change on OmniSwitch {0} / {1}\n\nDetails:\n- BGP Peer IP Address/AS : {2} / {3}\n- State : {4}\n\nPlease check the BGP Peer Node connectivity.".format(host, ipadd, bgp_peer, bgp_as, final_state)
-    syslog.syslog(syslog.LOG_INFO, "Notificattion: " + notif)
+    syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send notification")
     send_message(notif, jid)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
