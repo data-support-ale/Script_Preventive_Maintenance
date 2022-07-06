@@ -72,6 +72,7 @@ def process(ip, hostname, port, agg):
     if answer == '1':
         if port == "":
             cmd = "linkagg lacp agg " + agg + " admin-state disable"
+            syslog.syslog(syslog.LOG_INFO, "Linkagg disable on agg {} {} {}".format(agg, ip, hostname))
             ssh_connectivity_check(switch_user, switch_password, ip, cmd)
             os.system(
                 'logger -t montag -p user.info AggId {0} of OmniSwitch {1}/{2} updated'.format(port, agg, hostname))
@@ -79,6 +80,7 @@ def process(ip, hostname, port, agg):
             info = "Preventive Maintenance Application - A network loop has been detected on your network and the linkagg {0} is administratively down on OmniSwitch {1}/{2}".format(agg, ip, hostname)
         else:
             cmd = "interface port " + port + " admin-state disable"
+            syslog.syslog(syslog.LOG_INFO, "Port disable on port {} {} {}".format(port, ip, hostname))
             ssh_connectivity_check(switch_user, switch_password, ip, cmd)
             os.system(
                 'logger -t montag -p user.info Port {0} of OmniSwitch {1}/{2} updated'.format(port, port, hostname))
@@ -158,10 +160,10 @@ syslog.syslog(syslog.LOG_DEBUG, "Syslog agg: " + last_agg)
 
 counter = 0
 function = "loop"
-if script_has_run_recently(300,last_ip,function):
+if script_has_run_recently(30, last_ip,function):
     print('you need to wait before you can run this again')
-    syslog.syslog(syslog.LOG_DEBUG, "Executing script exit because executed within 5 minutes time period")
-    os.system('logger -t montag -p user.info Executing script exit because executed within 5 minutes time period')
+    syslog.syslog(syslog.LOG_DEBUG, "Executing script exit because executed within 30 sec time period")
+    os.system('logger -t montag -p user.info Executing script exit because executed within 30 sec time period')
     exit()
 
 with open("/var/log/devices/lastlog_loop.json", "r", errors='ignore') as log_file:
@@ -173,16 +175,18 @@ with open("/var/log/devices/lastlog_loop.json", "r", errors='ignore') as log_fil
             msg = log_json["message"]
             port = "null"
             agg = "null"
-            if "aggId" in msg:
-                agg = re.findall(r"aggId: (\d*)", msg)[0]
-            elif last_mac != "": # line is a normal port, we check if moving MAC correspond
-                mac = re.findall(r"(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))", msg)[0][0]
-                if mac == last_mac:
-                    last_port = str(re.findall(r"(\d*/\d*/\d*)", msg)[0]).replace("\\", "")
-                    last_mac = ""
-            else:
-                port = str(re.findall(r"(\d*/\d*/\d*)", msg)[0]).replace("\\", "")
-            print("log: {}".format(ip))
+            if ip == last_ip:
+                if "aggId" in msg:
+                    agg = re.findall(r"aggId: (\d*)", msg)[0]
+                elif last_mac != "" : # line is a normal port, we check if moving MAC correspond
+                    mac = re.findall(r"(([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2}))", msg)[0][0]
+                    if mac == last_mac:
+                        last_port = str(re.findall(r"(\d*/\d*/\d*)", msg)[0]).replace("\\", "")
+                        last_mac = ""
+                else:
+                    port = str(re.findall(r"(\d*/\d*/\d*)", msg)[0]).replace("\\", "")
+
+                print("log: {}".format(ip))
         except json.decoder.JSONDecodeError:
             print("File /var/log/devices/lastlog_loop.json empty")
             syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_loop.json - JSONDecodeError")
@@ -190,10 +194,9 @@ with open("/var/log/devices/lastlog_loop.json", "r", errors='ignore') as log_fil
         except IndexError:
             pass
 
-        if(ip == last_ip):
-            if port == last_port or agg == last_agg:
-                counter += 1
-                print(counter)
+        if port == last_port or agg == last_agg:
+            counter += 1
+            print(counter)
             
         if(counter == 10): # Number of occurences needed to trigger
             process(ip, hostname, last_port, last_agg)
