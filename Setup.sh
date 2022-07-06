@@ -388,9 +388,14 @@ input(type=\"imudp\" port=\"10514\")
 
 
 ### Template definition ####
+# Template for Devices logs
 \$template DynamicFile,\"/var/log/devices/%hostname%/syslog.log\"
 
+# Unused Template
 \$template MACSEC_DynamicFile,\"/var/log/devices/MACSEC/%hostname%_macsec.log\"
+
+# Template for Python scripts logging
+\$template SERVER_DynamicFile,\"/var/log/server/%programname%.log\"
 
 template (name=\"devicelogmacsec\" type=\"string\"
      string=\"/var/log/devices/lastlog_macsec.json\")
@@ -515,6 +520,9 @@ template (name=\"wlanlogoperations\" type=\"string\"
 template (name=\"wlanlogexceptions\" type=\"string\"
      string=\"/var/log/devices/lastlog_wlan_exceptions.json\")
 
+template (name=\"devicelogservermonitoring\" type=\"string\"
+     string=\"/var/log/server/lastlog_server_monitoring.json\")
+
 template(name=\"json_syslog\"
   type=\"list\") {
     constant(value=\"{\")
@@ -555,6 +563,24 @@ template(name=\"json_syslog\"
 #### RULES ####
 ###############
 #
+
+# Rules for Server monitoring (Authentication failure, service failure, disk space)
+if \$programname contains 'sshd' and \$msg contains 'authentication failures' then {
+    \$RepeatedMsgReduction on
+    action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+    action(type=\"omfile\" DynaFile=\"devicelogservermonitoring\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+    action(type=\"omprog\" name=\"support_server_monitoring\" binary=\"/opt/ALE_Script/support_server_monitoring.py\")
+    stop
+}
+
+if \$programname contains 'systemd' and \$msg contains 'Failed' then {
+    \$RepeatedMsgReduction on
+    action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+    action(type=\"omfile\" DynaFile=\"devicelogservermonitoring\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+    action(type=\"omprog\" name=\"support_server_monitoring\" binary=\"/opt/ALE_Script/support_server_monitoring.py\")
+    stop
+}
+
 # First some standard log files.  Log by facility.
 #
 auth,authpriv.*                 /var/log/auth.log
@@ -590,7 +616,8 @@ if \$msg contains 'ConsLog' then {
 
 # if a syslog message contains \"error\" string, we redirect to a specific log
 #:msg, contains, \"error\"         /var/log/syslog-error.log
-*.* ?DynamicFile;json_syslog
+# All Devices' logs are redirected to /var/log/devices as per DynamicFile template
+*.* ?DynamicFile
 
 ############### Preventive Maintenance Rules ##############
 #
@@ -822,6 +849,23 @@ if \$msg contains 'status 37' then {
   stop
 }
 
+#### High CPU or High Traffic on port - LAN ####
+if \$msg contains 'healthCmm' and \$msg contains 'rising above' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghealth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_health.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
+
+#### High MEMORY - LAN ####
+if \$msg contains 'alert' and \$msg contains 'The top 20' then {
+       \$RepeatedMsgReduction on
+       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omfile\" DynaFile=\"deviceloghealth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_health.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       stop
+}
 
 ##### LAN -  MAC-SEC Rules ########
 if \$msg contains 'intfNi Mka' or \$msg contains 'intfNi Drv' or \$msg contains 'intfNi Msec' then {
@@ -985,12 +1029,21 @@ if \$msg contains ''Receive agg port leave request' and not (\$msg contains 'Por
      stop
 }
 
+#### NI Hardware module issue - LAN ####
+if \$msg contains 'Incompatible expansion module'  then {
+     \$RepeatedMsgReduction on
+     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omprog\" name=\"support_lan_generic_ni\" binary=\"/opt/ALE_Script/support_switch_ChassisSupervisor.py\")
+     stop
+}
+
 #### FAN or Power Supply Unit DOWN - LAN ####
 if \$msg contains 'All power supplies'  then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_ChassisSupervisor.py\")
      stop
 }
 
@@ -998,7 +1051,7 @@ if \$msg contains 'ChassisSupervisor' and \$msg contains 'ALRT' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_ChassisSupervisor.py\")
      stop
 }
 
@@ -1006,7 +1059,7 @@ if \$msg contains 'ChassisSupervisor' and \$msg contains 'ERR' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_ChassisSupervisor.py\")
      stop
 }
 
@@ -1014,7 +1067,7 @@ if \$msg contains 'ChassisSupervisor' and \$msg contains 'Alert' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_ChassisSupervisor.py\")
      stop
 }
 
@@ -1022,7 +1075,7 @@ if \$msg contains 'ChassisSupervisor' and \$msg contains 'Removed' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_ChassisSupervisor.py\")
      stop
 }
 
@@ -1030,7 +1083,7 @@ if \$msg contains 'ChassisSupervisor' and \$msg contains 'inoperable' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_ChassisSupervisor.py\")
      stop
 }
 
@@ -1038,7 +1091,7 @@ if \$msg contains 'ChassisSupervisor' and \$msg contains 'UNPOWERED' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_ChassisSupervisor.py\")
      stop
 }
 
@@ -1046,7 +1099,7 @@ if \$msg contains 'temperature read failed' then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omfile\" DynaFile=\"devicelogpowersupplydown\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_power_supply.py\")
+     action(type=\"omprog\" name=\"support_lan_generic_ps\" binary=\"/opt/ALE_Script/support_switch_ChassisSupervisor.py\")
      stop
 }
 
@@ -1101,24 +1154,6 @@ if \$msg contains 'radCli' and \$msg contains 'RADIUS' then {
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"devicelogradius\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_radius.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-#### High CPU or High Traffic on port - LAN ####
-if \$msg contains 'healthCmm' and \$msg contains 'rising above' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloghealth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_health.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
-       stop
-}
-
-#### High MEMORY - LAN ####
-if \$msg contains 'alert' and \$msg contains 'The top 20' then {
-       \$RepeatedMsgReduction on
-       action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omfile\" DynaFile=\"deviceloghealth\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_health.py\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 
@@ -1242,7 +1277,7 @@ if \$msg contains 'ospf' and \$msg contains 'oversized LSA' then {
 }
 
 ####### TROUBLESHOOTING ########
-
+:syslogtag, contains, \"support\" ?SERVER_DynamicFile
 :syslogtag, contains, \"montag\" /var/log/devices/script_execution.log
 :hostname, isequal, \"haveged\" stop
 :hostname, isequal, \"kernel\" stop
