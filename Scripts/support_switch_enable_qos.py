@@ -123,7 +123,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         print(msg)
         syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ip_switch)
         syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
-        syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
+        #syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
         ip_switch_ddos = re.findall(r" ([.0-9]*)$", msg)[0]
         syslog.syslog(syslog.LOG_DEBUG, "Regex DDOS IP: " + ip_switch_ddos)
         try:

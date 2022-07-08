@@ -38,7 +38,7 @@ with open("/var/log/devices/lastlog_bgp.json", "r", errors='ignore') as log_file
         print(msg)
         syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
         syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
-        syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
+        #syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
         bgp_peer, bgp_as, final_state = re.findall(r"peer INFO: \[peer\((.*?)\),(.*?)\] transitioned to (.*?) state.", msg)[0]
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_bgp.json empty")

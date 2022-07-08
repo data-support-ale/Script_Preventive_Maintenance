@@ -36,7 +36,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
         print(msg)
         syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
         syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
-        syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
+        #syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_lanpower.json empty")
         syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_lanpower.json - JSONDecodeError")
@@ -88,7 +88,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
         try:
             pattern = "FAULT state change 1b to 25"
             syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-            port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 25 desc: Port is off: Improper Capacitor Detection results or Detection values indicating short \((.*) or Fail due to detec", msg)[0]
+            chassis,slog,port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 25 desc: Port is off: Improper Capacitor Detection results or Detection values indicating short (.*)", msg)[0]
             syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
             save_resp = check_save(ipadd, port, "lanpower")
             if save_resp == "-1":

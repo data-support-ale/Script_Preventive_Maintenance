@@ -36,7 +36,7 @@ with open("/var/log/devices/lastlog_server_monitoring.json", "r", errors='ignore
         print(msg)
         syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
         syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
-        syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
+        #syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_server_monitoring.json empty")
         syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_server_monitoring.json - JSONDecodeError")

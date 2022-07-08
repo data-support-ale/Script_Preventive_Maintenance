@@ -42,7 +42,7 @@ with open("/var/log/devices/lastlog_linkagg.json", "r", errors='ignore') as log_
         print(msg)
         syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
         syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
-        syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
+        #syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_linkagg.json empty")
         syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_linkagg.json - JSONDecodeError")
