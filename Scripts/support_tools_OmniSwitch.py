@@ -97,6 +97,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     exception = output = 0
     print("Function ssh_connectivity_check - we execute command " + cmd + " on Device: " + ipadd)
     syslog.syslog(syslog.LOG_INFO, "Function ssh_connectivity_check - we execute command " + cmd + " on Device " + ipadd)
+    cmd = str(cmd)
     try:
         p = paramiko.SSHClient()
         p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -204,28 +205,37 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         stderr = ""
         stdout = ""
         stdin = ""
-        stdin, stdout, stderr = p.exec_command(cmd, timeout=10)
+        syslog.syslog(syslog.LOG_INFO, "SSH Command Execution: " + cmd)
+        stdin, stdout, stderr = p.exec_command(cmd, timeout=120)
         #stdin, stdout, stderr = threading.Thread(target=p.exec_command,args=(cmd,))
         # stdout.start()
         # stdout.join(1200)
         print(stdout)
+        syslog.syslog(syslog.LOG_INFO, "SSH Command stdout: " + stdout)
         print(stderr)
-    except Exception as exception:
+        syslog.syslog(syslog.LOG_INFO, "SSH Command stdout: " + stderr)
+    except:
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        pass
+ #   except Exception as exception:
         #exception = "SSH Exception"
-        print("Function ssh_connectivity_check - " + str(exception))
-        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+ #       syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+ #       print("Function ssh_connectivity_check - " + str(exception))
+ #       notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-        except UnboundLocalError as exception:
-            print(exception)
-            return exception
-        except Exception as exception:
-            print(exception)
-            sys.exit(1)
-    
+ #       syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+ #       send_message(notif, jid)
+  #      syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+  #      try:
+  #          write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+ #           syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+  #      except UnboundLocalError as exception:
+ #           print(exception)
+  #          return exception
+#        except Exception as exception:
+ #           print(exception)
+  #          sys.exit(1)
+   
     try:
         exception = stderr.readlines()
         exception = str(exception)
@@ -235,12 +245,13 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     print(connection_status)
     print(exception)
     if connection_status != 0:
-        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        send_message(info, jid)
-        os.system('logger -t montag -p user.info ' + info)
+        notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                        "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as exception:
             print(exception)
             return exception
@@ -249,9 +260,10 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             return exception 
     else:
         info = ("SSH Session established successfully on OmniSwitch {0}").format(ipadd)
-        os.system('logger -t montag -p user.info ' + info)
+        syslog.syslog(syslog.LOG_INFO, "SSH Session established successfully on OmniSwitch " + ipadd +  " and command " + cmd + " passed")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_success", "tags": {"IP_Address": ipadd}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as exception:
             print(exception)
             return exception
@@ -261,6 +273,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         output = stdout.readlines()
         # We close SSH Session once retrieved command output
         p.close()
+        syslog.syslog(syslog.LOG_INFO, "SSH Session End")
         return output, exception
 
 
@@ -1898,7 +1911,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show interfaces alias; show system; show lldp remote-system; show configuration snapshot lanpower; \
+    l_switch_cmd.append("show system; show interfaces alias; show lldp remote-system; show configuration snapshot lanpower; \
         show powersupply total; show lanpower slot 1/1 ; show lanpower slot 1/1 port-config; show lanpower power-rule; show lanpower chassis 1 capacitor-detection; \
         show lanpower chassis 1 usage-threshold; show lanpower chassis 1 ni-priority; show lanpower slot 1/1 high-resistance-detection; \
         show lanpower slot 1/1 priority-disconnect; show lanpower slot 1/1 class-detection")
@@ -2457,7 +2470,6 @@ def collect_command_output_lldp_port_capability(switch_user, switch_password, po
         syslog.syslog(syslog.LOG_INFO, "Command executed: " + switch_cmd)         
         output, exception = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
         syslog.syslog(syslog.LOG_INFO, "Exception: " + exception)
-        syslog.syslog(syslog.LOG_INFO, "SSH Session end")
         if output != None:
             output = str(output)
             output_decode = bytes(output, "utf-8").decode("unicode_escape")

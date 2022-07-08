@@ -120,7 +120,7 @@ save_resp = check_save(ip, port, "violation")
 
 if save_resp == "0":
     if agg_id == "0":
-        notif = ("Preventive Maintenance Application - A port violation occurs on OmniSwitch {0} / {1}.\n\nDetails:\n- Port : {2}\n- Source : {3}\nDo you want to clear the violation?").format()
+        notif = ("Preventive Maintenance Application - A port violation occurs on OmniSwitch {0} / {1}.\n\nDetails:\n- Port : {2}\n- Source : {3}\nDo you want to clear the violation?").format(host,ip,port,reason)
         answer = send_message_request(notif, jid)
         print(answer)
         if answer == "2":

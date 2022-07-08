@@ -88,7 +88,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
         try:
             pattern = "FAULT state change 1b to 25"
             syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-            chassis,slog,port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 25 desc: Port is off: Improper Capacitor Detection results or Detection values indicating short (.*)", msg)[0]
+            port, reason = re.findall(r"Port (.*?) FAULT State change 1b to 25 desc: Port is off: Improper Capacitor Detection results or Detection values indicating short (.*)", msg)[0]
             syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
             save_resp = check_save(ipadd, port, "lanpower")
             if save_resp == "-1":
@@ -309,11 +309,10 @@ if save_resp == "0":
             elif reason == "(Illegal class)":
                 syslog.syslog(syslog.LOG_INFO, "Reason is Illegal Class")
                 feature = "Disable 4Pair"
-            notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} \
-            , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
+            notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
             syslog.syslog(syslog.LOG_INFO, notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card Advanced with 4th option: " + feature)
+            answer = send_message_request_advanced(notif, jid, feature)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -330,7 +329,7 @@ if save_resp == "0":
             notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} \
             , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
             syslog.syslog(syslog.LOG_INFO, notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card Advanced with 4th option: " + feature)
             answer = send_message_request_advanced(notif, jid, feature)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             if answer == "2":

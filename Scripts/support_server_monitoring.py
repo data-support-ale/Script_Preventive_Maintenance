@@ -5,7 +5,7 @@ import os
 import json
 from time import strftime, localtime
 from support_tools_OmniSwitch import get_credentials
-from support_send_notification import send_message, send_message_request, send_file
+from support_send_notification import send_message, send_message_request
 from database_conf import *
 import re
 import syslog
