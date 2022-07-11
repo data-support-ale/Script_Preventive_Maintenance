@@ -570,7 +570,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
     exception = str(exception)
     connection_status = stdout.channel.recv_exit_status()
     if connection_status != 0:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
+        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
         send_message(notif, jid)
