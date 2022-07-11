@@ -8,13 +8,16 @@ import datetime
 from time import sleep
 from unicodedata import name
 
-from support_send_notification import send_message, send_file
+from support_send_notification import *
 import subprocess
 import re
 import requests
 import paramiko
 from database_conf import *
+import syslog
 
+syslog.openlog('support_tools_Stellar')
+syslog.syslog(syslog.LOG_INFO, "Executing script")
 # This script contains all functions interacting with WLAN Stellar APs
 
 # Function for extracting environment information from ALE_script.conf file
@@ -72,121 +75,149 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     Paramiko exceptions are handled for notifying Network Administrator if the SSH Session does not establish
 
     :param str cmd                  Command pushed by SSH on WLAN Stellar AP
-    :param str ipadd                    Stellar IP address
-    :return:  stdout, stderr          If exceptions is returned on stderr a notification is sent to Network Administrator, else we log the session was established
+    :param str ipadd                Stellar IP address
+    :return:  stdout, stderr        If exceptions is returned on stderr a notification is sent to Network Administrator, else we log the session was established
     """
-    print(cmd)
+    exception = output = 0
+    print("Function ssh_connectivity_check - we execute command " + cmd + " on Device: " + ipadd)
+    syslog.syslog(syslog.LOG_INFO, "Function ssh_connectivity_check - we execute command " + cmd + " on Device " + ipadd)
+    cmd = str(cmd)
     try:
         p = paramiko.SSHClient()
         p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        p.connect(ipadd, port=22, username=login_AP,
-                  password=pass_AP, timeout=60.0, banner_timeout=200)
-    except ConnectionError as exception:
-        print(exception)
-        print("SSH not allowed when establishing SSH Session")
-        info = ("SSH Connection fails when establishing SSH Session to WLAN Stellar AP {0}, please verify if SSH is enabled on the AP Group").format(ipadd)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit(0)
-        except Exception as error:
-            print(error)
-            pass
+        syslog.syslog(syslog.LOG_INFO, "SSH Session start")
+        p.connect(ipadd, port=22, username=login_AP,password=pass_AP, timeout=60.0, banner_timeout=200)
+        syslog.syslog(syslog.LOG_INFO, "SSH Session established")
     except TimeoutError as exception:
-        print(exception)
-        print("Timeout when establishing SSH Session")
-        info = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
+        exception = "SSH Timeout"
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Timeout when establishing SSH Session")
+        notif = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit(0)
-        except Exception as error:
-            print(error)
-            pass  
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+        except UnboundLocalError as exception:
+            print(exception)
+            sys.exit(1) 
+        except Exception as exception:
+            print(exception)
+        syslog.syslog(syslog.LOG_INFO, "Script exit")
+        sys.exit(1) 
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
-        print("Authentication failed enter valid user name and password")
-        info = ("SSH Authentication failed when connecting to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
+        notif = ("SSH Authentication failed when connecting to WLAN Stellar AP {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit(0)
-        except Exception as error:
-            print(error)
-            pass 
-    except paramiko.SSHException as error:
-        print(error)
-        exception = error.readlines()
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+        except UnboundLocalError as exception:
+            print(exception)
+            return exception 
+        except Exception as exception:
+            print(exception)
+            return exception 
+        syslog.syslog(syslog.LOG_INFO, "Script exit")
+        sys.exit(1)
+    except paramiko.SSHException as exception:
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        print("Function ssh_connectivity_check - " + str(exception))
+        exception = exception.readlines()
         exception = str(exception)
-        print("Device unreachable")
-        logging.info(' SSH session does not establish on WLAN Stellar AP ' + ipadd)
-        info = ("WLAN Stellar AP {0} is unreachable, we cannot collect logs").format(ipadd)
-        print(info)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
+        print("Function ssh_connectivity_check - Device unreachable")
+        syslog.syslog(syslog.LOG_INFO, " SSH session does not establish on WLAN Stellar AP " + ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        notif = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit(0)
-        except Exception as error:
-            print(error)
-            pass
-    except:
-        logging.info(' SSH session does not establish on WLAN Stellar AP, please verify SSH is enabled on the AP Group ' + ipadd)
-        info = ("WLAN Stellar AP {0} is unreachable, please verify SSH is enabled on the AP Group").format(ipadd)
-        print(info)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+        except UnboundLocalError as exception:
+            print(exception)
+            return exception
+        except Exception as exception:
+            print(exception)
+            return exception
+        syslog.syslog(syslog.LOG_INFO, "Script exit")
+        sys.exit(1)
+    except ConnectionError as exception:
+        exception = str(exception)
+        print(exception)
+        logging.info(' SSH session does not establish on WLAN Stellar AP ' + ipadd)
+        notif = ("WLAN Stellar AP {0} is unreachable, we cannot collect logs").format(ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "SSH_disabled_on_AP_Group", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as error:
             print(error)
-            sys.exit(0)
-        except Exception as error:
-            print(error)
-            pass
+        sys.exit(1)
+    except Exception as exception:
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        print("Function ssh_connectivity_check - " + str(exception))
+        exception = exception.readlines()
+        exception = str(exception)
+        print("Function ssh_connectivity_check - Device unreachable")
+        logging.info(' SSH session does not establish on WLAN Stellar AP ' + ipadd)
+        notif = ("WLAN Stellar AP {0} is unreachable, we cannot collect logs").format(ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)        
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+        except UnboundLocalError as exception:
+            print(exception)
+            return exception
+        except Exception as exception:
+            print(exception)
+            return exception
+        syslog.syslog(syslog.LOG_INFO, "Script exit")
+        sys.exit(1)
     try:
+        stderr = ""
+        stdout = ""
+        stdin = ""
+        syslog.syslog(syslog.LOG_INFO, "SSH Command Execution: " + cmd)
         stdin, stdout, stderr = p.exec_command(cmd, timeout=120)
         #stdin, stdout, stderr = threading.Thread(target=p.exec_command,args=(cmd,))
         # stdout.start()
         # stdout.join(1200)
-    except Exception:
-        exception = "SSH Timeout"
-        info = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
-        print(info)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-        sys.exit() 
-    exception = stderr.readlines()
-    exception = str(exception)
-    connection_status = stdout.channel.recv_exit_status()
+    except:
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        pass
+    try:
+        exception = stderr.readlines()
+        exception = str(exception)
+        connection_status = stdout.channel.recv_exit_status()
+    except:
+        connection_status = 1
     print(connection_status)
     print(exception)
-    if connection_status == 1:
-        pass
-    elif connection_status != 0 :
-        info = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
-        send_message(info, jid)
-        os.system('logger -t montag -p user.info ' + info)
+    if connection_status != 0:
+        notif = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as error:
             print(error)
             sys.exit(2)
@@ -195,10 +226,10 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
             pass 
     else:
         info = ("SSH Session established successfully on WLAN Stellar AP {0}").format(ipadd)
-        os.system('logger -t montag -p user.info ' + info)
+        syslog.syslog(syslog.LOG_INFO, "SSH Session established successfully on WLAN Stellar AP " + ipadd +  " and command " + cmd + " passed")
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_success", "tags": {
-                        "IP_Address": ipadd}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": "support_ssh_success", "tags": {"IP_Address": ipadd}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as error:
             print(error)
         except Exception as error:
@@ -207,6 +238,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         output = stdout.readlines()
         # We close SSH Session once retrieved command output
         p.close()
+        syslog.syslog(syslog.LOG_INFO, "SSH Session End")
         return output
 
 def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):

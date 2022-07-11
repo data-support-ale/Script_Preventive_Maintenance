@@ -111,9 +111,11 @@ for switch_cmd in l_switch_cmd:
             text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
         else:
             exception = "Timeout"
-            info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-            syslog.syslog(syslog.LOG_INFO, info)
-            send_message(info, jid)
+            notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+            send_message(notif, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                     "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -124,10 +126,11 @@ for switch_cmd in l_switch_cmd:
                 print(error)
                 pass 
     except subprocess.TimeoutExpired as exception:
-        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
-        syslog.syslog(syslog.LOG_INFO, info)
-        send_message(info, jid)
+        notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -138,10 +141,11 @@ for switch_cmd in l_switch_cmd:
             print(error)
             pass 
     except FileNotFoundError as exception:
-        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
-        syslog.syslog(syslog.LOG_INFO, info)
-        send_message(info, jid)
+        notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])

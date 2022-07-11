@@ -24,18 +24,22 @@ switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pas
 
 def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
     syslog.syslog(syslog.LOG_INFO, "Executing function enable_qos_ddos")
+    syslog.syslog(syslog.LOG_INFO, "Building confiqos file - Executing function file_setup_qos")
     file_setup_qos(ipadd_ddos)
 
     remote_path = '/flash/working/configqos'
+    syslog.syslog(syslog.LOG_INFO, "SSH Session start")
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         syslog.syslog(syslog.LOG_INFO, "SSH Session to: " + ipadd)
         ssh.connect(ipadd, username=user, password=password, timeout=20.0)
+        syslog.syslog(syslog.LOG_INFO, "SSH Session established")
         sftp = ssh.open_sftp()
         # In case of SFTP Get timeout thread is closed and going into Exception
         try:
             filename = "/opt/ALE_Script/configqos"
+            syslog.syslog(syslog.LOG_INFO, "File " + filename + " pushed by SFTP on OmniSwitch " + ipadd + " path " + remote_path)
             th = threading.Thread(
                 target=sftp.put, args=(filename, remote_path))
             th.start()
@@ -43,10 +47,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
         except IOError:
             exception = "File error or wrong path"
             syslog.syslog(syslog.LOG_INFO, "SSH Session - Exception: " + exception)
-            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
-            os.system('logger -t montag -p user.info ' + info)
-            send_message(info, jid)
+            notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+            send_message(notif, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                     "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -59,11 +64,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
         except Exception:
             exception = "SFTP Get Timeout"
             syslog.syslog(syslog.LOG_INFO, "SSH Session - Exception: " + exception)
-            info = (
-                "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
-            os.system('logger -t montag -p user.info ' + info)
-            send_message(info, jid)
+            notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+            send_message(notif, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                     "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -77,10 +82,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
         syslog.syslog(syslog.LOG_INFO, "SSH Session - Exception: " + exception)
-        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
+        notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -219,6 +225,8 @@ elif save_resp == "-1":
     syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
     try:
         write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
+        syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+
         sys.exit()   
     except UnboundLocalError as error:
        print(error)
@@ -250,8 +258,7 @@ if answer == '1':
         send_message(notif,jid)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")    
         try:
-            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                "IP": ipadd, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
+            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
             syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as error:
             print(error)
@@ -278,8 +285,7 @@ elif answer == '3':
     send_file(filename_path, subject, action, result, category, jid)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     try:
-        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-            "IP": ipadd, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
         syslog.syslog(syslog.LOG_INFO, "Statistics saved")
     except UnboundLocalError as error:
         print(error)

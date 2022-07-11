@@ -49,7 +49,7 @@ appid = "slNi"
 subapp = "20"
 level = "debug2"
 # Call debugging function from support_tools_OmniSwitch
-print("call function enable debugging")
+print("call function enable debugging - swlog appid slNi subapp 20 level debug2")
 syslog.syslog(syslog.LOG_INFO, "Call debugging function from support_tools_OmniSwitch - swlog appid slNI subapp 20 level debug2")
 debugging(switch_user, switch_password, ipadd, appid, subapp, level)
 syslog.syslog(syslog.LOG_INFO, "Debugging applied")

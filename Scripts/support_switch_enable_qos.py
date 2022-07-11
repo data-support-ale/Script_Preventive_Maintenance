@@ -41,10 +41,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
         except IOError:
             exception = "File error or wrong path"
             syslog.syslog(syslog.LOG_INFO, "SSH Session - Exception: " + exception)
-            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
-            os.system('logger -t montag -p user.info ' + info)
-            send_message(info, jid)
+            notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+            send_message(notif, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                     "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -57,10 +58,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
         except Exception:
             exception = "SFTP Get Timeout"
             syslog.syslog(syslog.LOG_INFO, "SSH Session - Exception: " + exception)
-            info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            print(info)
-            os.system('logger -t montag -p user.info ' + info)
-            send_message(info, jid)
+            notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+            send_message(notif, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                     "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -74,10 +76,11 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
         syslog.syslog(syslog.LOG_INFO, "SSH Session - Exception: " + exception)
-        info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(info)
-        os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
+        notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
                 "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
