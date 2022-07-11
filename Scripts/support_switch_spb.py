@@ -8,13 +8,16 @@ from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
 from support_send_notification import send_message
 from database_conf import *
+import re
+import syslog
 
-# Script init
-script_name = sys.argv[0]
-os.system('logger -t montag -p user.info Executing script ' + script_name)
+syslog.openlog('support_switch_spb')
+syslog.syslog(syslog.LOG_INFO, "Executing script")
+
+
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+script_name = sys.argv[0]
 
-# Get informations from logs.
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Log sample
@@ -31,20 +34,28 @@ with open("/var/log/devices/lastlog_spb.json", "w", errors='ignore') as log_file
 with open("/var/log/devices/lastlog_spb.json", "r", errors='ignore') as log_file:
     try:
         log_json = json.load(log_file)
-        ip = log_json["relayip"]
+        ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
+        #syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_spb.json empty")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_spb.json - JSONDecodeError")
         exit()
     except IndexError:
         print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_spb.json - JSONDecodeError")
         exit()
 
     try:
         adjacency_id, port_1 = re.findall(r"Lost L1 adjacency with (.*?) on ifId (.*)", msg)[0]
+        syslog.syslog(syslog.LOG_INFO, "Adjacency Identifier: " + adjacency_id + " - Port from syslog: " + port_1)
     except IndexError:
         print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_spb.json - JSONDecodeError")
         exit()
     # n=int(port_1)
     n = len(str(port_1))
@@ -68,16 +79,20 @@ with open("/var/log/devices/lastlog_spb.json", "r", errors='ignore') as log_file
             port = str(dig[7])
             port = "Linkagg " + port
     print(port)
+    syslog.syslog(syslog.LOG_INFO, "Port: " + port)
 
-notif = ("Preventive Maintenance Application - SPB Adjacency state change on OmniSwitch {0} / {1}.\n\nDetails:\n- System ID : {2}\n- Port : {3}\nPlease check the SPB Adjacent node connectivity.").format(host,ip,adjacency_id,port)
+notif = ("Preventive Maintenance Application - SPB Adjacency state change on OmniSwitch {0} / {1}.\n\nDetails:\n- System ID : {2}\n- Port : {3}\nPlease check the SPB Adjacent node connectivity.").format(host,ipadd,adjacency_id,port)
+syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
 send_message(notif, jid)
+syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 sleep(1)
 open('/var/log/devices/lastlog_spb.json', 'w').close()
 
 try:
-    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
-                    "System_ID": adjacency_id, "IP": ip, "Port/LinkAgg": port}, "fields": {"count": 1}}])
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"System_ID": adjacency_id, "IP": ipadd, "Port/LinkAgg": port}, "fields": {"count": 1}}])
+    syslog.syslog(syslog.LOG_INFO, "Statistics saved")
 except UnboundLocalError as error:
     print(error)
     sys.exit()
