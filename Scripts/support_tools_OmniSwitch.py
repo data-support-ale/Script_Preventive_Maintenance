@@ -188,7 +188,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     except Exception as exception:
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - " + str(exception))
-        exception = exception.readlines()
+        #exception = exception.readlines()
         exception = str(exception)
         print("Function ssh_connectivity_check - Device unreachable")
         logging.info(' SSH session does not establish on OmniSwitch ' + ipadd)
@@ -1427,20 +1427,22 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
     return filename_path, subject, action, result, category
 
 # Function to collect several command outputs related to SPB issue
-def collect_command_output_spb(switch_user, switch_password, host, ipadd):
+def collect_command_output_spb(switch_user, switch_password, host, ipadd, adjacency_id, port):
     """ 
     This function takes entries arguments the OmniSwitch IP Address
     This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
 
     :param str host:                  Switch Hostname
     :param str ipadd:                 Switch IP address
+    :param str adjacency_id:          Switch SPB System ID
+    :param str port:                  Switch Port where Adjacency is lost
     :return:                          filename_path,subject,action,result,category
     """
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_spb")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
-    l_switch_cmd.append("show spb isis adjacency; show spb isis interface")
+    l_switch_cmd.append("show spb isis info; show spb isis database; show spb isis adjacency; show spb isis interface")
 
     for switch_cmd in l_switch_cmd:
         try:
@@ -1493,7 +1495,7 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd):
     f_logs.write(text)
     f_logs.close()
     subject = ("Preventive Maintenance Application - SPB Adjacency issue detected on OmniSwitch: {0}").format(ipadd)
-    action = ("A SPB adjacency is down on OmniSwitch (Hostname: {0})").format(host)
+    action = ("Preventive Maintenance Application - SPB Adjacency state change on OmniSwitch {0} / {1}. System ID : {2} - Port : {3}. Please check the SPB Adjacent node connectivity.").format(host,ipadd,adjacency_id,port)
     result = "Find enclosed to this notification the log collection for further analysis"
     category = "spb"
     return filename_path, subject, action, result, category
@@ -3230,18 +3232,29 @@ def port_monitoring(switch_user, switch_password, port, ipadd):
     """
     syslog.syslog(syslog.LOG_INFO, "Executing function port_monitoring")
    ## Execute port monitoring on port with subprocess.call as we are not expecting output
-    switch_cmd = ("no port-monitoring 1; sleep 2; port-monitoring 1 source port " + port + " file /flash/pmonitor.enc size 1 timeout 30 inport capture-type full enable")
+    switch_cmd = ("no port-monitoring 1")
     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
     try:
         output = subprocess.call(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
-        
         return True
     except subprocess.SubprocessError:
         print("Issue when executing command")
-        syslog.syslog(syslog.LOG_INFO, "Issue when executing command port_monitoring")
+        syslog.syslog(syslog.LOG_INFO, "Issue when executing command port_monitoring " + output) 
     except Exception as exception:
         print("Issue when executing command")
-        syslog.syslog(syslog.LOG_INFO, "Issue when executing command port_monitoring")        
+        syslog.syslog(syslog.LOG_INFO, "Issue when executing command port_monitoring " + output) 
+
+    switch_cmd = ("port-monitoring 1 source port " + port + " file /flash/pmonitor.enc size 1 timeout 30 inport capture-type full enable")
+    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
+    try:
+        output = subprocess.call(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
+        return True
+    except subprocess.SubprocessError:
+        print("Issue when executing command")
+        syslog.syslog(syslog.LOG_INFO, "Issue when executing command port_monitoring " + output) 
+    except Exception as exception:
+        print("Issue when executing command")
+        syslog.syslog(syslog.LOG_INFO, "Issue when executing command port_monitoring " + output)        
 
 if __name__ == "__main__":
 #    a = isUpLink("admin", "switch", "1/1/21", "10.130.7.239")
