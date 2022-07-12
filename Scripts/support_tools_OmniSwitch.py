@@ -15,7 +15,7 @@ from time import sleep
 #from unicodedata import name
 
 from paramiko import SSHException
-from support_send_notification import send_message, send_file
+from support_send_notification import *
 import subprocess
 import re
 import pysftp
@@ -27,7 +27,6 @@ from database_conf import *
 import syslog
 
 syslog.openlog('support_tools_OmniSwitch')
-#syslog.syslog(syslog.LOG_INFO, "Executing script")
 
 # This script contains all functions interacting with OmniSwitches
 
@@ -97,7 +96,9 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     """
     exception = output = 0
     print("Function ssh_connectivity_check - we execute command " + cmd + " on Device: " + ipadd)
+    syslog.syslog(syslog.LOG_INFO, "------------------------------")
     syslog.syslog(syslog.LOG_INFO, "Function ssh_connectivity_check - we execute command " + cmd + " on Device " + ipadd)
+    syslog.syslog(syslog.LOG_INFO, "------------------------------")
     cmd = str(cmd)
     try:
         p = paramiko.SSHClient()
@@ -119,12 +120,11 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
             syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as exception:
-            print(str(exception))
-            sys.exit(1) 
+            print(str(exception)) 
         except Exception as exception:
             print(str(exception))
         syslog.syslog(syslog.LOG_INFO, "Script exit")
-        sys.exit(1) 
+        os._exit(1)
     except paramiko.AuthenticationException:
         exception = "AuthenticationException"
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
@@ -144,8 +144,8 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             print(str(exception))
             return exception 
         syslog.syslog(syslog.LOG_INFO, "Script exit")
-        sys.exit(1)
-    except paramiko.SSHException as exception:
+        os._exit(1)
+    except (paramiko.SSHException,ConnectionError) as exception:
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - " + str(exception))
         exception = exception.readlines()
@@ -167,24 +167,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             print(str(exception))
             return exception
         syslog.syslog(syslog.LOG_INFO, "Script exit")
-        sys.exit(1)
-    except ConnectionError as exception:
-        exception = str(exception)
-        print(exception)
-        logging.info(' SSH session does not establish on OmniSwitch ' + ipadd)
-        notif = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-        sys.exit(1)
+        os._exit(1)
     except Exception as exception:
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - " + str(exception))
@@ -207,7 +190,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             print(str(exception))
             return exception
         syslog.syslog(syslog.LOG_INFO, "Script exit")
-        sys.exit(1)
+        os._exit(1)
     try:
         stderr = ""
         stdout = ""
@@ -221,7 +204,10 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         syslog.syslog(syslog.LOG_INFO, "SSH Command stdout: " + stdout)
         print(stderr)
         syslog.syslog(syslog.LOG_INFO, "SSH Command stdout: " + stderr)
-    except:
+    except TypeError as exception:
+        pass
+    except paramiko.SSHException as exception:
+        print(str(exception))
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         pass
  #   except Exception as exception:
@@ -241,7 +227,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
   #          return exception
 #        except Exception as exception:
  #           print(exception)
-  #          sys.exit(1)
+  #          os._exit(1)
    
     try:
         exception = stderr.readlines()
@@ -295,7 +281,9 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
     :param str cmd                       Switch IP address
     :return:  exception                  
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function get_file_sftp")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     date = datetime.date.today()
     syslog.syslog(syslog.LOG_INFO, "SSH Session start")
     ssh = paramiko.SSHClient()
@@ -319,11 +307,30 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
             print(exception)
             syslog.syslog(syslog.LOG_INFO, "Remote file not found: " + exception)
             pass
+    except TimeoutError as exception:
+        exception = "SSH Timeout"
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Timeout when establishing SSH Session")
+        notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+        except UnboundLocalError as exception:
+            print(exception)
+        except Exception as exception:
+            print(exception)
+        syslog.syslog(syslog.LOG_INFO, "Script exit")
+        os._exit(1)
     except paramiko.AuthenticationException:
             exception = "AuthenticationException"
             syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
             print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
-            notif = ("SSH Authentication failed when connecting to WLAN Stellar AP {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
+            notif = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
             send_message(notif, jid)
@@ -345,7 +352,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         exception = exception.readlines()
         exception = str(exception)
         print("Function ssh_connectivity_check - Device unreachable")
-        syslog.syslog(syslog.LOG_INFO, " SSH session does not establish on WLAN Stellar AP " + ipadd)
+        syslog.syslog(syslog.LOG_INFO, " SSH session does not establish on OmniSwitch " + ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         notif = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
@@ -363,7 +370,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         ssh.close()
         syslog.syslog(syslog.LOG_INFO, "SSH Session end")
         syslog.syslog(syslog.LOG_INFO, "Script exit")  
-        sys.exit()
+        os._exit(1)
     ssh.close()
 
 
@@ -377,7 +384,9 @@ def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
     :param str cmd                       Switch IP address
     :return:  remote_path                  
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function get_file_sftp")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     date = datetime.date.today()
     syslog.syslog(syslog.LOG_INFO, "SSH Session start")
     pmd_file = filename.replace("/", "_")
@@ -407,7 +416,7 @@ def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
         syslog.syslog(syslog.LOG_INFO, "SSH Session end") 
         sftp.close()
         syslog.syslog(syslog.LOG_INFO, "Script exit")
-        sys.exit()
+        os._exit(1)
     sftp.close()
     print(remote_path)
     return remote_path
@@ -420,7 +429,9 @@ def format_mac(mac):
     :param str mac            Attacker's MAC Address
     :return:  mac                  
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function format_mac")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "MAC received: " + mac)
     # remove delimiters and convert to lower case
     mac = re.sub('[.:-]', '', mac).lower()
@@ -440,7 +451,9 @@ def file_setup_qos(addr):
     We extract from syslog message the pmd file path and we download with python sftp client
     :param str addr            IP or MAC Address of the Attacker
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function file_setup_qos")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     content_variable = open('/opt/ALE_Script/configqos', 'w')
     if re.search(r"\:", addr):  # mac
         syslog.syslog(syslog.LOG_INFO, "If MAC Address contains : as delimiters")
@@ -464,7 +477,9 @@ def enable_syslog(switch_user, switch_password, ipadd, port, server_ip):
     :script executed ssh_device:      with cmd in argument
     :return:                          None
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function enable_syslog")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     cmd = ("swlog output socket {0} {1}").format(server_ip, port)
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
 
@@ -479,7 +494,9 @@ def debugging(switch_user, switch_password, ipadd, appid, subapp, level):
     :script executed ssh_device:      with cmd in argument
     :return:                          None
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function debugging")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     cmd = ("swlog appid {0} subapp {1} level {2}").format(appid, subapp, level)
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
 
@@ -493,7 +510,9 @@ def enable_port(switch_user, switch_password, ipadd, portnumber):
     :param str portnumber:          The Switch port where there is a loop. shape : x/y/z with x = chassis n ; y = slot n ; z = port n
     :return:                        None
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function enable_port")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     cmd = "interfaces port {0} admin-state enable".format(portnumber)
     # ssh session to start python script remotely
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
@@ -509,19 +528,40 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
     :param str ipadd:                       Switch IP address
     :return:                                filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function get_tech_support_sftp")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
     filename = 'tech_support_complete.tar'
     try:
         p = paramiko.SSHClient()
         p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        p.connect(ipadd, port=22, username=switch_user, password=switch_password)
+        p.connect(ipadd, port=22, username=switch_user, password=switch_password, timeout=10.0)
+    except TimeoutError as exception:
+        exception = "SSH Timeout"
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Timeout when establishing SSH Session")
+        notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+        except UnboundLocalError as exception:
+            print(exception)
+        except Exception as exception:
+            print(exception)
+        syslog.syslog(syslog.LOG_INFO, "Script exit")
+        os._exit(1)
     except paramiko.AuthenticationException:
             exception = "AuthenticationException"
             syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
             print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
-            notif = ("SSH Authentication failed when connecting to WLAN Stellar AP {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
+            notif = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
             send_message(notif, jid)
@@ -536,14 +576,14 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
                 print(exception)
                 return exception 
             syslog.syslog(syslog.LOG_INFO, "Script exit")
-            sys.exit(1)
+            os._exit(1)
     except paramiko.SSHException as error:
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - " + str(exception))
         exception = exception.readlines()
         exception = str(exception)
         print("Function ssh_connectivity_check - Device unreachable")
-        syslog.syslog(syslog.LOG_INFO, " SSH session does not establish on WLAN Stellar AP " + ipadd)
+        syslog.syslog(syslog.LOG_INFO, " SSH session does not establish on OmniSwitch " + ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         notif = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
@@ -559,7 +599,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
             print(exception)
             return exception
         syslog.syslog(syslog.LOG_INFO, "Script exit")
-        sys.exit(1)
+        os._exit(1)
     stdin = ""
     stderr = ""
     stdout = ""
@@ -582,7 +622,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         except Exception as error:
             print(str(error))
             pass 
-        sys.exit(2)
+        os._exit(1)
 
     stdin, stdout, stderr = p.exec_command("show tech-support eng complete")
     exception = stderr.readlines()
@@ -601,7 +641,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         except Exception as error:
             print(str(error))
             pass 
-        sys.exit(2)
+        os._exit(1)
 
     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2}  ls | grep {3}".format(
         switch_password, switch_user, ipadd, filename)
@@ -628,7 +668,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         if i > 20:
             print("Tech Support file creation timeout")
             syslog.syslog(syslog.LOG_INFO, "Tech Support file creation timeout - script exit")
-            sys.exit(2)
+            os._exit(1)
 
     filename = "tech_support_complete.tar"
     remoteFilePath = "./tech_support_complete.tar"
@@ -653,14 +693,15 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_tcam")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
     l_switch_cmd.append("show qos config; show qos statistics; show qos log; show qos rules; show tcam utilization detail")
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -684,23 +725,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -725,14 +750,15 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_network_loop")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
     l_switch_cmd.append(("show system; show chassis; show interfaces {0} status; show mac-learning port {0}; show vlan members port {0}").format(port))      
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -756,23 +782,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -800,8 +810,9 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_ovc")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
@@ -812,7 +823,6 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
         l_switch_cmd.append(("ping {0}; traceroute {0} max-hop 3").format(vpn_ip))
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -836,23 +846,7 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -892,14 +886,15 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_mqtt")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
     l_switch_cmd.append("show device-profile config; show appmgr iot-profiler")
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -923,23 +918,7 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -971,7 +950,9 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_storm")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     ## Log collection of additionnal command outputs
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
@@ -982,7 +963,6 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     if decision == "1" or decision == "2":
         l_switch_cmd.append("interfaces port " + port + " admin-state disable")
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -1006,23 +986,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -1053,7 +1017,9 @@ def collect_command_output_flapping(switch_user, switch_password, port, ipadd):
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_flapping")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     ## Log collection of additionnal command outputs
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
@@ -1061,7 +1027,6 @@ def collect_command_output_flapping(switch_user, switch_password, port, ipadd):
     l_switch_cmd.append(("show interfaces port {0}").format(port))
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -1085,25 +1050,17 @@ def collect_command_output_flapping(switch_user, switch_password, port, ipadd):
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
+                os._exit(1)
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
-        status_changes = re.findall(r"Number of Status Change   : (.*?),", output_decode)[0]
-        link_quality = re.findall(r"Link-Quality              : (.*?),", output_decode)[0]
+                status_changes = re.findall(r"Number of Status Change   : (.*?),", output_decode)[0]
+            except IndexError:
+                print("Index error in regex")
+                syslog.syslog(syslog.LOG_INFO, "Index error in regex for status_changes")
+            try:
+                link_quality = re.findall(r"Link-Quality              : (.*?),", output_decode)[0]
+            except IndexError:
+                print("Index error in regex")
+                syslog.syslog(syslog.LOG_INFO, "Index error in regex for link_quality")
     return status_changes, link_quality
 
 
@@ -1117,7 +1074,9 @@ def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_health_cpu")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     ## Log collection of additionnal command outputs
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
@@ -1130,7 +1089,6 @@ def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
         ; sleep 2 ; echo \"top -b -n 1 | head\" | su')
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -1154,23 +1112,7 @@ def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -1195,7 +1137,9 @@ def collect_command_output_health_memory(switch_user, switch_password, host, ipa
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_health_memory")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     ## Log collection of additionnal command outputs
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
@@ -1209,7 +1153,6 @@ def collect_command_output_health_memory(switch_user, switch_password, host, ipa
         ; sleep 2 ; echo \"cat \/proc\/meminfo\" | su')
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -1233,23 +1176,7 @@ def collect_command_output_health_memory(switch_user, switch_password, host, ipa
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -1276,7 +1203,9 @@ def collect_command_output_health_port(switch_user, switch_password, port, type,
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_health_port")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     ## Log collection of additionnal command outputs
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
@@ -1285,7 +1214,6 @@ def collect_command_output_health_port(switch_user, switch_password, port, type,
     show health port {0} ; show qos port {0}").format(port))
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -1309,23 +1237,7 @@ def collect_command_output_health_port(switch_user, switch_password, port, type,
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -1356,7 +1268,9 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_violation")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
@@ -1366,7 +1280,6 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
         l_switch_cmd.append(("show interfaces {0} status ; show violation; show violation port {0}").format(port))
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -1390,23 +1303,7 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -1438,14 +1335,15 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd, adjace
     :param str port:                  Switch Port where Adjacency is lost
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_spb")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
     l_switch_cmd.append("show spb isis info; show spb isis database; show spb isis adjacency; show spb isis interface")
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -1469,23 +1367,7 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd, adjace
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -1512,7 +1394,9 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_stp")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
@@ -1522,7 +1406,6 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
         l_switch_cmd.append(("show microcode; show system; show spantree mode; show spantree vlan {0}; show vlan {0}; show spantree vlan {0}").format(vlan))
   
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -1546,23 +1429,7 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -1593,23 +1460,24 @@ def collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category, chassis_id
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_fan")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
     l_switch_cmd.append('show chassis; show microcode; show system; show fan; show temperature; show powersupply; show powersupply total; show hardware-info')
 
     for switch_cmd in l_switch_cmd:
-        try:
-            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            if output != None:
+        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+        if output != None:
                 output = str(output)
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
                 output_decode = output_decode.replace("']","")
                 output_decode = output_decode.replace("['","")
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
-            else:
+        else:
                 exception = "Timeout"
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
@@ -1624,23 +1492,7 @@ def collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -1653,53 +1505,38 @@ def collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd
     ### We are looking for fan chassis_ID
     switch_cmd = "show fan"
     fan_status=0
-    try:
-        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+    output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
         
-        if output != None:
+    if output != None:
             output = str(output)
             fan_status = bytes(output, "utf-8").decode("unicode_escape")
             fan_status = fan_status.replace("', '","")
             fan_status = fan_status.replace("']","")
             fan_status = fan_status.replace("['","")
             print(fan_status)
-    except subprocess.TimeoutExpired as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
-    except subprocess.SubprocessError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
+    else:
+            exception = "Timeout"
+            notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+            send_message(notif, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+            try:
+                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+            except UnboundLocalError as error:
+                print(str(error))
+            except Exception as error:
+                print(str(error))
+                pass 
+            os._exit(1)
     if "NO" in fan_status:
         try:
             chassis_id = re.findall(r"(.*?)/--         1       NO", fan_status)[0]
             print(chassis_id)
         except IndexError:
             print("Index error in regex")
-            syslog.syslog(syslog.LOG_INFO, "Index error in regex on fan_status")
+            syslog.syslog(syslog.LOG_INFO, "Index error in regex on chassis_id")
             exit()
     else:
         print("FAN Chassis ID Not found we set value Unknown")
@@ -1727,14 +1564,15 @@ def collect_command_output_ni(switch_user, switch_password, ni_id, host, ipadd):
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_ni")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
     l_switch_cmd.append("show chassis; show microcode; show system; show module; show module long; show hardware-info")
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             
             if output != None:
@@ -1759,23 +1597,7 @@ def collect_command_output_ni(switch_user, switch_password, ni_id, host, ipadd):
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
 
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -1802,15 +1624,15 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_ps")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
     l_switch_cmd.append("show chassis; show microcode; show system; show virtual-chassis topology; show fan; show temperature; show powersupply; show powersupply total;  show powersupply chassis-id 1 1; show powersupply chassis-id 1 2; show powersupply chassis-id 2 1; show powersupply chassis-id 2 2; show hardware-info")
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             
             if output != None:
@@ -1835,23 +1657,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
 
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -1904,15 +1710,15 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_vc")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
     l_switch_cmd.append("show virtual-chassis vf-link; show virtual-chassis auto-vf-link-port; show virtual-chassis neighbors; debug show virtual-chassis topology")
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -1936,23 +1742,7 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -1978,15 +1768,15 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_linkagg")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
     l_switch_cmd.append(("show interfaces alias; show linkagg; show linkagg agg {0}; show linkagg agg {0} port").format(agg))
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -2010,23 +1800,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -2055,8 +1829,9 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_poe")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
@@ -2066,7 +1841,6 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
         show lanpower slot 1/1 priority-disconnect; show lanpower slot 1/1 class-detection")
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -2090,23 +1864,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -2117,20 +1875,18 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
     f_logs.close()
     lanpower_settings_status = 0
     switch_cmd = "show configuration snapshot lanpower"
-    try:
-        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+    output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
         
-        if output != None:
-            output = str(output)
-            output_decode = bytes(output, "utf-8").decode("unicode_escape")
-            output_decode = output_decode.replace("', '","")
-            output_decode = output_decode.replace("']","")
-            lanpower_settings_status = output_decode.replace("['","")
-            #lanpower_settings_status = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
-            #lanpower_settings_status = lanpower_settings_status.decode('UTF-8').strip()
-            print(lanpower_settings_status)
-    except subprocess.TimeoutExpired as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
+    if output != None:
+        output = str(output)
+        output_decode = bytes(output, "utf-8").decode("unicode_escape")
+        output_decode = output_decode.replace("', '","")
+        output_decode = output_decode.replace("']","")
+        lanpower_settings_status = output_decode.replace("['","")
+        print(lanpower_settings_status)
+    else:
+        exception = "Timeout"
+        notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
         send_message(notif, jid)
@@ -2143,22 +1899,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
         except Exception as error:
             print(str(error))
             pass 
-        sys.exit()
-    except subprocess.SubprocessError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
+        os._exit(1)
     if "capacitor-detection enable" in lanpower_settings_status:
         print("Capacitor detection enabled!")
         syslog.syslog(syslog.LOG_INFO, "Capacitor detection enabled!")
@@ -2236,8 +1977,9 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, 
     :param str host:                  Switch Hostname
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_ddm")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs related to the Digital Diagnostics Monitoring (DDM) noticed on OmniSwitch: {0} \n\n\n".format(ipadd)
     text = "########################################################################"
 
@@ -2245,7 +1987,6 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, 
     l_switch_cmd.append(("show system; show transceivers slot {0}/1; show interfaces; show interfaces status; show lldp remote-system").format(slot))
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -2269,23 +2010,7 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, 
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -2310,8 +2035,9 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
     :param str ipadd:                     Switch IP address
     :return:                              filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_aaa")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     service_status = 0
     protocol_lower_case = 0
     if protocol == "HTTPS":
@@ -2323,35 +2049,20 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         protocol = "console"
     else:
         switch_cmd = "show ip service | grep {0}".format(protocol)
-    try:
-        output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+    
+    output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
         
-        if output != None:
-            output = str(output)
-            service_status=0
-            output_decode = bytes(output, "utf-8").decode("unicode_escape")
-            output_decode = output_decode.replace("', '","")
-            output_decode = output_decode.replace("']","")
-            service_status = output_decode.replace("['","")
-            service_status = str(service_status)
-        else:
-            exception = "Timeout"
-            notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
-    except subprocess.TimeoutExpired as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
+    if output != None:
+        output = str(output)
+        service_status=0
+        output_decode = bytes(output, "utf-8").decode("unicode_escape")
+        output_decode = output_decode.replace("', '","")
+        output_decode = output_decode.replace("']","")
+        service_status = output_decode.replace("['","")
+        service_status = str(service_status)
+    else:
+        exception = "Timeout"
+        notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
         send_message(notif, jid)
@@ -2364,22 +2075,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         except Exception as error:
             print(str(error))
             pass 
-        sys.exit()
-    except subprocess.SubprocessError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
+        os._exit(1)
     if "enabled" in service_status or service_status != 0:
         print("Protocol " + protocol + " enabled!")
         syslog.syslog(syslog.LOG_INFO, "Protocol " + protocol + " enabled!")
@@ -2412,40 +2108,8 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
             aaa_status = "disabled"
             syslog.syslog(syslog.LOG_INFO, "No Protocol aaa authentication - status disabled")
             pass
-    except subprocess.TimeoutExpired as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
-    except subprocess.CalledProcessError as error:
-        aaa_status = "disabled"
-    except subprocess.SubprocessError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
 
-    except AttributeError as exception:
+    except (AttributeError,FileNotFoundError) as exception:
         notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
@@ -2458,21 +2122,8 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
             print(str(error))
         except Exception as error:
             print(str(error))
-            pass 
-    except FileNotFoundError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
+            pass
+        os._exit(1) 
     print(aaa_status)
     return service_status, aaa_status
 
@@ -2491,15 +2142,15 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
     :param str ipadd:                      Switch IP address
     :return:                               filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function authentication_failure")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
     l_switch_cmd = []
     l_switch_cmd.append("show ip service; show aaa authentication")
 
     for switch_cmd in l_switch_cmd:
-        try:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
                 output = str(output)
@@ -2523,23 +2174,7 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+                os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
 
@@ -2563,8 +2198,9 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
     :param str ipadd:                     Switch IP address
     :return:                              lldp_port_description
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_lldp_port_description")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     lldp_port_description = lldp_mac_address = 0
     lldp_port = ""
     switch_cmd = "show lldp port {0} remote-system".format(port)
@@ -2592,8 +2228,8 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
             except Exception as error:
                 print(str(error))
                 pass 
-            sys.exit()
-    except subprocess.TimeoutExpired as exception:
+            os._exit(1)
+    except (AttributeError, FileNotFoundError) as exception:
         notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
@@ -2608,45 +2244,16 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
         except Exception as error:
             print(str(error))
             pass 
-        sys.exit()
-    except AttributeError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
-    except FileNotFoundError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
+        os._exit(1)
     if "Port Description" in lldp_port:
         try: 
            print(lldp_port)
            lldp_port_description = re.findall(r"Port Description            = (.*?),", lldp_port)[0]
            lldp_mac_address = re.findall(r"Port (.*?):\n", lldp_port)[1]
-           
+        except IndexError:
+            print("Index error in regex")
+            syslog.syslog(syslog.LOG_INFO, "Index error in regex for lldp_mac_address or lldp_port_capability")
+            pass           
         except exception as exception:
             print(exception)
             syslog.syslog(syslog.LOG_INFO, "LLDP Port Description output failed - " + exception)
@@ -2664,9 +2271,9 @@ def collect_command_output_lldp_port_capability(switch_user, switch_password, po
     :param str ipadd:                     Switch IP address
     :return:                              lldp_capability
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_lldp_port_capability")
-
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     lldp_port_capability = lldp_port = 0
     switch_cmd = "show lldp port {0} remote-system".format(port)
     try:
@@ -2695,8 +2302,8 @@ def collect_command_output_lldp_port_capability(switch_user, switch_password, po
             except Exception as error:
                 print(str(error))
                 pass 
-            sys.exit()
-    except subprocess.TimeoutExpired as exception:
+            os._exit(1)
+    except (AttributeError,FileNotFoundError) as exception:
         notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
@@ -2711,45 +2318,17 @@ def collect_command_output_lldp_port_capability(switch_user, switch_password, po
         except Exception as error:
             print(str(error))
             pass 
-        sys.exit()
-    except AttributeError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
-    except FileNotFoundError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
+        os._exit(1)
     if "Port Description" in lldp_port:
         syslog.syslog(syslog.LOG_INFO, "Port description in lldp_port")
         try: 
            lldp_port_capability = re.findall(r"Capabilities Supported      = (.*?),", lldp_port)[0]
            lldp_mac_address = re.findall(r"Port (.*?):\n", lldp_port)[1]
            syslog.syslog(syslog.LOG_INFO, "lldp_port_capability: " + lldp_port_capability)
+        except IndexError:
+            print("Index error in regex")
+            syslog.syslog(syslog.LOG_INFO, "Index error in regex for lldp_mac_address or lldp_port_capability")
+            pass
         except UnboundLocalError as error:
             print(str(error))
             syslog.syslog(syslog.LOG_INFO, "Exception: " + error)
@@ -2760,7 +2339,7 @@ def collect_command_output_lldp_port_capability(switch_user, switch_password, po
             syslog.syslog(syslog.LOG_INFO, "Exception: " + error)
             lldp_port_capability = 0
             pass
-    return lldp_port_capability
+    return lldp_port_capability, lldp_mac_address
 
 
 # Function to collect OmniSwitch LLDP Remote System Port Description
@@ -2772,8 +2351,9 @@ def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
     :param str ipadd:                     Switch IP address
     :return:                              device_ip
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function get_arp_entry")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     device_ip = 0
 
     switch_cmd = "show arp | grep \"{0}\"".format(lldp_mac_address)
@@ -2801,8 +2381,8 @@ def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
             except Exception as error:
                 print(str(error))
                 pass 
-            sys.exit()
-    except subprocess.TimeoutExpired as exception:
+            os._exit(1)
+    except (AttributeError,FileNotFoundError) as exception:
         notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
@@ -2817,44 +2397,16 @@ def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
         except Exception as error:
             print(str(error))
             pass 
-        sys.exit()
-    except AttributeError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
-    except FileNotFoundError as exception:
-        notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass 
-        sys.exit()
+        os._exit(1)
     try:
         if "{0}".format(lldp_mac_address) in device_ip:
             print(device_ip)
-            device_ip = re.findall(r" ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}) ", device_ip)[0]
-            syslog.syslog(syslog.LOG_INFO, "Device IP Address found in ARP Table: " + device_ip)
+            try:
+                device_ip = re.findall(r" ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}) ", device_ip)[0]
+                syslog.syslog(syslog.LOG_INFO, "Device IP Address found in ARP Table: " + device_ip)
+            except IndexError:
+                print("Index error in regex")
+                syslog.syslog(syslog.LOG_INFO, "Index error in regex for device_ip")
         else:
             print("No ARP Entry for this MAC Address")
             syslog.syslog(syslog.LOG_INFO, "No ARP Entry for this MAC Address")
@@ -2872,7 +2424,9 @@ def check_save(ipadd, port, type):
     :param str ipadd:                      Switch IP address
     :return int:                           Return 1 if always, -1 if never else 0 if no entry
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
         try:
             syslog.syslog(syslog.LOG_INFO, "File does not exist - file is created")
@@ -2881,7 +2435,7 @@ def check_save(ipadd, port, type):
         except OSError as exception:
             print(exception)
             syslog.syslog(syslog.LOG_INFO, "Permission error when creating file /opt/ALE_Script/decisions_save.conf: " + exception)
-            sys.exit()
+            os._exit(1)
     content = open("/opt/ALE_Script/decisions_save.conf", "r", errors='ignore')
     file_lines = content.readlines()
     content.close()
@@ -2907,7 +2461,9 @@ def add_new_save(ipadd, port, type, choice="never"):
     :param str type:               Which use case: loop, flapping
     :return:                       None
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function add_new_save")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
         try:
             syslog.syslog(syslog.LOG_INFO, "File does not exist - file is created")
@@ -2916,7 +2472,7 @@ def add_new_save(ipadd, port, type, choice="never"):
         except OSError as exception:
             print(exception)
             syslog.syslog(syslog.LOG_INFO, "Permission error when creating file /opt/ALE_Script/decisions_save.conf: " + exception)
-            sys.exit()
+            os._exit(1)
 
     fileR = open("/opt/ALE_Script/decisions_save.conf", "r", errors='ignore')
     text = fileR.read()
@@ -2931,7 +2487,7 @@ def add_new_save(ipadd, port, type, choice="never"):
     except OSError as exception:
         print(exception)
         syslog.syslog(syslog.LOG_INFO, "Permission error when creating file /opt/ALE_Script/decisions_save.conf: " + exception)
-        sys.exit()
+        os._exit(1)
 
 def script_has_run_recently(seconds,ip,function):
     """ 
@@ -2941,7 +2497,9 @@ def script_has_run_recently(seconds,ip,function):
     :param str function:             Which use case: loop, flapping
     :return:                         True (if runtime less than 5 minutes) or False
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function script_has_run_recently")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     filename = ('/opt/ALE_Script/last-runtime_{0}.txt').format(function)
     current_time = int(time.time())
     text = "{0},{1},{2}\n".format(str(current_time),ip, function)
@@ -2975,8 +2533,9 @@ def check_timestamp_and_function(ip, function):
     :param str function:             Which use case: loop, flapping
     :return:                         2  (if runtime + function found) else 1
     """   
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function check_timestamp_and_function")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     content = open("/opt/ALE_Script/last-runtime_{0}.txt".format(function), "r", errors='ignore')
     file_lines = content.readlines()
     content.close()
@@ -3000,8 +2559,9 @@ def detect_port_loop():
     :param:                         None
     :return int :                   If the int is equal to 1 we have detected a loop, if not the int equals 0
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function detect_port_loop")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     content_variable = open('/var/log/devices/lastlog_loop.json', 'r')
     file_lines = content_variable.readlines()
     content_variable.close()
@@ -3057,8 +2617,9 @@ def check_timestamp():
     :return int diff_time:          This is the time gap between the last log and the current log.
     """
     # read time of the current log processed
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function check_timestamp")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     content_variable = open(
         '/var/log/devices/lastlog_loop.json', 'r', errors='ignore')
     file_lines = content_variable.readlines()
@@ -3095,8 +2656,9 @@ def isEssential(addr):
     Check if IP addr is in Esssential_ip.csv file
     return: True if addr is in file else False
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function isEssential")
-
+    syslog.syslog(syslog.LOG_INFO, "    ")
     ips_address = list()
     with open("/opt/ALE_Script/Essential_ip.csv") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=';')
@@ -3117,7 +2679,9 @@ def isUpLink(switch_user, switch_password, port_number, ipadd):
     Check if port is an Uplink (linkagg or more than 2 VLAN tagged)
     return: True if the port is considered as Uplink else False
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function isUpLink")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     l_switch_cmd = []
     l_switch_cmd.append("show  vlan members port " + port_number)
 
@@ -3145,8 +2709,8 @@ def isUpLink(switch_user, switch_password, port_number, ipadd):
                 except Exception as error:
                     print(str(error))
                     pass 
-                sys.exit()
-        except subprocess.TimeoutExpired as exception:
+                os._exit(1)
+        except (AttributeError,FileNotFoundError) as exception:
             notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
@@ -3161,39 +2725,7 @@ def isUpLink(switch_user, switch_password, port_number, ipadd):
             except Exception as error:
                 print(str(error))
                 pass 
-            sys.exit()
-        except AttributeError as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
-        except FileNotFoundError as exception:
-            notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as error:
-                print(str(error))
-            except Exception as error:
-                print(str(error))
-                pass 
-            sys.exit()
+            os._exit(1)
         ## if port is member of a linkagg ERROR is displayed in output
         if re.search(r"ERROR", output_vlan_members):
             return True
@@ -3215,7 +2747,9 @@ def disable_port(switch_user, switch_password, ipadd, portnumber):
     :param str portnumber:          The Switch port where there is a loop. shape : x/y/z with x = chassis n ; y = slot n ; z = port n
     :return:                        None
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function disable_port")
+    syslog.syslog(syslog.LOG_INFO, "    ")
     cmd = "interfaces port {0} admin-state disable".format(portnumber)
     # ssh session to start python script remotely
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
@@ -3230,7 +2764,9 @@ def port_monitoring(switch_user, switch_password, port, ipadd):
     :param str ipadd:                 Switch IP address
     :return:                          filename_path,subject,action,result,category
     """
+    syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function port_monitoring")
+    syslog.syslog(syslog.LOG_INFO, "    ")
    ## Execute port monitoring on port with subprocess.call as we are not expecting output
     switch_cmd = ("no port-monitoring 1")
     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
@@ -3261,95 +2797,108 @@ if __name__ == "__main__":
 #    print(a)
 #    b = isEssential("10.130.7.14")
 #    print(b)
-    login_switch, pass_switch, mails, rainbow_jid, ip_server_log, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
-    jid = "570e12872d768e9b52a8b975@openrainbow.com"
-    switch_password = "switch"
-    switch_user = "admin"
-    ipadd = "10.130.7.247"
-    cmd = "show system"
-    host = "LAN-6860N-2"
-    port = "1/1/52"
-    source = "Unknown Unicast"
-    decision = 0
-    ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-    #filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
-    #filename_path = "/var/log/server/support_tools_OmniSwitch.log"
-    #send_file(filename_path, subject, action, result, category, jid)
-    #filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
-    #send_file(filename_path, subject, action, result,category, jid)
-    #filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    reason="Fail due to out-of-range capacitor value"
-    port="34"
-    #filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-    #send_file(filename_path, subject, action, result,category, jid)
-    agg = "6"
-    #filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    vcid = "2"
-    #filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    psid = "2"
-    #filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    source = "Access Guardian"
-    port="1/1/15"
-    decision = "0"
-    #filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    protocol = "Console"
-    user = "toto"
-    source_ip = "10.130.7.17"
-    service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
-    filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
+    try:
+        syslog.syslog(syslog.LOG_INFO, "Starting tests") 
+        login_switch, pass_switch, mails, rainbow_jid, ip_server_log, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+        jid = "570e12872d768e9b52a8b975@openrainbow.com"
+        switch_password = "switch"
+        switch_user = "admin"
+        ipadd = "10.130.7.247"
+        cmd = "show system"
+        host = "LAN-6860N-2"
+        port = "1/1/58"
+        source = "Unknown Unicast"
+        decision = 0
+        ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+        filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
+        filename_path = "/var/log/server/support_tools_OmniSwitch.log"
+        #send_file(filename_path, subject, action, result, category, jid)
+        filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
+        #send_file(filename_path, subject, action, result,category, jid)
+        filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        reason="Fail due to out-of-range capacitor value"
+        port="34"
+        filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+        #send_file(filename_path, subject, action, result,category, jid)
+        agg = "6"
+        filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        vcid = "2"
+        filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        psid = "2"
+        filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        source = "Access Guardian"
+        port="1/1/59"
+        decision = "0"
+        filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        protocol = "Console"
+        user = "toto"
+        source_ip = "10.130.7.17"
+        service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
+        filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
 
-    #status_changes, link_quality = collect_command_output_flapping(switch_user, switch_password, port, ipadd)
-    filename_path, subject, action, result, category = collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    filename_path, subject, action, result, category = collect_command_output_health_memory(switch_user, switch_password, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    type = "receive"
-    filename_path, subject, action, result, category = collect_command_output_health_port(switch_user, switch_password, port, type, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    filename_path, subject, action, result, category = collect_command_output_spb(switch_user, switch_password, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    vlan = "68-70"
-    filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ipadd, vlan)
-    #send_file(filename_path, subject, action, result,category, jid)
-    fan_id = "2"
-    filename_path, subject, action, result, category = collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    ni_id = "3"
-    filename_path, subject, action, result, category = collect_command_output_ni(switch_user, switch_password, ni_id, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
-    #send_file(filename_path, subject, action, result,category, jid)
-    filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-    #send_file(filename_path, subject, action, result,category, jid)
-    slot= 1 
-    ddm_type = "Power"
-    threshold = "low" 
-    sfp_power = "0.3mA"
-    filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power)
-    #send_file(filename_path, subject, action, result,category, jid)
-    service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
-    filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
-    lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port, ipadd)
-    lldp_port_capability = collect_command_output_lldp_port_capability(switch_user, switch_password, port, ipadd)
-    device_ip = get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd)
-    type = "ddos"
-    check_save(ipadd, port, type)
-    add_new_save(ipadd, port, type, choice="never")
-    isEssential(ipadd)
-    isUpLink(switch_user, switch_password, port, ipadd)
-    port_monitoring(switch_user, switch_password, port, ipadd)
+        status_changes, link_quality = collect_command_output_flapping(switch_user, switch_password, port, ipadd)
+        filename_path, subject, action, result, category = collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        filename_path, subject, action, result, category = collect_command_output_health_memory(switch_user, switch_password, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        type = "receive"
+        filename_path, subject, action, result, category = collect_command_output_health_port(switch_user, switch_password, port, type, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        adjacency_id = "1223456366"
+        filename_path, subject, action, result, category = collect_command_output_spb(switch_user, switch_password, host, ipadd, adjacency_id, port)
+        #send_file(filename_path, subject, action, result,category, jid)
+        vlan = "68-70"
+        filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ipadd, vlan)
+        #send_file(filename_path, subject, action, result,category, jid)
+        fan_id = "2"
+        filename_path, subject, action, result, category = collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        ni_id = "3"
+        filename_path, subject, action, result, category = collect_command_output_ni(switch_user, switch_password, ni_id, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
+        #send_file(filename_path, subject, action, result,category, jid)
+        filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+        #send_file(filename_path, subject, action, result,category, jid)
+        slot= 1 
+        ddm_type = "Power"
+        threshold = "low" 
+        sfp_power = "0.3mA"
+        filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power)
+        #send_file(filename_path, subject, action, result,category, jid)
+        service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
+        filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
+        lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port, ipadd)
+        lldp_port_capability = collect_command_output_lldp_port_capability(switch_user, switch_password, port, ipadd)
+        device_ip = get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd)
+        type = "ddos"
+        check_save(ipadd, port, type)
+        add_new_save(ipadd, port, type, choice="never")
+        isEssential(ipadd)
+        isUpLink(switch_user, switch_password, port, ipadd)
+        port_monitoring(switch_user, switch_password, port, ipadd)
+    except (RuntimeError, TypeError, NameError):
+        raise
+    except OSError:
+        raise
+    except KeyboardInterrupt:
+        syslog.syslog(syslog.LOG_INFO, "KeyboardInterrupt")
+        raise
+    finally:
+        print("End of tests")
+        syslog.syslog(syslog.LOG_INFO, "End of tests")
 
 else:
     print("Support_Tools_OmniSwitch Script called by another script")
