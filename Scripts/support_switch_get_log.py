@@ -7,7 +7,6 @@ import datetime
 from time import strftime, localtime
 from support_tools_OmniSwitch import get_credentials, get_tech_support_sftp, ssh_connectivity_check
 from support_send_notification import send_message
-import subprocess
 import re
 from database_conf import *
 import syslog
@@ -105,10 +104,13 @@ for switch_cmd in l_switch_cmd:
     syslog.syslog(syslog.LOG_INFO, "Command executed on OmniSwitch: " + cmd)
     try:
         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-        output = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
         if output != None:
-            output = output.decode('UTF-8').strip()
-            text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
+            output = str(output)
+            output_decode = bytes(output, "utf-8").decode("unicode_escape")
+            output_decode = output_decode.replace("', '","")
+            output_decode = output_decode.replace("']","")
+            output_decode = output_decode.replace("['","")
+            text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
         else:
             exception = "Timeout"
             notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
@@ -125,21 +127,6 @@ for switch_cmd in l_switch_cmd:
             except Exception as error:
                 print(error)
                 pass 
-    except subprocess.TimeoutExpired as exception:
-        notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass 
     except FileNotFoundError as exception:
         notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)

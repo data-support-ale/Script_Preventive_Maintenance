@@ -5,8 +5,8 @@ import os
 import json
 import re
 from time import strftime, localtime
-from support_tools_OmniSwitch import get_credentials
-from support_send_notification import send_message
+from support_tools_Stellar import get_credentials
+from support_send_notification import *
 from database_conf import *
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())

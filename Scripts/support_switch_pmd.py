@@ -5,7 +5,6 @@ import os
 import getopt
 import json
 import logging
-import subprocess
 from time import gmtime, strftime, localtime, sleep
 import requests
 import datetime
