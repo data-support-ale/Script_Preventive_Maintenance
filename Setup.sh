@@ -1474,8 +1474,6 @@ else
 fi
 
 echo -e "\e[32mPython-pip packages Installation\e[39m"
-# Used in function get_pmd_file_sftp
-python3 -m pip install pysftp
 # Used for adding metrics in influxDB
 python3 -m pip install influxdb-client
 # Used for exposing metrics to Prometheus

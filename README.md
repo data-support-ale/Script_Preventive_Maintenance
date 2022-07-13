@@ -153,7 +153,6 @@ from support_tools import get_credentials,get_server_log_ip,get_jid,get_mail,sen
 from support_send_notification import send_message,send_file,send_mail
 import subprocess
 import re
-import pysftp
 import requests
 import paramiko
 

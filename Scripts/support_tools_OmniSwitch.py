@@ -3,6 +3,7 @@
 from ast import And
 #from asyncio.base_events import _ExceptionHandler
 from asyncio.subprocess import PIPE
+#from asyncore import compact_traceback
 from copy import error
 #from operator import sub
 import sys
@@ -18,12 +19,12 @@ from paramiko import SSHException
 from support_send_notification import *
 import subprocess
 import re
-import pysftp
 import requests
 import paramiko
 import csv
 import threading
 from database_conf import *
+import traceback
 import syslog
 
 syslog.openlog('support_tools_OmniSwitch')
@@ -107,6 +108,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         p.connect(ipadd, port=22, username=switch_user,password=switch_password, timeout=10.0, banner_timeout=100)
         syslog.syslog(syslog.LOG_INFO, "SSH Session established")
     except TimeoutError as exception:
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         exception = "SSH Timeout"
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - Exception: " + str(exception))
@@ -125,7 +127,8 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             print(str(exception))
         syslog.syslog(syslog.LOG_INFO, "Script exit")
         os._exit(1)
-    except paramiko.AuthenticationException:
+    except paramiko.AuthenticationException as exception:
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         exception = "AuthenticationException"
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
@@ -146,6 +149,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         syslog.syslog(syslog.LOG_INFO, "Script exit")
         os._exit(1)
     except (paramiko.SSHException,ConnectionError) as exception:
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - " + str(exception))
         exception = exception.readlines()
@@ -169,6 +173,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         syslog.syslog(syslog.LOG_INFO, "Script exit")
         os._exit(1)
     except Exception as exception:
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - " + str(exception))
         #exception = exception.readlines()
@@ -207,6 +212,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
     except TypeError as exception:
         pass
     except paramiko.SSHException as exception:
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         print(str(exception))
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         pass
@@ -300,14 +306,17 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
             th.start()
             th.join(60)
         except threading.ThreadError as exception:
+            syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
             print(exception)
             syslog.syslog(syslog.LOG_INFO, "SFTP Session aborted reason: " + exception)
             pass
         except FileNotFoundError as exception:
+            syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
             print(exception)
             syslog.syslog(syslog.LOG_INFO, "Remote file not found: " + exception)
             pass
     except TimeoutError as exception:
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         exception = "SSH Timeout"
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - Exception: " + str(exception))
@@ -327,26 +336,28 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         syslog.syslog(syslog.LOG_INFO, "Script exit")
         os._exit(1)
     except paramiko.AuthenticationException:
-            exception = "AuthenticationException"
-            syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
-            print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
-            notif = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-            except UnboundLocalError as exception:
-                print(exception)
-                return exception 
-            except Exception as exception:
-                print(exception)
-                return exception 
-            syslog.syslog(syslog.LOG_INFO, "Script exit")
-            pass
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
+        exception = "AuthenticationException"
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
+        notif = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+        except UnboundLocalError as exception:
+            print(exception)
+            return exception 
+        except Exception as exception:
+            print(exception)
+            return exception 
+        syslog.syslog(syslog.LOG_INFO, "Script exit")
+        pass
     except paramiko.SSHException as error:
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - " + str(exception))
         exception = exception.readlines()
@@ -372,54 +383,6 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         syslog.syslog(syslog.LOG_INFO, "Script exit")  
         os._exit(1)
     ssh.close()
-
-
-def get_pmd_file_sftp(switch_user, switch_password, ipadd, filename):
-    """ 
-    This function is called when a Core Dump is generated on OmniSwitch
-    We extract from syslog message the pmd file path and we download with python sftp client
-    :param str remoteFilePath            File  located in the /flash/pmd/ directory
-    :param str localFilePath             Local file path downloaded in /tftpboot/ directory
-    :param str ipadd                     Command pushed by SSH on OmnISwitch
-    :param str cmd                       Switch IP address
-    :return:  remote_path                  
-    """
-    syslog.syslog(syslog.LOG_INFO, "    ")
-    syslog.syslog(syslog.LOG_INFO, "Executing function get_file_sftp")
-    syslog.syslog(syslog.LOG_INFO, "    ")
-    date = datetime.date.today()
-    syslog.syslog(syslog.LOG_INFO, "SSH Session start")
-    pmd_file = filename.replace("/", "_")
-    remote_path = '/tftpboot/{0}_{1}_{2}'.format(date, ipadd, pmd_file)
-    try:
-        with pysftp.Connection(host=ipadd, username=switch_user, password=switch_password) as sftp:
-            # get a remote file
-            localFilePath = ("/tftpboot/{0}_{1}_{2}").format(date, ipadd, pmd_file)
-            syslog.syslog(syslog.LOG_INFO, "SFTP get file " + remote_path + " on local directory " + localFilePath)
-            sftp.get('{0}'.format(filename),'/tftpboot/{0}_{1}_{2}'.format(date, ipadd, pmd_file))
-    except FileNotFoundError as exception:
-        print(exception)
-        syslog.syslog(syslog.LOG_INFO, "Remote file not found: " + exception)
-        notif = ("The download of PMD file {0} on OmniSwitch {1} failed - {2}").format(filename, ipadd, exception)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-        try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "GET_SFTP_FILE", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(str(error))
-        except Exception as error:
-            print(str(error))
-            pass
-        syslog.syslog(syslog.LOG_INFO, "SSH Session end") 
-        sftp.close()
-        syslog.syslog(syslog.LOG_INFO, "Script exit")
-        os._exit(1)
-    sftp.close()
-    print(remote_path)
-    return remote_path
 
 
 def format_mac(mac):
@@ -2803,13 +2766,15 @@ if __name__ == "__main__":
         jid = "570e12872d768e9b52a8b975@openrainbow.com"
         switch_password = "switch"
         switch_user = "admin"
-        ipadd = "10.130.7.247"
+        ipadd = "10.130.7.245"
         cmd = "show system"
         host = "LAN-6860N-2"
         port = "1/1/58"
         source = "Unknown Unicast"
         decision = 0
-        ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+        #ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
+        filename_pmd = "/flash/pmd/pmd-vrrp-03.10.2022-10.51.12"
+        get_pmd_file_sftp(switch_user, switch_password, ipadd, filename_pmd)
         filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
         filename_path = "/var/log/server/support_tools_OmniSwitch.log"
         #send_file(filename_path, subject, action, result, category, jid)
