@@ -198,7 +198,7 @@ with open("/var/log/devices/lastlog_flapping.json", "r", errors='ignore') as log
             exit()
         except IndexError:
             print("Index error in regex")
-            syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_flapping.json - JSONDecodeError")
+            syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_flapping.json - Index error in regex")
             exit()
 
 with open("/var/log/devices/lastlog_flapping.json", "w", errors='ignore') as log_file:
