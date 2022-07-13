@@ -2,7 +2,7 @@
 
 import sys
 import os
-
+dir="/opt/ALE_Script"
 pattern = sys.argv[1]
 text = """
 if $msg contains '""" + pattern + """' then {

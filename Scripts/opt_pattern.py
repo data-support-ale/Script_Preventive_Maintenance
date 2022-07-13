@@ -2,13 +2,13 @@
 
 import sys
 import os
-
+dir="/opt/ALE_Script"
 pattern = sys.argv[1]
 text = """
 if $msg contains '""" + pattern + """' then {
        action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
        action(type=\"omfile\" DynaFile=\"deviceloggetlogswitch\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-       action(type=\"omprog\" binary=\"/opt/ALE_Script/support_switch_get_log.py \\\"""" + pattern + """\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
+       action(type=\"omprog\" binary= \"/opt/ALE_Script/support_switch_get_log.py \\\"""" + pattern + """\\\"\" queue.type=\"LinkedList\" queue.size=\"1\" queue.workerThreads=\"1\")
        stop
 }
 :syslogtag, contains, "montag" /var/log/devices/script_execution.log

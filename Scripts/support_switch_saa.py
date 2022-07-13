@@ -109,7 +109,6 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                             exception = "Timeout"
                             info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                             print(info)
-                            os.system('logger -t montag -p user.info ' + info)
                             send_message(info, jid)
                             try:
                                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])

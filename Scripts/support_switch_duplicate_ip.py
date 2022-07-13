@@ -19,7 +19,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
-
+dir="/opt/ALE_Script"
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
@@ -38,7 +38,7 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
         sftp = ssh.open_sftp()
         # In case of SFTP Get timeout thread is closed and going into Exception
         try:
-            filename = "/opt/ALE_Script/configqos"
+            filename = dir + "/configqos"
             syslog.syslog(syslog.LOG_INFO, "File " + filename + " pushed by SFTP on OmniSwitch " + ipadd + " path " + remote_path)
             th = threading.Thread(
                 target=sftp.put, args=(filename, remote_path))

@@ -11,7 +11,6 @@ from database_conf import *
 
 # Script init
 script_name = sys.argv[0]
-os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.

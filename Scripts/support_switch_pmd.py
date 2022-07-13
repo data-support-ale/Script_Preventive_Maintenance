@@ -11,7 +11,7 @@ import datetime
 #import smtplib
 #import mimetypes
 import re
-from support_tools_OmniSwitch import get_credentials, get_tech_support_sftp, get_pmd_file_sftp, get_file_sftp
+from support_tools_OmniSwitch import get_credentials, get_tech_support_sftp, get_file_sftp
 from support_send_notification import *
 from database_conf import *
 import syslog

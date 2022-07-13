@@ -156,7 +156,6 @@ def process(ipadd, hostname, port, link):
 
 # Script init
 script_name = sys.argv[0]
-#os.system('logger -t montag -p user.info Executing script :' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
@@ -209,7 +208,6 @@ function = "flapping"
 if script_has_run_recently(30, last_ip,function):
     print('you need to wait before you can run this again')
     syslog.syslog(syslog.LOG_DEBUG, "Executing script exit because executed within 30 sec time period")
-    os.system('logger -t montag -p user.info Executing script exit because executed within 30 sec time period')
     exit()
 
 with open("/var/log/devices/lastlog_flapping.json", "r", errors='ignore') as log_file:

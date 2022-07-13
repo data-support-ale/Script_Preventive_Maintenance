@@ -13,7 +13,8 @@ import syslog
 
 syslog.openlog('support_switch_get_log')
 syslog.syslog(syslog.LOG_INFO, "Executing script")
-
+dir="/opt/ALE_Script"
+attachment_path = "/var/log/server/log_attachment"
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
@@ -148,18 +149,18 @@ date_hm = datetime.datetime.today()
 syslog.syslog(syslog.LOG_INFO, "Additionnal logs collected")
 filename = "{0}_{1}-{2}_{3}_logs".format(date,
                                          date_hm.hour, date_hm.minute, ipadd)
-f_logs = open('/opt/ALE_Script/{0}.txt'.format(filename), 'w', errors='ignore')
+f_logs = open(attachment_path + '/{0}.txt'.format(filename), 'w', errors='ignore')
 f_logs.write(text)
 f_logs.close()
-syslog.syslog(syslog.LOG_INFO, "Logs path: /opt/ALE_Script/" + filename)
+syslog.syslog(syslog.LOG_INFO, "Logs path: " + attachment_path + filename)
 ###############################################################################
 
 #### Send file with additionnal logs #####
-filename = '/opt/ALE_Script/{0}.txt'.format(filename)
+filename = attachment_path + '/{0}.txt'.format(filename)
 print(filename)
 
 if jid != '':
-    notif = "Additional logs collected from switch(IP : {0}) syslogs. and stored in /opt/ALE_Script/ on server IP Address: {2}".format(ipadd, pattern, ip_server)
+    notif = "Additional logs collected from switch(IP : {0}) syslogs. and stored in " + attachment_path + " on server IP Address: {2}".format(ipadd, pattern, ip_server)
     syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
     send_message(notif, jid)

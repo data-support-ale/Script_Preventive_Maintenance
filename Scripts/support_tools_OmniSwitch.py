@@ -33,6 +33,8 @@ syslog.openlog('support_tools_OmniSwitch')
 
 # Function for extracting environment information from ALE_script.conf file
 
+dir="/opt/ALE_Script"
+attachment_path = "/var/log/server/log_attachment"
 
 def get_credentials(attribute=None):
     """ 
@@ -48,7 +50,7 @@ def get_credentials(attribute=None):
     :return str mails:              List of email addresses of recipients
     """
 
-    with open("/opt/ALE_Script/ALE_script.conf", "r") as content_variable:
+    with open(dir + "/ALE_script.conf", "r") as content_variable:
         login_switch, pass_switch, mails, rainbow_jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id, * \
             kargs = re.findall(
                 r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
@@ -200,11 +202,8 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         stderr = ""
         stdout = ""
         stdin = ""
-        syslog.syslog(syslog.LOG_INFO, "SSH Command Execution: " + cmd)
+        #syslog.syslog(syslog.LOG_INFO, "SSH Command Execution: " + cmd)
         stdin, stdout, stderr = p.exec_command(cmd, timeout=120)
-        #stdin, stdout, stderr = threading.Thread(target=p.exec_command,args=(cmd,))
-        # stdout.start()
-        # stdout.join(1200)
         print(stdout)
         syslog.syslog(syslog.LOG_INFO, "SSH Command stdout: " + stdout)
         print(stderr)
@@ -269,13 +268,17 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             return exception
         except Exception as exception:
             print(exception)
-            return exception 
-        output = stdout.readlines()
+            return exception
+        try:
+            output = stdout.readlines()
+        except UnicodeDecodeError as exception:
+            syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
+            syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+            raise       
         # We close SSH Session once retrieved command output
         p.close()
         syslog.syslog(syslog.LOG_INFO, "SSH Session End")
         return output, exception
-
 
 def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFilePath):
     """ 
@@ -314,7 +317,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
             syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
             print(exception)
             syslog.syslog(syslog.LOG_INFO, "Remote file not found: " + exception)
-            pass
+            pass          
     except TimeoutError as exception:
         syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         exception = "SSH Timeout"
@@ -417,7 +420,7 @@ def file_setup_qos(addr):
     syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function file_setup_qos")
     syslog.syslog(syslog.LOG_INFO, "    ")
-    content_variable = open('/opt/ALE_Script/configqos', 'w')
+    content_variable = open(dir + '/configqos', 'w')
     if re.search(r"\:", addr):  # mac
         syslog.syslog(syslog.LOG_INFO, "If MAC Address contains : as delimiters")
         setup_config = "policy condition scanner_{0} source mac {0}\npolicy action block_mac disposition deny\npolicy rule scanner_{0} condition scanner_{0} action block_mac\nqos apply\nqos enable\n".format(addr)
@@ -693,7 +696,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_tcam_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -750,7 +753,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_network_loop_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -814,7 +817,7 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_ovc_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -886,7 +889,7 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_mqtt_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -954,7 +957,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_storm_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -988,7 +991,7 @@ def collect_command_output_flapping(switch_user, switch_password, port, ipadd):
 
     l_switch_cmd = []
     l_switch_cmd.append(("show interfaces port {0}").format(port))
-
+    status_changes = link_quality = ""
     for switch_cmd in l_switch_cmd:
             output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
             if output != None:
@@ -1080,7 +1083,7 @@ def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_health_cpu_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1144,7 +1147,7 @@ def collect_command_output_health_memory(switch_user, switch_password, host, ipa
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_health_memory_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1205,7 +1208,7 @@ def collect_command_output_health_port(switch_user, switch_password, port, type,
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_health_port_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1271,7 +1274,7 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_violation_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1335,7 +1338,7 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd, adjace
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_spb_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1397,7 +1400,7 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_stp_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1460,7 +1463,7 @@ def collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_fan_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1566,7 +1569,7 @@ def collect_command_output_ni(switch_user, switch_password, ni_id, host, ipadd):
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_ni_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1642,7 +1645,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
             ps_status = "SUPPORTED"
 
     filename = "{0}_{1}-{2}_{3}_ps_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1710,7 +1713,7 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_vcmm_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1768,7 +1771,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_linkagg_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1832,7 +1835,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_poe_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -1978,7 +1981,7 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, 
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_ddm_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -2142,7 +2145,7 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_authentication_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -2237,7 +2240,7 @@ def collect_command_output_lldp_port_capability(switch_user, switch_password, po
     syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_lldp_port_capability")
     syslog.syslog(syslog.LOG_INFO, "    ")
-    lldp_port_capability = lldp_port = 0
+    lldp_port_capability = lldp_mac_address = lldp_port = 0
     switch_cmd = "show lldp port {0} remote-system".format(port)
     try:
         syslog.syslog(syslog.LOG_INFO, "SSH Session start")
@@ -2390,16 +2393,16 @@ def check_save(ipadd, port, type):
     syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
     syslog.syslog(syslog.LOG_INFO, "    ")
-    if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
+    if not os.path.exists(dir + '/decisions_save.conf'):
         try:
             syslog.syslog(syslog.LOG_INFO, "File does not exist - file is created")
-            open('/opt/ALE_Script/decisions_save.conf', 'w', errors='ignore').close()
+            open(dir + '/decisions_save.conf', 'w', errors='ignore').close()
             return "0"
         except OSError as exception:
             print(exception)
-            syslog.syslog(syslog.LOG_INFO, "Permission error when creating file /opt/ALE_Script/decisions_save.conf: " + exception)
+            syslog.syslog(syslog.LOG_INFO, "Permission error when creating file" + dir + "/decisions_save.conf: " + exception)
             os._exit(1)
-    content = open("/opt/ALE_Script/decisions_save.conf", "r", errors='ignore')
+    content = open(dir + "/decisions_save.conf", "r", errors='ignore')
     file_lines = content.readlines()
     content.close()
 
@@ -2427,29 +2430,29 @@ def add_new_save(ipadd, port, type, choice="never"):
     syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function add_new_save")
     syslog.syslog(syslog.LOG_INFO, "    ")
-    if not os.path.exists('/opt/ALE_Script/decisions_save.conf'):
+    if not os.path.exists(dir + '/decisions_save.conf'):
         try:
             syslog.syslog(syslog.LOG_INFO, "File does not exist - file is created")
-            open('/opt/ALE_Script/decisions_save.conf', 'w').close()
-            subprocess.call(['chmod', '0755', '/opt/ALE_Script/decisions_save.conf'])
+            open(dir + '/decisions_save.conf', 'w').close()
+            subprocess.call(['chmod', '0755', dir + '/decisions_save.conf'])
         except OSError as exception:
             print(exception)
-            syslog.syslog(syslog.LOG_INFO, "Permission error when creating file /opt/ALE_Script/decisions_save.conf: " + exception)
+            syslog.syslog(syslog.LOG_INFO, "Permission error when creating file" + dir + "/decisions_save.conf: " + exception)
             os._exit(1)
 
-    fileR = open("/opt/ALE_Script/decisions_save.conf", "r", errors='ignore')
+    fileR = open(dir + "/decisions_save.conf", "r", errors='ignore')
     text = fileR.read()
     fileR.close()
 
     textInsert = "{0},{1},{2},{3}\n".format(ipadd, port, type, choice)
     try:
-        fileW = open("/opt/ALE_Script/decisions_save.conf", "w", errors='ignore')
+        fileW = open(dir + "/decisions_save.conf", "w", errors='ignore')
         fileW.write(textInsert + text)
         syslog.syslog(syslog.LOG_INFO, "Data inserted: " + textInsert + text)
         fileW.close()
     except OSError as exception:
         print(exception)
-        syslog.syslog(syslog.LOG_INFO, "Permission error when creating file /opt/ALE_Script/decisions_save.conf: " + exception)
+        syslog.syslog(syslog.LOG_INFO, "Permission error when creating file" + dir + "/decisions_save.conf: " + exception)
         os._exit(1)
 
 def script_has_run_recently(seconds,ip,function):
@@ -2463,11 +2466,11 @@ def script_has_run_recently(seconds,ip,function):
     syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function script_has_run_recently")
     syslog.syslog(syslog.LOG_INFO, "    ")
-    filename = ('/opt/ALE_Script/last-runtime_{0}.txt').format(function)
+    filename = (dir + '/last-runtime_{0}.txt').format(function)
     current_time = int(time.time())
     text = "{0},{1},{2}\n".format(str(current_time),ip, function)
     try:
-        content = open("/opt/ALE_Script/last-runtime_{0}.txt".format(function), "r", errors='ignore')
+        content = open(dir + "/last-runtime_{0}.txt".format(function), "r", errors='ignore')
  #       with open(filename, 'rt') as f:
         file_lines = content.readlines()
         file_lines = file_lines[0]
@@ -2499,7 +2502,7 @@ def check_timestamp_and_function(ip, function):
     syslog.syslog(syslog.LOG_INFO, "    ")
     syslog.syslog(syslog.LOG_INFO, "Executing function check_timestamp_and_function")
     syslog.syslog(syslog.LOG_INFO, "    ")
-    content = open("/opt/ALE_Script/last-runtime_{0}.txt".format(function), "r", errors='ignore')
+    content = open(dir + "/last-runtime_{0}.txt".format(function), "r", errors='ignore')
     file_lines = content.readlines()
     content.close()
 
@@ -2623,7 +2626,7 @@ def isEssential(addr):
     syslog.syslog(syslog.LOG_INFO, "Executing function isEssential")
     syslog.syslog(syslog.LOG_INFO, "    ")
     ips_address = list()
-    with open("/opt/ALE_Script/Essential_ip.csv") as csv_file:
+    with open(dir + "/Essential_ip.csv") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=';')
             line = 0
             for row in csv_reader:
@@ -2766,85 +2769,88 @@ if __name__ == "__main__":
         jid = "570e12872d768e9b52a8b975@openrainbow.com"
         switch_password = "switch"
         switch_user = "admin"
-        ipadd = "10.130.7.245"
+        ipadd = "10.130.7.247"
         cmd = "show system"
         host = "LAN-6860N-2"
         port = "1/1/58"
         source = "Unknown Unicast"
         decision = 0
         #ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-        filename_pmd = "/flash/pmd/pmd-vrrp-03.10.2022-10.51.12"
-        get_pmd_file_sftp(switch_user, switch_password, ipadd, filename_pmd)
-        filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
+        filename_pmd = "/flash/pmd/pmd-vrrp-03.10.2022-13"
+        date = datetime.date.today()
+        localFilePath = filename_pmd.replace("/", "_")
+        localFilePath = ("/tftpboot/{0}_{1}_{2}").format(date, ipadd, localFilePath)
+        #get_file_sftp(switch_user, switch_password, ipadd, filename_pmd, localFilePath)
+        #filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
         filename_path = "/var/log/server/support_tools_OmniSwitch.log"
         #send_file(filename_path, subject, action, result, category, jid)
-        filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
+        #filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
         #send_file(filename_path, subject, action, result,category, jid)
-        filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         reason="Fail due to out-of-range capacitor value"
         port="34"
-        filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+        #filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
         #send_file(filename_path, subject, action, result,category, jid)
         agg = "6"
-        filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         vcid = "2"
-        filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         psid = "2"
-        filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         source = "Access Guardian"
         port="1/1/59"
         decision = "0"
-        filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         protocol = "Console"
         user = "toto"
         source_ip = "10.130.7.17"
-        service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
-        filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
+        #ervice_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
+        #filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
 
-        status_changes, link_quality = collect_command_output_flapping(switch_user, switch_password, port, ipadd)
-        filename_path, subject, action, result, category = collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
-        #send_file(filename_path, subject, action, result,category, jid)
-        filename_path, subject, action, result, category = collect_command_output_health_memory(switch_user, switch_password, host, ipadd)
+        #status_changes, link_quality = collect_command_output_flapping(switch_user, switch_password, port, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
+        ##send_file(filename_path, subject, action, result,category, jid)
+        #filename_path, subject, action, result, category = collect_command_output_health_memory(switch_user, switch_password, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         type = "receive"
-        filename_path, subject, action, result, category = collect_command_output_health_port(switch_user, switch_password, port, type, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_health_port(switch_user, switch_password, port, type, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
-        filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         adjacency_id = "1223456366"
-        filename_path, subject, action, result, category = collect_command_output_spb(switch_user, switch_password, host, ipadd, adjacency_id, port)
+        #filename_path, subject, action, result, category = collect_command_output_spb(switch_user, switch_password, host, ipadd, adjacency_id, port)
         #send_file(filename_path, subject, action, result,category, jid)
         vlan = "68-70"
-        filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ipadd, vlan)
+        #filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ipadd, vlan)
         #send_file(filename_path, subject, action, result,category, jid)
         fan_id = "2"
-        filename_path, subject, action, result, category = collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         ni_id = "3"
-        filename_path, subject, action, result, category = collect_command_output_ni(switch_user, switch_password, ni_id, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_ni(switch_user, switch_password, ni_id, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
-        filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
-        filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
-        filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
-        filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+        #filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
         #send_file(filename_path, subject, action, result,category, jid)
         slot= 1 
         ddm_type = "Power"
         threshold = "low" 
         sfp_power = "0.3mA"
-        filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power)
+        #filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power)
         #send_file(filename_path, subject, action, result,category, jid)
-        service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
-        filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
+        #service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
+        #filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
         lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port, ipadd)
         lldp_port_capability = collect_command_output_lldp_port_capability(switch_user, switch_password, port, ipadd)
         device_ip = get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd)

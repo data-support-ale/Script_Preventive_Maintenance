@@ -19,7 +19,8 @@ import syslog
 
 syslog.openlog('support_tools_Stellar')
 # This script contains all functions interacting with WLAN Stellar APs
-
+dir="/opt/ALE_Script"
+attachment_path = "/var/log/server/log_attachment"
 # Function for extracting environment information from ALE_script.conf file
 
 
@@ -37,7 +38,7 @@ def get_credentials(attribute=None):
     :return str mails:              List of email addresses of recipients
     """
 
-    with open("/opt/ALE_Script/ALE_script.conf", "r") as content_variable:
+    with open(dir + "/ALE_script.conf", "r") as content_variable:
         login_switch, pass_switch, mails, rainbow_jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id, * \
             kargs = re.findall(
                 r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
@@ -409,7 +410,7 @@ def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
 
     filename = "{0}_{1}-{2}_{3}_sta_limit_reached_logs".format(
         date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -490,7 +491,7 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_vlan_limit_reached_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()
@@ -568,7 +569,7 @@ def collect_logs(login_AP, pass_AP, ipadd, pattern):
     date_hm = datetime.datetime.today()
 
     filename = "{0}_{1}-{2}_{3}_snapshot_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
-    filename_path = ('/opt/ALE_Script/{0}.txt').format(filename)
+    filename_path = (attachment_path + '/{0}.txt').format(filename)
     f_logs = open(filename_path, 'w')
     f_logs.write(text)
     f_logs.close()

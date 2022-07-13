@@ -19,7 +19,6 @@ from alelog import alelog
 
 # Script init
 script_name = sys.argv[0]
-os.system('logger -t montag -p user.info Executing script ' + script_name)
 
 pattern = sys.argv[1]
 print(pattern)
@@ -33,5 +32,11 @@ _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 # Get informations from logs.
 switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
-
+set_portnumber("1/1/6")
 print("test2")
+ipadd = "10.130.7.36"
+notif = "Preventive Maintenance Application - Test2 coke and stock"
+send_message_detailed(notif, jid1, jid2, jid3)
+set_decision(ipadd, "1")
+mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
+sys.exit(0)

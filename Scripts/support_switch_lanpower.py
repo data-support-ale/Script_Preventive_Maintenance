@@ -373,8 +373,7 @@ if answer == '1':
     syslog.syslog(syslog.LOG_INFO, "Command executed: " + cmd)    
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
     syslog.syslog(syslog.LOG_INFO, "SSH Session end")
-    #os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
-     
+
     if jid != '':
         notif = "Preventive Maintenance Application - PoE is administratively disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
@@ -390,7 +389,6 @@ elif answer == '2':
     syslog.syslog(syslog.LOG_INFO, "Command executed: " + cmd) 
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
     syslog.syslog(syslog.LOG_INFO, "SSH Session end")
-#    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
 
 ## Value 3 when we return advanced value like Capacitor Detection or High Resistance Capacity
 elif answer == '3':
@@ -437,8 +435,6 @@ elif answer == '3':
         syslog.syslog(syslog.LOG_INFO, "PoE Reload received answer 3")
         l_switch_cmd = []
         l_switch_cmd.append(("lanpower port 1/1/{0} admin-state disable; sleep 2; lanpower port 1/1/{0} admin-state enable").format(port))
-#        l_switch_cmd.append("sleep 2")
-#        l_switch_cmd.append("lanpower port 1/1/" + port + " admin-state enable")
         for switch_cmd in l_switch_cmd:
             syslog.syslog(syslog.LOG_INFO, "SSH Session start")
             syslog.syslog(syslog.LOG_INFO, "Command executed: " + switch_cmd) 
@@ -449,8 +445,6 @@ elif answer == '3':
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
         send_message(notif, jid)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")     
-#    os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
-
 
 else:
     print("No decision matching - script exit")

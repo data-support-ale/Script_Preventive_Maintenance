@@ -13,7 +13,7 @@ import paramiko
 from database_conf import *
 
 
-
+dir="/opt/ALE_Script"
 
 #------------------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ def entry_log(log):
 path = os.getcwd() #get the full path of the  working directory
 cp = configparser.ConfigParser()
 try:
-   configfile = '/opt/ALE_Script/OV_radius_checker.conf'
+   configfile = dir + '/OV_radius_checker.conf'
 except:
   info = "Error when openning config file; Check the name OV_radius_checker.conf and retry.\n If the script has been executed by command lines, be sure to be in the same directory as the executable."
   entry_log(info)

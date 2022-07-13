@@ -91,7 +91,6 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
             syslog.syslog(syslog.LOG_INFO, "Result: Find enclosed to this notification the log collection for further analysis")
             syslog.syslog(syslog.LOG_INFO, " Executing function get_tech_support_sftp")
             get_tech_support_sftp(switch_user, switch_password, host, ipadd)
-            os.system('logger -t ChassisSupervisor -p user.info - Logs collected - Calling VNA API')
             send_file(filename_path, subject, action, result, category, jid)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 

@@ -96,7 +96,7 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
         except IndexError:
             syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_violation.jso - Index error in regex - script exit")
             exit()
-        syslog.syslog(syslog.LOG_INFO, "Violation port and reason: " + port + "/" + reason)
+        syslog.syslog(syslog.LOG_INFO, "Violation port and reason: " + port + " " + reason)
         if reason == "0":
             reason = "Unknown"
         elif reason == "1":
@@ -125,7 +125,7 @@ with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as lo
             reason = "ESM"
         elif reason == "14":
             reason = "LLDP"
-        syslog.syslog(syslog.LOG_INFO, "Violation port and reason: " + port + "/" + reason)
+        syslog.syslog(syslog.LOG_INFO, "Violation port and reason: " + port + " " + reason)
 
     else:
         print("No pattern match - exiting script")
@@ -205,8 +205,6 @@ if answer == '1':
     cmd = "clear violation port " + port
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
     syslog.syslog(syslog.LOG_INFO, "Port violation cleared up")
-    # old method
-    #os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
     ## 2 seconds delay for getting port violation logs
     sleep(2)
 
@@ -230,8 +228,6 @@ elif answer == '2':
     cmd = "clear violation port " + port
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
     syslog.syslog(syslog.LOG_INFO, "Port violation cleared up")
-    # old method
-    #os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
     ## 2 seconds delay for getting port violation logs
     sleep(2)
 

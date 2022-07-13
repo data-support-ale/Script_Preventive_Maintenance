@@ -14,7 +14,8 @@ import syslog
 
 syslog.openlog('support_switch_enable_qos')
 syslog.syslog(syslog.LOG_INFO, "Executing script")
-
+dir="/opt/ALE_Script"
+attachment_path = "/var/log/server/log_attachment"
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
@@ -33,7 +34,7 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
         sftp = ssh.open_sftp()
         # In case of SFTP Get timeout thread is closed and going into Exception
         try:
-            filename = "/opt/ALE_Script/configqos"
+            filename = dir + "/configqos"
             th = threading.Thread(
                 target=sftp.put, args=(filename, remote_path))
             th.start()
@@ -272,7 +273,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         syslog.syslog(syslog.LOG_INFO, "SSH Session close - debugging disabled")
 
     else:
-        print("Mail request set as no")
-        os.system('logger -t montag -p user.info Mail request set as no')
-        sleep(1)
+        print("Script support_enable_qos no pattern match - exiting script")
+        syslog.syslog(syslog.LOG_INFO, "Script support_enable_qos no pattern match - exiting script")
+        sys.exit()
         open('/var/log/devices/lastlog_ddos_ip.json', 'w').close()

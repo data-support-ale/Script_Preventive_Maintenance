@@ -51,11 +51,6 @@ sys.path.insert(1,os.path.abspath(os.path.join(path,os.pardir)))
 _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
 script_name = sys.argv[0]
-logging = "logger -t montag -p user.info Executing script {0}".format(script_name)
-try:
-    os.system('logger -t montag -p user.info ' + logging)
-except:
-    pass
 
 switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 

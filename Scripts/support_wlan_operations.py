@@ -8,7 +8,9 @@ from support_tools_OmniSwitch import get_credentials
 from support_send_notification import *
 import json
 import time
+import syslog
 
+syslog.openlog('support_wlan_operations')
 #### To Add in rsyslog.conf ####
 #template (name="wlanlogoperations" type="string"
 #     string="/var/log/devices/lastlog_wlan_operations.json")
@@ -38,8 +40,6 @@ _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
 script_name = sys.argv[0]
 
-os.system('logger -t montag -p user.info Executing script ' + script_name )
-
 switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
@@ -56,19 +56,34 @@ with open("/var/log/devices/lastlog_wlan_operations.json", "r", errors='ignore')
         ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog Host: " + host)
+        #syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_wlan_operations.json empty")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_wlan_operations.json - JSONDecodeError")
+        exit()
+    except IndexError:
+        print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_wlan_operations.json - Index error in regex")
         exit()
     # Sysreboot operation on Stellar AP
     if "sysreboot" in msg:
         try:
-            os.system('logger -t montag -p user.info reboot detected')
+            pattern = "sysreboot"
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             subject = ("Preventive Maintenance Application - There is an unexpected reboot detected on server {0} from WLAN Stellar AP {1}").format(ip_server, ipadd)
             action = "Please check the LANPOWER is running fine on LAN OmniSwitch and verify the capacitor-detection is disabled"
             result = "More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000066402"
             filename_path = "/var/log/devices/lastlog_wlan_operations.json"
             category = "sysreboot"
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -79,14 +94,21 @@ with open("/var/log/devices/lastlog_wlan_operations.json", "r", errors='ignore')
     # Sysupgrade operation on Stellar AP
     elif "sysupgrade" in msg:
         try:
+            pattern = "sysupgrade"
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)            
             upgrade_version = re.findall(r"-v(.*)ww", msg)[0]
-            os.system('logger -t montag -p user.info internal error detected')
+            syslog.syslog(syslog.LOG_INFO, "Upgrade version: " + upgrade_version) 
             subject = ("Preventive Maintenance Application - There is an upgrade detected on server {0} from WLAN Stellar AP: {1} - Version: {2}").format(ip_server, ipadd, upgrade_version)
             action = " "
             result = " "
             filename_path = "/var/log/devices/lastlog_wlan_operations.json"
             category = "sysreboot"
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -96,5 +118,6 @@ with open("/var/log/devices/lastlog_wlan_operations.json", "r", errors='ignore')
         sys.exit(0)
 
     else:
-        print("Script support_wlan_operations no pattern match - exiting script")
+        print("Script support_wlan_exceptions no pattern match - exiting script")
+        syslog.syslog(syslog.LOG_INFO, "Script support_wlan_exceptions no pattern match - exiting script")
         sys.exit()
