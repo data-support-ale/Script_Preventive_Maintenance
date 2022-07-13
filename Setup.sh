@@ -1574,7 +1574,12 @@ echo
 echo -e "\e[32mDocker-Compose Installation complete\e[39m"
 echo
 
-
+mkdir /var/log/server/ >& /dev/null
+mkdir /var/log/server/log_attachment >& /dev/null
+chmod 755 /var/log/server/ >& /dev/null
+chmod 755 /var/log/server/log_attachment >& /dev/null
+chown admin-support:admin-support /var/log/server/ >& /dev/null
+chown admin-support:admin-support /var/log/server/log_attachment >& /dev/null
 mkdir /var/log/devices/ >& /dev/null
 touch /var/log/devices/logtemp.json
 chmod 755 /var/log/devices/
