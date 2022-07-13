@@ -449,7 +449,7 @@
 				},
 				"timeout": {
 					"type": "int",
-					"value": 90
+					"value": 600
 				},
 				"users": {
 					"type": "users"
@@ -1636,7 +1636,7 @@
 				},
 				"timeout": {
 					"type": "int",
-					"value": 30
+					"value": 600
 				},
 				"users": {
 					"type": "users"
