@@ -189,9 +189,10 @@ with open("/var/log/devices/lastlog_loop.json", "w", errors='ignore') as log_fil
 
 counter = 0
 function = "loop"
-if script_has_run_recently(30, last_ip,function):
-    print('you need to wait before you can run this again')
-    syslog.syslog(syslog.LOG_DEBUG, "Executing script exit because executed within 30 sec time period")
+#### Put back timer to 5 minutes as per last feedback from James
+if script_has_run_recently(300, last_ip,function):
+    print('Executing script exit because executed within 300 seconds time period')
+    syslog.syslog(syslog.LOG_DEBUG, "Executing script exit because executed within 300 seconds time period")
     exit()
 
 with open("/var/log/devices/lastlog_loop.json", "r", errors='ignore') as log_file:
