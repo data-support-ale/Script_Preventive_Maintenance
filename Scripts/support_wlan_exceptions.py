@@ -9,7 +9,9 @@ from support_tools_Stellar import collect_logs
 from support_send_notification import *
 import json
 import time
+import syslog
 
+syslog.openlog('support_wlan_exceptions')
 ##### To Add in rsyslog.conf #####
 #template (name="wlanlogexceptions" type="string"
 #     string="/var/log/devices/lastlog_wlan_exceptions.json")
@@ -71,26 +73,36 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
         ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog Host: " + host)
+        #syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_wlan_exceptions.json empty")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_wlan_exceptions.json - JSONDecodeError")
+        exit()
+    except IndexError:
+        print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_wlan_exceptions.json - Index error in regex")
         exit()
     # Sample log for TARGET ASSERTED Exception
     # [wifi0][0x0000000B]: XXX TARGET ASSERTED XXX
     if "TARGET ASSERTED" in msg:
         try:
-            os.system('logger -t montag -p user.info target asserted detected')
             pattern = "TARGET ASSERTED"
-            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
-            try:
-                os.system('logger -t montag -p user.info ' + logging)
-            except:
-                pass
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
+            syslog.syslog(syslog.LOG_INFO, "Executing function collect_logs")
             filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - There is a Target Asserted error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
             result = "Attached to this notification the log collection, please contact ALE Customer Support"
             category = "TARGET_ASSERTED"
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -103,19 +115,21 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     # [00001000] *pgd=00000000<4><0>Internal error: Oops: 17 [#1] PREEMPT SMP ARM
     elif "Internal error" in msg:
         try:
-            os.system('logger -t montag -p user.info internal error detected')
             pattern = "Internal error"
-            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
-            try:
-                os.system('logger -t montag -p user.info ' + logging)
-            except:
-                pass
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
+            syslog.syslog(syslog.LOG_INFO, "Executing function collect_logs")
             filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - There is an Internal Error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
             result = "Attached to this notification the log collection, please contact ALE Customer Support"
             category = "Internal_error"
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -128,19 +142,21 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     # <0>Kernel panic - not syncing: Fatal exception in interrupt
     elif "Kernel panic" or "Fatal exception" or "KERNEL PANIC" in msg:
         try:
-            os.system('logger -t montag -p user.info Kernel Panic detected')
             pattern = "Kernel panic"
-            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
-            try:
-                os.system('logger -t montag -p user.info ' + logging)
-            except:
-                pass
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
+            syslog.syslog(syslog.LOG_INFO, "Executing function collect_logs")
             filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - There is a Kernel Panic error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
             result = "This is a known issue fixed in AWOS 4.0.4 MR-4, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000067381"
             category = "Exception"
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -153,19 +169,21 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     # <0>Kernel panic - not syncing: Fatal exception in interrupt
     elif "Exception stack" or "core-monitor reboot" or "parse condition rule is error" in msg:
         try:
-            os.system('logger -t montag -p user.info Kernel Panic detected')
             pattern = "Exception"
-            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
-            try:
-                os.system('logger -t montag -p user.info ' + logging)
-            except:
-                pass
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
+            syslog.syslog(syslog.LOG_INFO, "Executing function collect_logs")
             filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - An unhandled exception occurred on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
             result = "Attached to this notification the log collection, please contact ALE Customer Support"
             category = "Exception"
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -176,19 +194,21 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
     # Kernel exception
     elif "Unable to handle kernel" in msg:
         try: 
-            os.system('logger -t montag -p user.info Kernel Panic detected')
             pattern = "Unable to handle kernel"
-            logging = "logger -t montag -p user.info Executing script {0} - pattern detected: {1}".format(script_name,pattern)
-            try:
-                os.system('logger -t montag -p user.info ' + logging)
-            except:
-                pass
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
+            syslog.syslog(syslog.LOG_INFO, "Executing function collect_logs")
             filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
             subject = ("Preventive Maintenance Application - An unhandled exception occurred on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
             result = "Attached to this notification the log collection, please contact ALE Customer Support"
             category = "Exception"
+            syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+            syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+            syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
             send_file(filename_path, subject, action, result, category, jid)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -199,4 +219,5 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
 
     else:
         print("Script support_wlan_exceptions no pattern match - exiting script")
+        syslog.syslog(syslog.LOG_INFO, "Script support_wlan_exceptions no pattern match - exiting script")
         sys.exit()
