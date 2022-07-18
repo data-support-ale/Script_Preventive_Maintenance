@@ -54,6 +54,7 @@ with open("/var/log/devices/lastlog_linkagg.json", "r", errors='ignore') as log_
  
     ## Sample Log
     ## OS6860E_VC_Core swlogd linkAggCmm main INFO: Receive agg port leave request: agg: 1, port: 1/1/1(0)
+    ## If we did not receive LACP frame within 3 seconds interval above log is generated and port is put Out of Sync within the LinkAgg, if this is Primary port traffic is dropped till Port is Attached again
     if "Aggregate Down" in msg:
         try:
             pattern = "Aggregate Down"
