@@ -56,7 +56,7 @@ if "Failed to start LSB" in msg:
     try:
         pattern = "TFTP Service issue"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        notif = ("Preventive Maintenance Application - TFTP Service issue detected on Server server {0}.\nThis service is used for log collection of WLAN Stellar AP.\nDo you want to restart the TFTP Service?").format(ip_server)        #send_message(info, jid)
+        notif = ("Preventive Maintenance Application - TFTP Service issue detected on Server server {0}.\nThis service is used for log collection of WLAN Stellar AP. Do you want to restart the TFTP Service?").format(ip_server)        #send_message(info, jid)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
         answer = send_message_request(notif, jid)
