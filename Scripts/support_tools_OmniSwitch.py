@@ -2734,7 +2734,7 @@ def port_monitoring(switch_user, switch_password, port, ipadd):
     syslog.syslog(syslog.LOG_INFO, "Executing function port_monitoring")
     syslog.syslog(syslog.LOG_INFO, "    ")
    ## Execute port monitoring on port with subprocess.call as we are not expecting output
-    switch_cmd = ("no port-monitoring 1")
+    switch_cmd = ("no port-monitoring 1; no port-mirroring 1")
     cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, switch_cmd)
     try:
         output = subprocess.call(cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
