@@ -26,6 +26,7 @@ fi
 
 
 dir="/opt/ALE_Script"
+vna_url = "https://vna.preprod.omniaccess-stellar-asset-tracking.com/"
 sudo useradd -U admin-support >& /dev/null
 sudo groupadd -g 1500 admin-support >& /dev/null
 sudo usermod -a -G admin-support admin-support >& /dev/null

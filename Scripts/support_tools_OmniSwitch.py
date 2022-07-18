@@ -2776,73 +2776,73 @@ if __name__ == "__main__":
         source = "Unknown Unicast"
         decision = 0
         #ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-        filename_pmd = "/flash/pmd/pmd-vrrp-03.10.2022-13"
+        filename_pmd = "/flash/pmd/pmd-agCmm-04.23.2021-14.34.58"
         date = datetime.date.today()
         localFilePath = filename_pmd.replace("/", "_")
         localFilePath = ("/tftpboot/{0}_{1}_{2}").format(date, ipadd, localFilePath)
         get_file_sftp(switch_user, switch_password, ipadd, filename_pmd, localFilePath)
         filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
         filename_path = "/var/log/server/support_tools_OmniSwitch.log"
-        send_file(filename_path, subject, action, result, category, jid)
+        #send_file(filename_path, subject, action, result, category, jid)
         filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         reason="Fail due to out-of-range capacitor value"
         port="34"
         filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         agg = "6"
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         vcid = "2"
         filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         psid = "2"
         filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         source = "Access Guardian"
         port="1/1/59"
         decision = "0"
         filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         protocol = "Console"
         user = "toto"
         source_ip = "10.130.7.17"
         service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
         filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
 
         status_changes, link_quality = collect_command_output_flapping(switch_user, switch_password, port, ipadd)
         filename_path, subject, action, result, category = collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         filename_path, subject, action, result, category = collect_command_output_health_memory(switch_user, switch_password, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         type = "receive"
         filename_path, subject, action, result, category = collect_command_output_health_port(switch_user, switch_password, port, type, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         adjacency_id = "1223456366"
         filename_path, subject, action, result, category = collect_command_output_spb(switch_user, switch_password, host, ipadd, adjacency_id, port)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         vlan = "68-70"
         filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ipadd, vlan)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         fan_id = "2"
         filename_path, subject, action, result, category = collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         ni_id = "3"
         filename_path, subject, action, result, category = collect_command_output_ni(switch_user, switch_password, ni_id, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-        send_file(filename_path, subject, action, result,category, jid)
+        #send_file(filename_path, subject, action, result,category, jid)
         slot= 1 
         ddm_type = "Power"
         threshold = "low" 
