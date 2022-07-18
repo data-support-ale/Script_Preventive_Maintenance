@@ -16,6 +16,7 @@ syslog.openlog('support_send_notification')
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 dir="/opt/ALE_Script"
+vna_url = "https://vna.preprod.omniaccess-stellar-asset-tracking.com/"
 
 def get_credentials(attribute=None):
     """ 
@@ -60,7 +61,7 @@ def send_message(info, jid):
 
 
     company = get_credentials("company")
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
+    url = vna_url + "/api/flows/NBDNotif_Classic_"+company
     headers = {
                 'Content-type': 'application/json', 
                 "Accept-Charset": "UTF-8",
@@ -186,7 +187,7 @@ def send_test(info, jid,company):
     :param str jid:                 Rainbow jid where the message will be send
     :return:                        None
     """
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Test_"+company
+    url = vna_url + "/api/flows/NBDNotif_Test_"+company
     headers = {
                 'Content-type': 'application/json', 
                 "Accept-Charset": "UTF-8",
@@ -304,7 +305,7 @@ def send_alert(info, jid):
     :return:                        None
     """
     company = get_credentials("company")
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_"+company
+    url = vna_url + "/api/flows/NBDNotif_Alert_"+company
     headers = {
                 'Content-type': 'application/json',
                 "Accept-Charset": "UTF-8",
@@ -434,7 +435,7 @@ def send_message_request(info, jid):
  
     try:
         company = get_credentials("company")
-        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
+        url = vna_url + "/api/flows/NBDNotif_Classic_"+company
         headers = {
                     'Content-type': 'application/json', 
                     "Accept-Charset": "UTF-8",
@@ -580,7 +581,7 @@ def send_message_request_advanced(info, jid, feature):
             print(text[0])
             print(text[1])
             company = get_credentials("company")
-            url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_"+company
+            url = vna_url + "/api/flows/NBDNotif_Classic_"+company
             headers = {
                         'Content-type': 'application/json', 
                         "Accept-Charset": "UTF-8",
@@ -719,7 +720,7 @@ def send_alert_advanced(subject, action, result, jid):
     :return:                                   None
     """
     company = get_credentials("company")
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Alert_"+company
+    url = vna_url + "/api/flows/NBDNotif_Alert_"+company
     headers = {
                 'Content-type': 'application/json', 
                 "Accept-Charset": "UTF-8",
@@ -853,7 +854,7 @@ def send_file(filename_path, subject, action, result, category, jid):
     """
 
     company = get_credentials("company")
-    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_"+company
+    url = vna_url + "/api/flows/NBDNotif_File_"+company
     request_debug = "Call VNA REST API Method POST path %s" % url
     print(request_debug)
     headers = {
