@@ -17,7 +17,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
 path = "/opt/ALE_Script"
-
+vna_url = "https://vna.preprod.omniaccess-stellar-asset-tracking.com/"
 # Get informations from ALE_script.conf (mails, mails_raw, company name)
 
 switch_user, switch_password, mails, jid1, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
@@ -33,10 +33,11 @@ if(get_credentials("room_id") != ""):
 syslog.syslog(syslog.LOG_INFO, "Notification sent to ALE admin for notifying setup is called")
 subject = ("NBD Preventive Maintenance - There is a new Setup, End Customer: \"{0}\"").format(company)
 body = "Attached to this message the configuration file, please setup the VNA accordingly"
-url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Setup_File"
+url = vna_url + "/api/flows/NBDNotif_Setup_File"
 headers = {	
     'Content-type': "text/plain", 	
-    'Content-Disposition': "attachment;filename=ALE_script.conf",	
+    'Content-Disposition': "attachment;filename=ALE_script.conf",
+    'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",	
     'jid1': '{0}'.format(jid1), 	
     'toto': '{0}'.format(subject), 	
     'tata': '{0}'.format(body)	
@@ -61,9 +62,13 @@ try:
     if mails != "":
         print(mails)
         syslog.syslog(syslog.LOG_INFO, "User emails: " + mails)
-        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_New_Bubble"
-        headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8",
-                   'mails': '{0}'.format(mails), 'company': '{0}'.format(company)}
+        url = vna_url + "/api/flows/NBDNotif_New_Bubble"
+        headers = {
+            'Content-type': 'application/json', 
+            'Accept-Charset': 'UTF-8',
+            'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+            'mails': '{0}'.format(mails), 
+            'company': '{0}'.format(company)}
 
         syslog.syslog(syslog.LOG_INFO, "URL: " + url)
         headers_str = str(headers)
@@ -104,7 +109,7 @@ try:
 
     # REST-API method GET for Login to VNA
         syslog.syslog(syslog.LOG_INFO, "API for login to VNA")
-        url = "https://tpe-vna.al-mydemo.com/management/api/users/me"
+        url = vna_url + "/management/api/users/me"
         # example : {"id":"4bf9fa8b-ad91-4f3b-ba55-d98183dc5c02","created":1638355705248,"updated":null,"loginName":"jtrebaol","fullName":"Jonathan TREBAOL","email":"jonathan.trebaol@al-enterprise.com","roles":["DirectoryManagement","EditorManagement","UserManagement","StatisticsManagement","GroupsManagement","SiteManagement","TenantAdminManagement","PromptManagement"],"active":true,"tenantId":"15c2a6b5-ef66-4424-99a9-227e7643f96d"}
         payload = {}
         headers = {
@@ -128,12 +133,12 @@ try:
 
     # REST-API method POST /api/tenants/<tenant_id>/flows/import is called within payload the workflow_generic_result.json file. <tenant_id> value is received into the HTTP Get Answer when calling REST-API api/users/me
         syslog.syslog(syslog.LOG_INFO, "API for importing the workflow to VNA - /management/api/tenants/{}/flows/import/")
-        url = "https://tpe-vna.al-mydemo.com/management/api/tenants/{}/flows/import/".format(
+        url = vna_url + "/management/api/tenants/{}/flows/import/".format(
             tenant_id)  # This URL contains the tenant_id and enable the import
         payload = data
         headers = {
-            'Origin': 'https://tpe-vna.al-mydemo.com',
-            'Referer': 'https://tpe-vna.al-mydemo.com/app/editor',
+            'Origin': vna_url,
+            'Referer': vna_url + '/app/editor',
             'X-Requested-With': 'XMLHttpRequest',
             'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',
             'Content-Type': 'application/json',
@@ -153,7 +158,7 @@ try:
 
     # REST-API method PUT api/tenants/<tenant_id>/flows/<id>/imported is called within path <id> value received from REST-API /api/tenants/<tenant_id>/flows/import for validating  the VNA Workflow import
         syslog.syslog(syslog.LOG_INFO, "API for importing the workflow to VNA - /management/api/tenants/{}/flows/{}/imported")
-        url = "https://tpe-vna.al-mydemo.com/management/api/tenants/{}/flows/{}/imported".format(
+        url = vna_url + "/management/api/tenants/{}/flows/{}/imported".format(
             tenant_id, id)  # This URL validate the import use the tenant_id but also the import_id from the import request
         # replacement of different fields to specify the IDs in the .json before sending it out
         headers = {
@@ -185,7 +190,7 @@ try:
 
     # REST-API method PUT /api/tenants/<tenant_id>/flows/<id>/deploy is called for enabling the VNA Workflow
         syslog.syslog(syslog.LOG_INFO, "API for enabling the workflow - /management/api/tenants/{}/flows/{}/deploy")
-        url = "https://tpe-vna.al-mydemo.com/management/api/tenants/{}/flows/{}/deploy".format(
+        url = vna_url + "/management/api/tenants/{}/flows/{}/deploy".format(
             tenant_id, id)
         syslog.syslog(syslog.LOG_INFO, "URL: " + url)
         response = requests.request("PUT", url, headers=headers, data=payload)
@@ -204,7 +209,7 @@ try:
 
     # REST-API for sending Welcome gif to Rainbow bubble
         syslog.syslog(syslog.LOG_INFO, "API for sending Welcome GIF to Rainbow Bubble/Rainhow JID")
-        url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_{0}".format(company)
+        url = vna_url + "/api/flows/NBDNotif_File_{0}".format(company)
         payload = open(path + "/VNA_Workflow/images/giphy.gif", "rb")
         headers = {	
             'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',	

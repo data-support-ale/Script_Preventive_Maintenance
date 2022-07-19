@@ -10,9 +10,9 @@ notifiers:
     # See `Supported Settings` section for settings supported for each
     # Secure settings that will be encrypted in the database (supported since Grafana v7.2). See `Supported Settings` section for secure settings supported for each notifier.
     settings:
-      url: https://tpe-vna.al-mydemo.com/api/flows/grafana_alert
+      url: https://vna.preprod.omniaccess-stellar-asset-tracking.com/api/flows/grafana_alert
     secure_settings:
-      url: https://tpe-vna.al-mydemo.com/api/flows/grafana_alert
+      url: https://vna.preprod.omniaccess-stellar-asset-tracking.com/api/flows/grafana_alert
       httpMethod: post
       username:
       password: no

@@ -104,7 +104,7 @@ if sys.argv[1] != 0:
     company = sys.argv[1]
     print(company)
     info = "NBD Preventive Maintenance - This is a test!"
-    url = ("https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_Classic_{0}").format(company)
+    url = ("https://vna.preprod.omniaccess-stellar-asset-tracking.com/api/flows/NBDNotif_Classic_{0}").format(company)
     headers = {'Content-type': 'application/json', "Accept-Charset": "UTF-8", 'jid1': '{0}'.format(jid), 'toto': '{0}'.format(info),'Card': '0'}
     response = requests.get(url, headers=headers)
 else:
