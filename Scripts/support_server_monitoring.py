@@ -52,6 +52,8 @@ with open("/var/log/devices/lastlog_server_monitoring.json", "r", errors='ignore
 
 # Sample log if TFTP Service does not start
 # systemd[1]: Failed to start LSB: HPA's tftp server.
+# systemd[1790]: Failed to start Notification regarding a crash report.
+# systemd[1]: Failed to start Rotate log files.
 if "Failed to start LSB" in msg:
     try:
         pattern = "TFTP Service issue"
