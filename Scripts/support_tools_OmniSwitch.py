@@ -1930,7 +1930,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
 
 
 # Function to collect several command outputs related to Digital Diagnostics Monitoring
-def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power):
+def collect_command_output_ddm(switch_user, switch_password, host, ipadd, chassis, port, slot, ddm_type, threshold, sfp_power):
     """ 
     This function takes IP Address and Hostname, slot and port number
     This function returns file path containing the show command outputs and the notification subject, body used when calling VNA API
@@ -1986,7 +1986,7 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, 
     f_logs.write(text)
     f_logs.close()
     subject = ("Preventive Maintenance Application - The SFP on OmniSwitch: {0}/{1} - crossed DDM (Digital Diagnostics Monitoring) threshold").format(host,ipadd)
-    action = ("The SFP {0}/{1} on OmniSwitch {2}/{3} crossed DDM (Digital Diagnostics Monitoring) threshold {4} {5}: {6}").format(slot, port, host, ipadd, threshold, ddm_type, sfp_power)
+    action = ("The SFP {0}/{1}/{2} on OmniSwitch {3}/{4} crossed DDM (Digital Diagnostics Monitoring) threshold {5} {6}: {7}").format(chassis, slot, port, host, ipadd, threshold, ddm_type, sfp_power)
     result = "Find enclosed to this notification the log collection for further analysis. Please replace the Fiber Optical Transceiver or Fiber cable and check if issue still persists."
     category = "ddm"
     return filename_path, subject, action, result, category

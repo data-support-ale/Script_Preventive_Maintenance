@@ -16,7 +16,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
-
+chassis = "1"
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Log sample
@@ -52,16 +52,22 @@ with open("/var/log/devices/lastlog_ddm.json", "r", errors='ignore') as log_file
     try:
         ddm_type, sfp_power, slot, port, threshold = re.findall(r"SFP/XFP (.*?)=(.*?) on slot=(.*?) port=(.*?), crossed DDM threshold (.*)", msg)[0]
         # Log sample cmmEsmCheckDDMThresholdViolations: SFP/XFP Tx Optical Power=-inf dBm on slot=1 port=28, crossed DDM threshold low alarm
-        if sfp_power == "-inf dBm":
+    except IndexError:
+        try:
+            ddm_type, sfp_power, chassis, slot, port, threshold = re.findall(r"SFP/XFP (.*?)=(.*?) on chassis=(.*?) slot=(.*?) port=(.*?), crossed DDM threshold (.*)", msg)[0]
+            # Log sample AOS 8.9R01 OS6900_VC swlogd intfCmm Mgr WARN: cmmEsmCheckDDMThresholdViolations: SFP/XFP Rx Power=-26.6 dBm on chassis=2 slot=1 port=9, crossed DDM threshold low alarm
+
+        except IndexError:
+                print("Index error in regex")
+                syslog.syslog(syslog.LOG_INFO, "Index error in regex")
+                exit()
+    if sfp_power == "-inf dBm":
             print("DDM event generated when interface is administratively DOWN")
             syslog.syslog(syslog.LOG_INFO, "DDM event generated when interface is administratively DOWN - exit")
             exit()
-    except IndexError:
-        print("Index error in regex")
-        syslog.syslog(syslog.LOG_INFO, "Index error in Regex - exit")
-        exit()
 
-filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power)
+
+filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, chassis, port, slot, ddm_type, threshold, sfp_power)
 syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
