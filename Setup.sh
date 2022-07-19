@@ -27,10 +27,12 @@ fi
 
 dir="/opt/ALE_Script"
 vna_url = "https://vna.preprod.omniaccess-stellar-asset-tracking.com/"
-sudo useradd -U admin-support >& /dev/null
+# -s for setting the Shell, -U for setting same group name as username, -m for creating the home directory 
+sudo useradd -s /bin/bash -Um admin-support -c "Prenventive Maintenance account for non-ALE User" >& /dev/null
 sudo groupadd -g 1500 admin-support >& /dev/null
 sudo usermod -a -G admin-support admin-support >& /dev/null
-
+# Prompt to provide the admin-support password
+sudo password admin-support
 mkdir $dir >& /dev/null
 mkdir /tftpboot/ >& /dev/null
 
