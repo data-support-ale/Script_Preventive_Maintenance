@@ -584,6 +584,36 @@ if \$programname contains 'systemd' and \$msg contains 'Failed' then {
     stop
 }
 
+
+if \$programname=='mariadbd' then {
+      action(type=\"omfile\" File=\"/var/log/server/mariaDb.log\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+      stop
+}
+
+if \$programname=='rsyslogd' then {
+       action(type=\"omfile\" File=\"/var/log/server/rsyslog.log\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       stop
+}
+
+if \$programname=='systemd' then {
+       action(type=\"omfile\" File=\"/var/log/server/systemd.log\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+       stop
+}
+
+if \$msg contains 'UFW BLOCK' then {
+     action(type=\"omfile\" File=\"/var/log/server/firewall.log\"  DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     stop
+
+}
+
+if \$msg contains 'No space left on device' then {
+    \$RepeatedMsgReduction on
+    action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+    action(type=\"omfile\" DynaFile=\"devicelogservermonitoring\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+    action(type=\"omprog\" name=\"support_server_monitoring\" binary=\"$dir/support_server_monitoring.py\")
+    stop
+}
+
 # First some standard log files.  Log by facility.
 #
 auth,authpriv.*                 /var/log/auth.log
