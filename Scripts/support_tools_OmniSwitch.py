@@ -1882,47 +1882,47 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
         syslog.syslog(syslog.LOG_INFO, "High Resistance detection disabled!")
     print(reason)
     if reason == "(Illegal class)":
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs with reason {1}. The OmniSwitch POE controller requires that the same class be detected on both pairs before passing detection and sending POE power to the port. When it detects different classes from the same device, power is denied until 4pair is disabled").format(host, reason)
         result = "Find enclosed to this notification the log collection for further analysis"
     elif reason == "Fail due to out-of-range capacitor value" or reason == "Port is off: Voltage injection into the port (Port fails due to voltage being applied to the port from external source)" and high_resistance_detection_status == "enabled":
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs. High Resistance Detection is {1}. Please disable the high-resistance-detection (lanpower slot x/1 high-resistance-detection disable) if not necessary or disable the Lanpower on port that are non Powered Devices (lanpower port x/x/x admin-state disable)").format(host, high_resistance_detection_status)
         result = "Find enclosed to this notification the log collection for further analysis"
     elif reason == "Fail due to out-of-range capacitor value" or reason == "Port is off: Voltage injection into the port (Port fails due to voltage being applied to the port from external source)" and capacitor_detection_status == "enabled":
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs. Capacitor Detection is {1}. Please disable the capacitor-detection (lanpower slot x/1 capacitor-detection disable)  if not necessary or disable the Lanpower on port that are non Powered Devices (lanpower port x/x/x admin-state disable)").format(host, capacitor_detection_status)
         result = "Find enclosed to this notification the log collection for further analysis"
     elif reason == "Port is off: Voltage injection into the port (Port fails due to voltage being applied to the port from external source)":
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs. Please disable the Lanpower on port that are non Powered Devices (lanpower port x/x/x admin-state disable)").format(host)
         result = "Find enclosed to this notification the log collection for further analysis"
     elif reason == "Port is off: Over temperature at the port (Port temperature protection mechanism was activated)" or reason == "(Port temperature protection mechanism was activated)":
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs. Please upgrade the switch to AOS 8.7R03 for supporting latest Lanpower APIs and monitor. If issue still persists, try a reload of Lanpower (lanpower slot x/x service stop; lanpower slot x/x service start)").format(host)
         result = "Find enclosed to this notification the log collection for further analysis"
     elif reason == "Non-standard PD connected":
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs. A non-powered device is connected to PoE port, please disable the lanpower on this port if you want to remove this error message (lanpower port x/x/x admin-state disable)").format(host)
         result = "Find enclosed to this notification the log collection for further analysis"       
     elif reason == "Port is off: Overload state (Overload state according to 802.3AF/AT, current is above Icut)":
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs and port is in Denied State. This issue is fixed in AOS 8.6R02. If issue still persists, try a reload of Lanpower (lanpower slot x/x service stop; lanpower slot x/x service start)").format(host)
         result = "Find enclosed to this notification the log collection for further analysis"
     elif reason == "Port is yet undefined (Getting this status means software problem)" or reason == "Internal hardware fault (Port does not respond, hardware fault, or system initialization)":
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs. Please collect logs and contact ALE Customer Support").format(host)
         result = "Find enclosed to this notification the log collection for further analysis" 
     elif reason == "Port is off: Power budget exceeded (Power Management function shuts down port, due to lack of power. Port is shut down or remains off)":
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs and port is in Denied State. Please verify the Active Bank is compliant with your OmniSwitch model. If Switch model is OS6860N-P48 please ensure the latest CPLD firmware is applied, more details on Technical Knowledge Base  https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000066680.").format(host)
         result = "Find enclosed to this notification the log collection for further analysis"
     elif reason == "Port is off: Main supply voltage is low (Mains voltage is lower than Min Voltage limit)":
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs and port is in Denied State. Please collect logs and contact ALE Customer Support. If Switch model is OS6465H-P6 or OS6465H-P12 with a power supply 75W/48V: only 802.3at Powered Devices are supported.").format(host)
         result = "Find enclosed to this notification the log collection for further analysis"                  
     else:
-        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port 1/1/{2} - reason: {3}").format(host,ipadd,port,reason)
+        subject = ("Preventive Maintenance Application - Lanpower issue detected on OmniSwitch: {0}/{1} - port {2} - reason: {3}").format(host,ipadd,port,reason)
         action = ("A PoE issue has been detected on OmniSwitch( Hostname : {0} ) syslogs. Please collect logs and contact ALE Customer Support").format(host)
         result = "Find enclosed to this notification the log collection for further analysis"         
     category = "poe"
