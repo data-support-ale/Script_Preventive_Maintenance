@@ -58,7 +58,7 @@ if "Failed to start LSB" in msg:
     try:
         pattern = "TFTP Service issue"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        notif = ("Preventive Maintenance Application - TFTP Service issue detected on Server server {0}.\nThis service is used for log collection of WLAN Stellar AP. Do you want to restart the TFTP Service?").format(ip_server)        #send_message(info, jid)
+        notif = ("Preventive Maintenance Application - TFTP Service issue detected on Preventive Maintenance server {0}.\nThis service is used for log collection of WLAN Stellar AP. Do you want to restart the TFTP Service?").format(ip_server)        #send_message(info, jid)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
         answer = send_message_request(notif, jid)
@@ -79,7 +79,7 @@ elif "Failed password" in msg:
         pattern = "SSH Authentication issue"
         login,user_ip,port,service = re.findall(r"Failed password for (.*?) from (.*?) port (.*?) (.*)", msg)[0]
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        notif = ("Preventive Maintenance Application - SSH Authentication failure when connecting to server {0} .\n\nDetails: \n- User: {1}\n- IP Address: {2}.").format(ip_server,login,user_ip)      #send_message(info, jid)
+        notif = ("Preventive Maintenance Application - SSH Authentication failure when connecting to Preventive Maintenance server {0} .\n\nDetails: \n- User: {1}\n- IP Address: {2}\n- Protocol: {3}").format(ip_server,login,user_ip,service)      #send_message(info, jid)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Notification")
         send_message(notif, jid)
@@ -92,11 +92,32 @@ elif "Failed password" in msg:
         sys.exit()
     sys.exit()
 
+# Sample log for SSH Disconnection
+# {"@timestamp":"2022-07-19T17:28:56.584953+02:00","type":"syslog_json","relayip":"127.0.0.1","hostname":"debian2","message":"<38>Jul 19 17:28:56 sshd[16814]: Disconnecting authenticating user admin-support 10.61.34.9 port 42274: Too many authentication failures [preauth]","end_msg":""}
+elif "Disconnecting authenticating user" in msg:
+    try:
+        pattern = "Disconnecting authenticating user"
+        login,user_ip,port = re.findall(r"Disconnecting authenticating user (.*?) (.*?) port (.*?): Too many authentication failures", msg)[0]
+        syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
+        notif = ("Preventive Maintenance Application - SSH Authentication failure when connecting to Preventive Maintenance server {0} .\n\nDetails: \n- User: {1}\n- IP Address: {2}.").format(ip_server,login,user_ip)      #send_message(info, jid)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Notification")
+        send_message(notif, jid)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except IndexError as error:
+        print(error)
+        sys.exit()
+    sys.exit()
+
+# Log if Disk issue
 elif "No space left on device" in msg:
     try:
         pattern = "No space left on device"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        notif = ("Preventive Maintenance Application - No space left on device issue detected on server {0}").format(ip_server)      #send_message(info, jid)
+        notif = ("Preventive Maintenance Application - No space left on device issue detected on Preventive Maintenance server {0}").format(ip_server)      #send_message(info, jid)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Notification")
         send_message(notif, jid)
@@ -111,7 +132,7 @@ elif "No space left on device" in msg:
 else:
     try:
         service_issue_reason = re.findall(r"Failed to start (.*)", msg)[0]
-        notif = ("Preventive Maintenance Application - Service failure detected on server {0} .\n\nDetails: \n- Reason: {1}").format(ip_server,service_issue_reason)      #send_message(info, jid)
+        notif = ("Preventive Maintenance Application - Service failure detected on Preventive Maintenance server {0} .\n\nDetails: \n- Reason: {1}").format(ip_server,service_issue_reason)      #send_message(info, jid)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Notification")
         send_message(notif, jid)

@@ -56,7 +56,9 @@ cp ./Scripts/* $dir/
 cp ./*.csv $dir/ >& /dev/null
 chmod 755 $dir/*
 chown admin-support:admin-support $dir/*
-
+# Do not provide access to preventive maintenance directories and source code
+#chmod 600 $dir/*
+#chown root:root $dir/*
 
 unset company
 unset rainbow_jid
@@ -576,7 +578,7 @@ if \$programname contains 'sshd' and \$msg contains 'authentication failures' th
     stop
 }
 
-if \$programname contains 'systemd' and \$msg contains 'Failed' then {
+if \$programname contains 'systemd' and \$msg contains 'Failed to start' then {
     \$RepeatedMsgReduction on
     action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
     action(type=\"omfile\" DynaFile=\"devicelogservermonitoring\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
