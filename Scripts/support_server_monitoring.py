@@ -43,7 +43,7 @@ with open("/var/log/devices/lastlog_server_monitoring.json", "r", errors='ignore
         exit()
     except IndexError:
         print("Index error in regex")
-        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_server_monitoring.json - JSONDecodeError")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_server_monitoring.json - IndexError")
         exit()
 
 # always 1
