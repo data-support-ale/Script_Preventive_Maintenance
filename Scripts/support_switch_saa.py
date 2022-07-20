@@ -1,19 +1,24 @@
 #!/usr/local/bin/python3.7
 
-from argparse import Action
+#from argparse import Action
 from distutils.log import info
 import sys
 import os
 import json
 import datetime
 from time import strftime, localtime, time, sleep
-from support_tools_OmniSwitch import get_credentials, send_file, ssh_connectivity_check, execute_command, port_monitoring, get_file_sftp
-from support_send_notification import send_message
+from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, get_file_sftp
+from support_send_notification import *
 from database_conf import *
 import re
-import paramiko
+#import paramiko
 import pexpect
+import syslog
 
+syslog.openlog('support_switch_saa')
+syslog.syslog(syslog.LOG_INFO, "   ")
+syslog.syslog(syslog.LOG_INFO, "Executing script")
+syslog.syslog(syslog.LOG_INFO, "   ")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
@@ -36,6 +41,7 @@ def cmd(child, cmds, expt, timeout):
     child.expect(expt, timeout=timeout)
     child.sendline(cmds)
     cmdout += printchild(child, cmdout)
+    #syslog.syslog(syslog.LOG_DEBUG, "Functon cmd - variable cmdout: " + cmdout)
     return cmdout
 
 def entry_log(log,function,ipadd):
@@ -68,23 +74,37 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
         ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
+        #syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
         print("File /var/log/devices/lastlog_saa.json empty")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_saa.json - JSONDecodeError")
         exit()
     except IndexError:
         print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_saa.json - IndexError")
         exit()
     
     ipadd_list = ['10.69.145.69', '10.69.145.72', '10.69.147.135','10.69.147.136']
     #ipadd_list = ['10.69.147.135']
+    syslog.syslog(syslog.LOG_INFO, "List of IP Addresses: " + str(ipadd_list))
+    
     # Sample log
     # OS6900_VC swlogd saaCmm sm-proto INFO: SPB:SPB-500-e8-e7-32-cc-f3-4f - Iteration packet loss 4/0
 
-    if "Iteration packet loss" in msg:
+    if "Iteration packet loss" and "SPB-500" in msg:
         try:
+            pattern = "Iteration packet loss"
+            syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
             saa_name = re.findall(r"INFO: (.*?) - Iteration packet loss", msg)[0]
-            info = ("Service Assurance Agent - SAA probe {0} configured on OmniSwitch {1} / {2} failed").format(saa_name,ipadd,host)
-            send_message(info,jid)
+            syslog.syslog(syslog.LOG_INFO, "SAA Name: " + saa_name)
+            notif = ("Service Assurance Agent - SAA probe {0} configured on OmniSwitch {1} / {2} failed").format(saa_name,ipadd,host)
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Notification")
+            send_message(notif, jid)
+            syslog.syslog(syslog.LOG_INFO, "Notification sent")
 
             l_switch_cmd = []
             l_switch_cmd.append("show system; show chassis; show arp; show spb isis nodes; show spb isis adjacency; show spb isis bvlans; show spb isis unicast-table \
@@ -93,6 +113,9 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
             show service 5 debug-info; show service 6 debug-info; show service 32000 debug-info; show unp user")
 
             for switch_cmd in l_switch_cmd:
+                syslog.syslog(syslog.LOG_INFO, "   ")
+                syslog.syslog(syslog.LOG_INFO, "Collecting CLI logs on OmniSwitch: " + ipadd)
+                syslog.syslog(syslog.LOG_INFO, "   ")
                 for ipadd in ipadd_list:
                     try:
                         output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
@@ -105,23 +128,21 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                             print(output_decode)
                             entry_log(output_decode,"CLI",ipadd)
                             
+                            
                         else:
                             exception = "Timeout"
-                            info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                            syslog.syslog(syslog.LOG_INFO, "Timeout")
+                            notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                             print(info)
-                            send_message(info, jid)
-                            try:
-                                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-                            except UnboundLocalError as error:
-                                print(error)
-                            except Exception as error:
-                                print(error)
-                                pass 
+                            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+                            syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Notification")
+                            send_message(notif, jid)
+                            syslog.syslog(syslog.LOG_INFO, "Notification sent")
 
-                    except Exception as error:
-                        print(error)
+                    except Exception as exception:
+                        print(exception)
+                        syslog.syslog(syslog.LOG_INFO, "Command execution failed - exception: " + str(exception))
                     pass
-
 
             l_switch_cmd = []
             l_switch_cmd.append("d chg ING_DVP_TABLE;exit")
@@ -156,8 +177,13 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
             l_switch_cmd.append("d chg UNKNOWN_UCAST_BLOCK_MASK;exit")
             l_switch_cmd.append("d chg UNKNOWN_UCAST_BLOCK_MASK;exit")
 
-            for switch_cmd in l_switch_cmd:
-                for ipadd in ipadd_list:                
+            #for switch_cmd in l_switch_cmd:
+            #    for ipadd in ipadd_list:
+            for ipadd in ipadd_list:
+                syslog.syslog(syslog.LOG_INFO, "   ")
+                syslog.syslog(syslog.LOG_INFO, "Collecting bshell logs on OmniSwitch: " + ipadd)
+                syslog.syslog(syslog.LOG_INFO, "   ")
+                for switch_cmd in l_switch_cmd:               
                     try:
                         out=''
                         child = pexpect.spawn('ssh %s@%s'%(switch_user, ipadd))
@@ -166,7 +192,9 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                             print('ERROR! could not login with SSH')
                             print(child.before, child.after)
                             print(str(child))
-                            sys.exit (1)
+                            syslog.syslog(syslog.LOG_INFO, "Could not login by SSH on switch: " + ipadd)
+                            break
+                            #sys.exit (1)
                         if i == 1:
                             child.sendline ('yes')
                             child.expect ('(?i)password')
@@ -179,16 +207,18 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                         out+=cmd(child, 'bshell', '', 10)
                         out+=cmd(child, switch_cmd, '', 20)                   
                         entry_log(out,"BSHELL",ipadd)           
-                    except Exception as error:
-                        print(error)
+                    except Exception as exception:
+                        print(exception)
+                        syslog.syslog(syslog.LOG_INFO, "Command execution failed")
+                        break
                     pass
 
             for ipaddress in ipadd_list:
                 function = "CLI" 
                 logfilename = strftime('%Y-%m-%d', localtime(time())) + "_lastlog_saa_{0}_{1}.log".format(function,ipaddress)
                 print(logfilename)
-                logfilepath = "/var/log/devices/{0}".format(logfilename)
-                if os.path.exists(logfilepath) == False:
+                filename_path = "/var/log/devices/{0}".format(logfilename)
+                if os.path.exists(filename_path) == False:
                     info = ("Service Assurance Agent - OmniSwitch {0} is unreachable for log collection of CLI command output").format(ipaddress)
                     send_message(info,jid)                    
                     continue
@@ -197,14 +227,19 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 result = ("We have collected the CLI and BSHELL logs of the following OmniSwitches: {0}").format(ipadd_list)
                 action = "Find enclosed to this notification the log collection"
                 category = "saa_{0}_{1}".format(ipaddress,function)
-                send_file(logfilepath, subject, action, result, category, jid)
+                syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+                syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+                syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
+                send_file(filename_path, subject, action, result, category, jid)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             for ipaddress in ipadd_list:
                 function = "BSHELL" 
                 logfilename = strftime('%Y-%m-%d', localtime(time())) + "_lastlog_saa_{0}_{1}.log".format(function,ipaddress)
                 print(logfilename)
-                logfilepath = "/var/log/devices/{0}".format(logfilename)
-                if os.path.exists(logfilepath) == False:
+                filename_path = "/var/log/devices/{0}".format(logfilename)
+                if os.path.exists(filename_path) == False:
                     info = ("Service Assurance Agent - OmniSwitch {0} is unreachable for log collection of BSHELL command output").format(ipaddress)
                     send_message(info,jid)   
                     continue
@@ -213,9 +248,15 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 result = ("We have collected the CLI and BSHELL logs of the following OmniSwitches: {0}").format(ipadd_list)
                 action = "Find enclosed to this notification the log collection"
                 category = "saa_{0}_{1}".format(ipaddress,function)
-                send_file(logfilepath, subject, action, result, category, jid)
+                syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+                syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+                syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
+                send_file(filename_path, subject, action, result, category, jid)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             ##### Port monitoring to check if frames are received with VLAN Tag 4095 #####
+            '''
             try:
                 ip = "10.130.7.245"
                 switch_cmd = ("no port-monitoring 1")
@@ -256,21 +297,16 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 info = "Service Assurance Agent - Port Monitoring capture - download failed"
                 send_message(info,jid)
                 pass
-
-            try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "SAA Name": saa_name}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-                sys.exit()
-        except Exception as error:
-            print(error)
-            pass 
+            '''
         except UnboundLocalError as error:
             print(error)
+            syslog.syslog(syslog.LOG_INFO, "UnboundLocalError - Notification sent")
             sys.exit()
         except IndexError as error:
             print(error)
+            syslog.syslog(syslog.LOG_INFO, "IndexError - exiting script")
             sys.exit()
     else:
         print("no pattern match - exiting script")
+        syslog.syslog(syslog.LOG_INFO, "No pattern match - exiting script")
         sys.exit()
