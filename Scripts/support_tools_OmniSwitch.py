@@ -107,7 +107,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         p = paramiko.SSHClient()
         p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         syslog.syslog(syslog.LOG_INFO, "SSH Session start")
-        p.connect(ipadd, port=22, username=switch_user,password=switch_password, timeout=10.0, banner_timeout=100)
+        p.connect(ipadd, port=22, username=switch_user,password=switch_password, timeout=20.0, banner_timeout=100)
         syslog.syslog(syslog.LOG_INFO, "SSH Session established")
     except TimeoutError as exception:
         syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
@@ -127,8 +127,9 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
             print(str(exception)) 
         except Exception as exception:
             print(str(exception))
-        syslog.syslog(syslog.LOG_INFO, "Script exit")
-        os._exit(1)
+        #syslog.syslog(syslog.LOG_INFO, "Script exit")
+        #os._exit(1)
+        return output, exception
     except paramiko.AuthenticationException as exception:
         syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         exception = "AuthenticationException"
@@ -154,7 +155,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - " + str(exception))
-        exception = exception.readlines()
+        #exception = exception.readlines()
         exception = str(exception)
         print("Function ssh_connectivity_check - Device unreachable")
         syslog.syslog(syslog.LOG_INFO, " SSH session does not establish on OmniSwitch " + ipadd)
@@ -208,6 +209,8 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         syslog.syslog(syslog.LOG_INFO, "SSH Command stdout: " + stdout)
         print(stderr)
         syslog.syslog(syslog.LOG_INFO, "SSH Command stdout: " + stderr)
+    except AttributeError as exception:
+        pass
     except TypeError as exception:
         pass
     except paramiko.SSHException as exception:
@@ -363,7 +366,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - " + str(exception))
-        exception = exception.readlines()
+        #exception = exception.readlines()
         exception = str(exception)
         print("Function ssh_connectivity_check - Device unreachable")
         syslog.syslog(syslog.LOG_INFO, " SSH session does not establish on OmniSwitch " + ipadd)
@@ -546,7 +549,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
     except paramiko.SSHException as error:
         syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
         print("Function ssh_connectivity_check - " + str(exception))
-        exception = exception.readlines()
+        #exception = exception.readlines()
         exception = str(exception)
         print("Function ssh_connectivity_check - Device unreachable")
         syslog.syslog(syslog.LOG_INFO, " SSH session does not establish on OmniSwitch " + ipadd)
@@ -1055,8 +1058,14 @@ def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
         ; sleep 2 ; echo \"top -b -n 1 | head\" | su')
 
     for switch_cmd in l_switch_cmd:
-            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            if output != None:
+            output, exception = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            if exception != None:
+                notif = ("Preventive Maintenance Application - We detected an High CPU on OmniSwitch {0}/{1}. We are not able to collect logs - reason: Timeout when establishing SSH Session to OmniSwitch {1}").format(host,ipadd)
+                syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+                send_message(notif, jid)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")   
+            elif output != None:
                 output = str(output)
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
@@ -1119,8 +1128,14 @@ def collect_command_output_health_memory(switch_user, switch_password, host, ipa
         ; sleep 2 ; echo \"cat \/proc\/meminfo\" | su')
 
     for switch_cmd in l_switch_cmd:
-            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            if output != None:
+            output, exception = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            if exception != None:
+                notif = ("Preventive Maintenance Application - We detected an High Memory on OmniSwitch {0}/{1}. We are not able to collect logs - reason: Timeout when establishing SSH Session to OmniSwitch {1}").format(host,ipadd)
+                syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+                send_message(notif, jid)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")   
+            elif output != None:
                 output = str(output)
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
@@ -1180,8 +1195,14 @@ def collect_command_output_health_port(switch_user, switch_password, port, type,
     show health port {0} ; show qos port {0}").format(port))
 
     for switch_cmd in l_switch_cmd:
-            output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
-            if output != None:
+            output, exception = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+            if exception != None:
+                notif = ("Preventive Maintenance Application - We detected an High consumption on port {0} on OmniSwitch {1}/{2}. We are not able to collect logs - reason: Timeout when establishing SSH Session to OmniSwitch {2}").format(port,host,ipadd)
+                syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+                send_message(notif, jid)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")               
+            elif output != None or output != 0:
                 output = str(output)
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
                 output_decode = output_decode.replace("', '","")
@@ -1190,7 +1211,7 @@ def collect_command_output_health_port(switch_user, switch_password, port, type,
                 text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
             else:
                 exception = "Timeout"
-                notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+                notif = ("Preventive Maintenance Application - We detected an High consumption on port {0} on OmniSwitch {1}/{2}. We are not able to collect logs - reason: Timeout when establishing SSH Session to OmniSwitch {2}").format(port,host,ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
                 send_message(notif, jid)
@@ -2769,7 +2790,7 @@ if __name__ == "__main__":
         jid = "570e12872d768e9b52a8b975@openrainbow.com"
         switch_password = "switch"
         switch_user = "admin"
-        ipadd = "10.130.7.247"
+        ipadd = "192.168.80.82"
         cmd = "show system"
         host = "LAN-6860N-2"
         port = "1/1/58"
@@ -2780,54 +2801,54 @@ if __name__ == "__main__":
         date = datetime.date.today()
         localFilePath = filename_pmd.replace("/", "_")
         localFilePath = ("/tftpboot/{0}_{1}_{2}").format(date, ipadd, localFilePath)
-        get_file_sftp(switch_user, switch_password, ipadd, filename_pmd, localFilePath)
-        filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
+        #get_file_sftp(switch_user, switch_password, ipadd, filename_pmd, localFilePath)
+        #filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
         filename_path = "/var/log/server/support_tools_OmniSwitch.log"
         #send_file(filename_path, subject, action, result, category, jid)
-        filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
+        #filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
         #send_file(filename_path, subject, action, result,category, jid)
-        filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         reason="Fail due to out-of-range capacitor value"
         port="34"
-        filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
+        #filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
         #send_file(filename_path, subject, action, result,category, jid)
         agg = "6"
-        filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         vcid = "2"
-        filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         psid = "2"
-        filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_ps(switch_user, switch_password, psid, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         source = "Access Guardian"
         port="1/1/59"
         decision = "0"
-        filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         protocol = "Console"
         user = "toto"
         source_ip = "10.130.7.17"
-        service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
-        filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
+        #service_status, aaa_status = collect_command_output_aaa(switch_user, switch_password, protocol, ipadd)
+        #filename_path, subject, action, result, category = authentication_failure(switch_user, switch_password, user, source_ip, protocol, service_status, aaa_status, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
 
-        status_changes, link_quality = collect_command_output_flapping(switch_user, switch_password, port, ipadd)
-        filename_path, subject, action, result, category = collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
+        #status_changes, link_quality = collect_command_output_flapping(switch_user, switch_password, port, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
-        filename_path, subject, action, result, category = collect_command_output_health_memory(switch_user, switch_password, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_health_memory(switch_user, switch_password, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         type = "receive"
         filename_path, subject, action, result, category = collect_command_output_health_port(switch_user, switch_password, port, type, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
-        filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
+        #filename_path, subject, action, result, category = collect_command_output_violation(switch_user, switch_password, port, source, decision, host, ipadd)
         #send_file(filename_path, subject, action, result,category, jid)
         adjacency_id = "1223456366"
-        filename_path, subject, action, result, category = collect_command_output_spb(switch_user, switch_password, host, ipadd, adjacency_id, port)
+        #filename_path, subject, action, result, category = collect_command_output_spb(switch_user, switch_password, host, ipadd, adjacency_id, port)
         #send_file(filename_path, subject, action, result,category, jid)
         vlan = "68-70"
-        filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ipadd, vlan)
+        #filename_path, subject, action, result, category = collect_command_output_stp(switch_user, switch_password, decision, host, ipadd, vlan)
         #send_file(filename_path, subject, action, result,category, jid)
         fan_id = "2"
         filename_path, subject, action, result, category = collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd)
