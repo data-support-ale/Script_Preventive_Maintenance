@@ -11,6 +11,10 @@ from time import strftime, localtime
 from support_send_notification import *
 # from database_conf import *
 import time
+import syslog
+
+syslog.openlog('support_switch_duplicate_ip')
+syslog.syslog(syslog.LOG_INFO, "Executing script")
 
 from pattern import set_rule_pattern, set_portnumber, set_decision, get_decision, mysql_save
 
@@ -68,7 +72,7 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
                 print(error)
             sys.exit()
         except Exception:
-            exception = "SFTP Get Timeout"
+            exception = "Exception"
             info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
@@ -79,8 +83,8 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             except UnboundLocalError as error:
                 print(error)
             sys.exit()
-    except paramiko.ssh_exception.AuthenticationException:
-        exception = "SFTP Get Timeout"
+    except paramiko.AuthenticationException:
+        exception = "AuthenticationException"
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
@@ -128,8 +132,6 @@ with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_fi
             except IndexError:
                 print("Index error in regex")
                 exit()
-            print("Index error in regex")
-            exit()
     # CORE swlogd ipni arp INFO: arp info overwritten for 172.16.29.30 by 78e3b5:054b08 port Lag 1
     elif "overwritten" in msg:
         try:
@@ -137,7 +139,10 @@ with open("/var/log/devices/lastlog_dupip.json", "r", errors='ignore') as log_fi
         except IndexError:
             print("Index error in regex")
             exit()
-
+    else:
+        print("No pattern match")
+        syslog.syslog(syslog.LOG_INFO, "No pattern match")
+        exit()
     mac = format_mac(mac)
 
 # always 1

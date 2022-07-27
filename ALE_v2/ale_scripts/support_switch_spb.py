@@ -4,11 +4,15 @@ import sys
 import os
 import re
 import json
-from support_tools_OmniSwitch import get_credentials
+from support_tools_OmniSwitch import get_credentials, collect_command_output_spb
 from time import strftime, localtime, sleep
 from support_send_notification import *
 # from database_conf import *
 import time
+import syslog
+
+syslog.openlog('support_switch_spb')
+syslog.syslog(syslog.LOG_INFO, "Executing script")
 
 from pattern import set_rule_pattern, set_portnumber, set_decision, mysql_save
 
@@ -83,11 +87,16 @@ if alelog.rsyslog_script_timeout(ip + port + pattern, time.time()):
     exit(0)
 
 if jid1 != '' or jid2 != '' or jid3 != '':
-    notif = ("Preventive Maintenance Application - SPB Adjacency state change on OmniSwitch {0} / {1}.\n\nDetails:\n- System ID : {2}\n- Port : {3}\nPlease check the SPB Adjacent node connectivity.").format(host,ip,adjacency_id,port)
+    filename_path, subject, action, result, category = collect_command_output_spb(switch_user, switch_password, host, ip, adjacency_id, port)
+    syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+    syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+    syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")  
     set_decision(ip, "4")
-    mysql_save(runtime=_runtime, ip_address=ip, result='success', reason=notif, exception='')
+    mysql_save(runtime=_runtime, ip_address=ip, result='success', reason=action, exception='')
     # send_message(notif, jid)
-    send_message_detailed(notif, jid1, jid2, jid3)
+    send_file_detailed(filename_path, subject, action, result, category)
+    syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 else:
     set_decision(ip, "4")
     mysql_save(runtime=_runtime, ip_address=ip, result='success', reason="Mail request set as no", exception='')

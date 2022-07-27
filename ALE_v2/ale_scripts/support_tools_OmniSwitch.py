@@ -653,7 +653,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
     f_logs.write(text)
     f_logs.close()
     subject = (
-        "Preventive Maintenance Application - A TCAM failure (QOS) is noticed on switch: {0}, reason {1}").format(ipadd, source)
+        "Preventive Maintenance Application - A TCAM failure (QOS) is noticed on switch: {0}").format(ipadd)
     action = (
         "A TCAM failure (QOS) is noticed on OmniSwitch (Hostname: {0})").format(host)
     result = "Find enclosed to this notification the log collection of command outputs"
