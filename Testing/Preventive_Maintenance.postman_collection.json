@@ -1,0 +1,1189 @@
+{
+	"info": {
+		"_postman_id": "e34d07f3-b878-49cb-8fea-3f4828fd773e",
+		"name": "Preventive_Maintenance",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11252398"
+	},
+	"item": [
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var xsrfCookie = postman.getResponseCookie(\"csrftoken\");\r",
+							"pm.collectionVariables.set(\"csrftoken\", xsrfCookie.value);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\":\"jonathan.trebaol@al-enterprise.com\",\n    \"password\":\"OmniVista2500*\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}:8000/api/login",
+					"host": [
+						"{{url}}"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user_create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-CSRFToken",
+						"value": "{{csrftoken}}",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\":\"user3\",\n    \"password\":\"user@1234\",\n    \"email\":\"user3@ale.com\",\n    \"type_name\":\"Regular\",\n    \"jid\":\"user3@rainbow.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}:8000/api/users/",
+					"host": [
+						"{{url}}"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user_list",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-CSRFToken",
+						"value": "{{csrftoken}}",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{url}}:8000/api/users/",
+					"host": [
+						"{{url}}"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "user_edit",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "X-CSRFToken",
+						"value": "{{csrftoken}}",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\":\"user1\",\n    \"password\":\"password@1\",\n    \"email\":\"updateduser1@ale.com\",\n    \"type_name\":\"Admin\",\n    \"jid\":\"updateduser1@rainbow.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}:8000/api/users/2/",
+					"host": [
+						"{{url}}"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"users",
+						"2",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "logout",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}:8000/api/logout",
+					"host": [
+						"{{url}}"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "password_change",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "X-CSRFToken",
+						"value": "{{csrftoken}}",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"new_password\":\"newpassword@1\",\n\"new_password_confirmation\":\"newpassword@1\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}:8000/api/users/3/",
+					"host": [
+						"{{url}}"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"users",
+						"3",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "decision_list",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-CSRFToken",
+						"value": "{{csrftoken}}",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{url}}:8000/api/decisions",
+					"host": [
+						"{{url}}"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"decisions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "decison_delete",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "X-CSRFToken",
+						"value": "{{csrftoken}}",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{url}}:8000/api/decisions/2",
+					"host": [
+						"{{url}}"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"decisions",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send_message",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "X-VNA-Authorization",
+						"value": "{{X-VNA-Authorization}}",
+						"type": "text"
+					},
+					{
+						"key": "jid1",
+						"value": "j_9403700392@openrainbow.com",
+						"type": "text"
+					},
+					{
+						"key": "text1",
+						"value": "ceci",
+						"type": "text"
+					},
+					{
+						"key": "text2",
+						"value": "est",
+						"type": "text"
+					},
+					{
+						"key": "text3",
+						"value": "un",
+						"type": "text"
+					},
+					{
+						"key": "text4",
+						"value": "test",
+						"type": "text"
+					},
+					{
+						"key": "text5",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "text6",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "text7",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "text8",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "text9",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "Card",
+						"value": "0",
+						"type": "text"
+					},
+					{
+						"key": "Email",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "roomid",
+						"value": "{{roomid}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{VNA_URL}}/api/flows/NBDNotif_Classic_{{Company}}?=",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_Classic_{{Company}}"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send_message_without_X-VNA-Authorization",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "jid1",
+						"value": "j_9403700392@openrainbow.com",
+						"type": "text"
+					},
+					{
+						"key": "text1",
+						"value": "ceci",
+						"type": "text"
+					},
+					{
+						"key": "text2",
+						"value": "est",
+						"type": "text"
+					},
+					{
+						"key": "text3",
+						"value": "un",
+						"type": "text"
+					},
+					{
+						"key": "text4",
+						"value": "test",
+						"type": "text"
+					},
+					{
+						"key": "text5",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "text6",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "text7",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "text8",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "text9",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "Card",
+						"value": "0",
+						"type": "text"
+					},
+					{
+						"key": "Email",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{VNA_URL}}/api/flows/NBDNotif_Classic_{{Company}}?=",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_Classic_{{Company}}"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "vna_login",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic anRyZWJhb2w6anRyZWJhb2w=",
+						"type": "text"
+					},
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID=80E64766B76B28CBFF0B44B3876ADA01",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://{{VNA_URL}}/management/api/users/me",
+					"protocol": "https",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"management",
+						"api",
+						"users",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send_alert",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "X-VNA-Authorization",
+						"value": "{{X-VNA-Authorization}}",
+						"type": "text"
+					},
+					{
+						"key": "jid1",
+						"value": "j_9403700392@openrainbow.com",
+						"type": "text"
+					},
+					{
+						"key": "subject",
+						"value": "Alerte générale !",
+						"type": "text"
+					},
+					{
+						"key": "Card",
+						"value": "0",
+						"type": "text"
+					},
+					{
+						"key": "Email",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "roomid",
+						"value": "{{roomid}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{VNA_URL}}/api/flows/NBDNotif_Alert_{{Company}}",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_Alert_{{Company}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send_test",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "X-VNA-Authorization",
+						"value": "{{X-VNA-Authorization}}",
+						"type": "text"
+					},
+					{
+						"key": "jid1",
+						"value": "j_9403700392@openrainbow.com",
+						"type": "text"
+					},
+					{
+						"key": "subject",
+						"value": "C est un test",
+						"type": "text"
+					},
+					{
+						"key": "Card",
+						"value": "0",
+						"type": "text"
+					},
+					{
+						"key": "Email",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "roomid",
+						"value": "{{roomid}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{VNA_URL}}/api/flows/NBDNotif_Test_{{Company}}",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_Test_{{Company}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New_bubble",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "X-VNA-Authorization",
+						"value": "{{X-VNA-Authorization}}",
+						"type": "text"
+					},
+					{
+						"key": "mails",
+						"value": "jonathan.trebaol@al-enterprise.com;trebaoljonathan@wanadoo.fr",
+						"type": "text"
+					},
+					{
+						"key": "company",
+						"value": "EMEA",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://{{VNA_URL}}/api/flows/NBDNotif_New_Bubble",
+					"protocol": "https",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_New_Bubble"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send_file",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+						"key": "Content-type",
+						"value": "text/plain",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "X-VNA-Authorization",
+						"value": "{{X-VNA-Authorization}}",
+						"type": "text"
+					},
+					{
+						"key": "jid1",
+						"value": "j_9403700392@openrainbow.com",
+						"type": "text"
+					},
+					{
+						"key": "subject",
+						"value": "Preventive Maintenance Application - Authentication failure noticed on OmniSwitch OS6860E_VC_COre",
+						"type": "text"
+					},
+					{
+						"key": "action",
+						"value": "An Authentication failure has been detected on OmniSwitch ( Hostname: OS6860E_VC_Core / 10.130.7.247 ) from User: toto - Source IP Address: 10.10.10.1 - protocol: Console",
+						"type": "text"
+					},
+					{
+						"key": "result",
+						"value": "As per configuration, this service protocol is enabled and aaa authentication is disabled",
+						"type": "text"
+					},
+					{
+						"key": "Card",
+						"value": "0",
+						"type": "text"
+					},
+					{
+						"key": "Email",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "roomid",
+						"value": "{{roomid}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "",
+							"type": "file",
+							"src": "/C:/Users/jtrebaol/OneDrive - ALE International/Bureau/Postman/test.pcap"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{VNA_URL}}/api/flows/NBDNotif_File_{{Company}}",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_File_{{Company}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send_file_image_gif",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+						"key": "Content-type",
+						"value": "image/gif",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "X-VNA-Authorization",
+						"value": "{{X-VNA-Authorization}}",
+						"type": "text"
+					},
+					{
+						"key": "jid1",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "subject",
+						"value": "Test Postman",
+						"type": "text"
+					},
+					{
+						"key": "action",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "result",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "Card",
+						"value": "0",
+						"type": "text"
+					},
+					{
+						"key": "Email",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "roomid",
+						"value": "{{roomid}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Disposition",
+						"value": "attachment; filename=welcome.gif",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/jtrebaol/OneDrive - ALE International/Bureau/Postman/giphy.gif"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{VNA_URL}}/api/flows/NBDNotif_File_{{Company}}",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_File_{{Company}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send_file_tech_support",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+						"key": "Content-type",
+						"value": "application/x-tar",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "X-VNA-Authorization",
+						"value": "{{X-VNA-Authorization}}",
+						"type": "text"
+					},
+					{
+						"key": "jid1",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "subject",
+						"value": "subject",
+						"type": "text"
+					},
+					{
+						"key": "action",
+						"value": "action",
+						"type": "text"
+					},
+					{
+						"key": "result",
+						"value": "result",
+						"type": "text"
+					},
+					{
+						"key": "Card",
+						"value": "0",
+						"type": "text"
+					},
+					{
+						"key": "Email",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "roomid",
+						"value": "{{roomid}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/jtrebaol/OneDrive - ALE International/Bureau/Postman/2022-07-18_14-30_10.130.7.247_tech_support_complete.tar"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{VNA_URL}}/api/flows/NBDNotif_File_{{Company}}",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_File_{{Company}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send_file_core_dump",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+						"key": "Content-type",
+						"value": "application/x-tar",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "X-VNA-Authorization",
+						"value": "{{X-VNA-Authorization}}",
+						"type": "text"
+					},
+					{
+						"key": "jid1",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "subject",
+						"value": "subject",
+						"type": "text"
+					},
+					{
+						"key": "action",
+						"value": "action",
+						"type": "text"
+					},
+					{
+						"key": "result",
+						"value": "result",
+						"type": "text"
+					},
+					{
+						"key": "Card",
+						"value": "0",
+						"type": "text"
+					},
+					{
+						"key": "Email",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "roomid",
+						"value": "{{roomid}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/jtrebaol/OneDrive - ALE International/Bureau/Postman/2022-07-18_10.130.7.247__flash_pmd_pmd-agCmm-04.23.2021-14.34.58"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{VNA_URL}}/api/flows/NBDNotif_File_{{Company}}",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_File_{{Company}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send_message_request",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "X-VNA-Authorization",
+						"value": "{{X-VNA-Authorization}}",
+						"type": "text"
+					},
+					{
+						"key": "jid1",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "text1",
+						"value": "Preventive Maintenance Application - TFTP Service issue detected on Server server",
+						"type": "text"
+					},
+					{
+						"key": "text2",
+						"value": "This service is used for log collection of WLAN Stellar AP. Do you want to restart the TFTP Service?",
+						"type": "text"
+					},
+					{
+						"key": "Card",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "Email",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "roomid",
+						"value": "{{roomid}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{VNA_URL}}/api/flows/NBDNotif_Classic_{{Company}}",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_Classic_{{Company}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send_message_request_advanced",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Charset",
+						"value": "UTF-8",
+						"type": "text"
+					},
+					{
+						"key": "X-VNA-Authorization",
+						"value": "{{X-VNA-Authorization}}",
+						"type": "text"
+					},
+					{
+						"key": "jid1",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "text1",
+						"value": "Preventive Maintenance Application - A port violation occurs on OmniSwitch OS6860E_VC_Core LinkAgg ID 10, source: Access Guardian",
+						"type": "text"
+					},
+					{
+						"key": "text2",
+						"value": "Do you want to clear the violation or administratively disable the Link Aggregate?",
+						"type": "text"
+					},
+					{
+						"key": "Card",
+						"value": "2",
+						"type": "text"
+					},
+					{
+						"key": "Email",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "advanced",
+						"value": "Admin Down",
+						"type": "text"
+					},
+					{
+						"key": "roomid",
+						"value": "{{roomid}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{VNA_URL}}/api/flows/NBDNotif_Classic_{{Company}}",
+					"host": [
+						"{{VNA_URL}}"
+					],
+					"path": [
+						"api",
+						"flows",
+						"NBDNotif_Classic_{{Company}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "csrftoken",
+			"value": ""
+		}
+	]
+}

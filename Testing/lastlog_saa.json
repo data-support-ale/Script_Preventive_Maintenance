@@ -1,0 +1,1 @@
+{"@timestamp":"2022-04-07T13:51:36+02:00","type":"syslog_json","relayip":"10.130.7.245","hostname":"OS6900_VC","message":"<134>Apr  7 13:51:36 OS6900_VC swlogd saaCmm sm-proto INFO: SPB:SPB-600-e8-e7-32-cc-f3-4f - Iteration packet loss 4/0","end_msg":""}

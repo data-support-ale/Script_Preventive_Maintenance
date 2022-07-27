@@ -1,0 +1,1 @@
+{"@timestamp":"2022-02-24T15:41:21+01:00","type":"syslog_json","relayip":"192.168.80.81","hostname":"TEST1_Titouan","message":"swlogd stpCmm _VLNt ALRM: stpCMM_handleVmMsg@1319->vlan 535 may not be stp enabled","end_msg":""}
