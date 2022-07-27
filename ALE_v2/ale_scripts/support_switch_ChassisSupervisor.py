@@ -32,7 +32,7 @@ set_rule_pattern(pattern)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_power_supply_down.json", "r", errors='ignore') as log_file:
@@ -559,27 +559,23 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, nb_power_supply, "power_supply", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + nb_power_supply + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, nb_power_supply, "power_supply", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + nb_power_supply + " Choice: " + " Never")
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "PS_Unit": nb_power_supply}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
             except Exception as error:
-                print(error)
-                pass 
+               print(error)
+               pass 
         except UnboundLocalError as error:
             print(error)
             sys.exit()
         except IndexError as error:
             print(error)
             sys.exit()
+
     # Sample log
     # OS6860E swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM Device Power Supply operational state changed to UNPOWERED
     elif "UNPOWERED" in msg:
@@ -602,38 +598,34 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, nb_power_supply, "power_supply", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + nb_power_supply + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, nb_power_supply, "power_supply", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + nb_power_supply + " Choice: " + " Never")
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename( __file__)), "tags": {"IP": ipadd, "PS_Unit": "All"}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
             except Exception as error:
-                print(error)
-                pass 
+               print(error)
+               pass 
         except UnboundLocalError as error:
             print(error)
             sys.exit()
         except IndexError as error:
             print(error)
             sys.exit()
+
     else:
         print("No pattern match - exiting script")
         syslog.syslog(syslog.LOG_INFO, "No pattern match - exiting script")
         sys.exit()      
 
-elif save_resp == "-1":
+elif 'No' in decision:
     print("Decision saved to No - script exit")
     syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
     sys.exit()
 
-elif save_resp == "1":
+elif 'yes and remember' in [d.lower() for d in decision]:
     answer = '2'
     print("Decision saved to Yes and remember")
     syslog.syslog(syslog.LOG_INFO, "Decision saved to Yes and remember")

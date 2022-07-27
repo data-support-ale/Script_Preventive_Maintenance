@@ -12,9 +12,12 @@ import subprocess
 import re
 # from database_conf import *
 import time
+import syslog
 
+syslog.openlog('support_switch_get_log')
+syslog.syslog(syslog.LOG_INFO, "Executing script")
 from pattern import set_rule_pattern, set_portnumber, set_decision, mysql_save
-
+attachment_path = "/var/log/server/log_attachment"
 path = os.path.dirname(__file__)
 print(os.path.abspath(os.path.join(path,os.pardir)))
 sys.path.insert(1,os.path.abspath(os.path.join(path,os.pardir)))
@@ -25,6 +28,7 @@ script_name = sys.argv[0]
 os.system('logger -t montag -p user.notif Executing script ' + script_name)
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+_runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
 
@@ -47,8 +51,17 @@ with open("/var/log/devices/get_log_switch.json", "r", errors='ignore') as log_f
         ipadd = log_json["relayip"]
         host = log_json["hostname"]
         msg = log_json["message"]
+        print(msg)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog IP Address: " + ipadd)
+        syslog.syslog(syslog.LOG_DEBUG, "Syslog Hostname: " + host)
+        #syslog.syslog(syslog.LOG_DEBUG, "Syslog message: " + msg)
     except json.decoder.JSONDecodeError:
-        print("File /var/log/devices/get_log_switch.json empty")
+        print("File /var/log/devices/lastlog_power_supply_down.json empty")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/get_log_switch.json - JSONDecodeError")
+        exit()
+    except IndexError:
+        print("Index error in regex")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/get_log_switch.json - Index error in regex")
         exit()
 
 pattern = ""
@@ -56,166 +69,100 @@ if len(sys.argv) > 2:
     pattern = sys.argv[1]
     print(pattern)
     notif = ("We received following pattern from RSyslog {0}").format(pattern)
-    os.system('logger -t montag -p user.notif ' + notif)
+    syslog.syslog(syslog.LOG_INFO, notif)
     _pattern = sys.argv[2]
 elif len(sys.argv) > 1:
     _pattern = sys.argv[1]
 
 print(_pattern)
 set_rule_pattern(_pattern)
-# notif = ("We received following pattern from RSyslog {0}").format(_pattern)
-# os.system('logger -t montag -p user.notif ' + notif)
 
 
-def get_port():
-    with open("/var/log/devices/get_log_switch.json", "r", errors='ignore') as log_file:
-        try:
-            log_json = json.load(log_file)
-            ipadd = log_json["relayip"]
-            host = log_json["hostname"]
-            msg = log_json["message"]
-        except json.decoder.JSONDecodeError:
-            print("File /var/log/devices/get_log_switch.json empty")
-            exit()
-        port = 0
-        return port
-
-set_portnumber(get_port())
+set_portnumber("0")
 set_decision(ipadd, "4")
-if alelog.rsyslog_script_timeout(ipadd + str(get_port()) + _pattern, time.time()):
-    print("Less than 5 min")
+if alelog.rsyslog_script_timeout(ipadd + "0" + pattern, time.time()):
+    syslog.syslog(syslog.LOG_INFO, "Script executed within 5 minutes interval - script exit")
     exit(0)
+
 
 
 notif = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. We are collecting logs on syslog server".format(ipadd, pattern)
 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Sending notification")
 send_message(notif)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-set_decision(ipadd, "4")
 try:
-    mysql_save(runtime=runtime, ip_address=ipadd, result='success', reason=notif, exception='')
-    syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+    set_decision(ipadd, "4")
+    mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
+    syslog.syslog(syslog.LOG_INFO, "Statistics saved")
 except UnboundLocalError as error:
     print(error)
     sys.exit()
 except Exception as error:
     print(error)
-    pass   
-
+    pass 
 
 ### TECH-SUPPORT ENG COMPLETE ###
+syslog.syslog(syslog.LOG_INFO, "Executing function get_tech_support_sftp")
 get_tech_support_sftp(switch_user, switch_password, host, ipadd)
-
+mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason="Tech-Support file collected", exception='')
+syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+syslog.syslog(syslog.LOG_INFO, "Tech_support collected")
 print("Starting collecting additionnal logs")
-
-notif = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. Tech-support eng complete is collected and stored in /tftpboot/ on syslog server".format(ipadd, pattern)
-syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-send_message(notif)
-syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-set_decision(ipadd, "4")
-try:
-    mysql_save(runtime=runtime, ip_address=ipadd, result='success', reason=notif, exception='')
-    syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
-except UnboundLocalError as error:
-    print(error)
-    sys.exit()
-except Exception as error:
-    print(error)
-    pass   
-
-
+syslog.syslog(syslog.LOG_INFO, "Starting collecting additionnal logs")
 ##########################Get More LOGS########################################
-_runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 text = "More logs about the switch : {0} \n\n\n".format(ipadd)
 
 l_switch_cmd = []
-l_switch_cmd.append("show interfaces")
-l_switch_cmd.append("show system")
-l_switch_cmd.append("show date")
-l_switch_cmd.append("show unp user")
+l_switch_cmd.append("show interfaces; show system; show chassis; show date; show unp user")
 print(ipadd)
 for switch_cmd in l_switch_cmd:
-    cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
-        switch_password, switch_user, ipadd, switch_cmd)
-    try:
-        output = ssh_connectivity_check(
-            switch_user, switch_password, ipadd, switch_cmd)
-        output = subprocess.check_output(
-            cmd, stderr=subprocess.DEVNULL, timeout=40, shell=True)
-        if output != None:
-            output = output.decode('UTF-8').strip()
-            text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output)
-        else:
-            exception = "Timeout"
-            notif = (
-                "Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-            print(notif)
-            _notif = notif + ' ; ' + 'command executed - {0}'.format(switch_cmd)
-            os.system('logger -t montag -p user.notif ' + notif)
-            send_message(notif)
-            try:
-                mysql_save(runtime=_runtime, ip_address=ipadd, result='failure', reason=_notif , exception=exception)
-            except UnboundLocalError as error:
-                print(error)
-            sys.exit()
-    except subprocess.TimeoutExpired as exception:
-        notif = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(notif)
-        _notif = notif + ' ; ' + 'command executed - {0}'.format(switch_cmd)
-        os.system('logger -t montag -p user.notif ' + notif)
+    output = ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
+    if output != None:
+        output = str(output)
+        output_decode = bytes(output, "utf-8").decode("unicode_escape")
+        output_decode = output_decode.replace("', '","")
+        output_decode = output_decode.replace("']","")
+        output_decode = output_decode.replace("['","")
+        text = "{0}{1}: \n{2}\n\n".format(text, switch_cmd, output_decode)
+    else:
+        exception = "Timeout"
+        notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
+        _info = notif + ' ; ' + 'command executed - {0}'.format(switch_cmd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
         send_message(notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
-            mysql_save(runtime=_runtime, ip_address=ipadd, result='failure', reason=_notif , exception=exception)
-        except UnboundLocalError as error:
-            print(error)
-        sys.exit()
-    except FileNotFoundError as exception:
-        notif = (
-            "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        print(notif)
-        _notif = notif + ' ; ' + 'command executed - {0}'.format(switch_cmd)
-        os.system('logger -t montag -p user.notif ' + notif)
-        send_message(notif)
-        try:
-            mysql_save(runtime=_runtime, ip_address=ipadd, result='failure', reason=_notif , exception=exception)
-        except UnboundLocalError as error:
-            print(error)
-        sys.exit()
+            set_decision(ipadd, "4")
+            mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=_info, exception=exception)
+        except UnboundLocalError as exception:
+            print(exception)
+        except Exception as exception:
+            print(exception)
+        os._exit(1)
 
-mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason="More logs about the switch : {0} \n\n\n".format(ipadd), exception='')
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
+syslog.syslog(syslog.LOG_INFO, "Additionnal logs collected")
 
 filename = "{0}_{1}-{2}_{3}_logs".format(date,
                                          date_hm.hour, date_hm.minute, ipadd)
-f_logs = open(path + '/{0}.txt'.format(filename), 'w', errors='ignore')
+f_logs = open(attachment_path + '/{0}.txt'.format(filename), 'w', errors='ignore')
 f_logs.write(text)
 f_logs.close()
+syslog.syslog(syslog.LOG_INFO, "Logs path: " + attachment_path + filename)
 ###############################################################################
 
 #### Send file with additionnal logs #####
-filename = path + '/{0}.txt'.format(filename)
+filename = attachment_path + '/{0}.txt'.format(filename)
 print(filename)
 
 
-notif = "Additional logs collected from switch(IP : {0}) syslogs. and stored in {3} on server IP Address: {2}".format(ipadd, pattern, ip_server, path)
+notif = "Tech-Support file and additional logs collected from switch(IP : {0}) syslogs. and stored in " + attachment_path + " on server IP Address: {2}".format(ipadd, pattern, ip_server)
 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
 send_message(notif)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-set_decision(ipadd, "4")
-try:
-    mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
-    syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
-except UnboundLocalError as error:
-    print(error)
-    sys.exit()
-except Exception as error:
-    print(error)
-    pass   
-
-
+mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
 open('/var/log/devices/get_log_switch.json', 'w').close()
