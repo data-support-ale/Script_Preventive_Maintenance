@@ -1,0 +1,429 @@
+.body {
+    font-family: "ClanOT";
+}
+
+.app-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 3rem;
+    background-color: #6b489d;
+    box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 5%), inset 0 -1px 0 rgb(0 0 0 / 10%);
+}
+
+.logo-name p {
+    font-size: 17px;
+}
+
+.logo-name p b {
+    font-size: 24px;
+}
+
+
+:first-child>.nav-item {
+    /* margin-left: 10rem; */
+}
+
+
+
+.nav-item img {
+    display: block;
+    margin: 0 auto;
+    padding-bottom: 5px;
+}
+
+.app-header .child {
+    position: relative;
+    left: 2rem;
+    top: 3rem;
+    width: 20rem;
+    float: left;
+    color: #ffff;
+}
+
+/* .app-header .nav {
+    position: relative;
+    left: 17rem;
+    top: 0rem;
+    float: left;
+} */
+
+.app-header .nav li a {
+    color: #ffff;
+}
+
+.profile-block {
+    float: right;
+    margin-right: 3rem;
+    margin-top: 8px;
+}
+
+.avatar {
+    /* vertical-align: middle;
+    line-height: 3em;
+    text-align: center;
+    border-radius: 50%;
+    background: #0085ca;
+    color: white;
+    display: inline-block;
+    font-size: 1em;
+    width: 3em;
+    height: 3em; */
+    vertical-align: middle;
+    line-height: 3em;
+    text-align: center;
+    border-radius: 50%;
+    background: #0085ca;
+    color: white;
+    display: inline-block;
+    font-size: 1em;
+    width: 4em;
+    height: 4em;
+    margin-bottom: 2px;
+    padding-top: 9px;
+}
+
+.btn-drop {
+    background: #6b489d !important;
+}
+
+.btn-drop:focus {
+    box-shadow: none;
+}
+
+.success-dot {
+    height: 15px;
+    width: 15px;
+    background-color: #34b233;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.error-dot {
+    height: 15px;
+    width: 15px;
+    background-color: #d3143d;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.circlecolor {
+    color: #34b233;
+}
+
+.aboutcolor {
+    color: #0085ca;
+}
+
+.headings {
+    color: #0085ca;
+}
+
+p {
+    line-height: 1;
+    font-size: 0.875em;
+    /* 14px/16=0.875em */
+}
+
+.logoutheader {
+    background: #0085ca;
+}
+
+.logoutcircle {
+    vertical-align: middle;
+    line-height: 3em;
+    text-align: center;
+    border-radius: 50%;
+    background: white;
+    color: #0085ca;
+    display: inline-block;
+    font-size: 1em;
+    width: 3em;
+    height: 3em;
+}
+
+.logoutstyle {
+    text-align: center;
+    font: normal normal medium 28px/24px ClanOT;
+    color: #0085ca;
+    opacity: 1;
+}
+
+.barcolor {
+    background: #0085ca;
+}
+
+.progress-bar-striped {
+    border-radius: 20px;
+    background: #34b233;
+    background-image: linear-gradient(45deg,
+            rgba(255, 255, 255, 0.15) 25%,
+            transparent 25%,
+            transparent 50%,
+            rgba(255, 255, 255, 0.15) 50%,
+            rgba(255, 255, 255, 0.15) 75%,
+            transparent 75%,
+            transparent);
+}
+
+.downloadcolor {
+    background: #dbdbdb 0% 0% no-repeat padding-box;
+}
+
+.active {
+    background: #f0f0f0;
+}
+
+.active a {
+    color: #0085ca !important;
+}
+
+.active img {
+    /* background: #0085ca !important; */
+}
+
+.font-size-l {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.font-size-m {
+    font-size: 18px;
+}
+
+.font-size-s {
+    font-size: 14px;
+}
+
+.font-size-u {
+    font-size: 16px;
+}
+
+
+/*  New Css    */
+header {
+    background: #6B489D;
+    /* height: 7%; */
+}
+
+.container {
+    background: #6B489D;
+}
+
+.nav-item {
+    height: 100px;
+    /* padding-top: 0.4rem; */
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+}
+
+.nav-link {
+    display: block;
+    padding-top: 2rem;
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.menu {
+    margin-right: 19%;
+}
+
+.menu ul {
+    /* padding-top: 3%; */
+    margin: -1px;
+}
+
+.menu ul li {
+    list-style-type: none;
+    color: #fff;
+    display: inline-block;
+    font-size: 20px;
+    margin-left: 24px;
+}
+
+.logo .child {
+    color: #ffff;
+}
+
+.child span:nth-child(1) {
+    font-size: 17px;
+}
+
+.child span:nth-child(2) {
+    font-size: 24px;
+}
+
+.menu_item {}
+
+.menu ul li:hover {
+    cursor: pointer;
+    transition: 0.4s ease-in-out;
+}
+
+.avatarBtn {
+    padding-top: 17px;
+}
+
+@media screen and (max-width: 1550px) {
+    .avatarBtn {
+        padding-top: 5px;
+    }
+}
+
+@media screen and (max-width: 1450px) {
+
+    @media screen and (max-width: 1300px) and (min-width : 1010px) {
+        .menu {
+            margin-right: auto;
+        }
+
+        .avatarBtn {
+            padding-top: 5px;
+        }
+    }
+
+    .nav-item img {
+        margin: 0;
+    }
+
+    .nav-item {
+        height: 80px;
+        padding-right: 1.5rem;
+    }
+
+    .menu ul li {
+        margin-left: 0px;
+    }
+
+
+}
+
+@media only screen and (max-width : 1009px) {
+    .menu {
+        margin-right: -6px;
+    }
+
+    .avatarBtn {
+        padding-top: 5px;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 1000px) {
+    .menu {
+        position: absolute;
+        right: -280px;
+        /* top: 29px; */
+        top: 7%;
+        z-index: 9999;
+        width: 280px;
+        height: 55%;
+        background: #6B489D;
+        transition: 0.4s ease-in-out;
+    }
+
+    @media only screen and (max-width: 800px) {
+        .menu {
+            position: absolute;
+            right: -280px;
+            /* top: 29px; */
+            top: 5%;
+            z-index: 9999;
+            width: 280px;
+            height: 55%;
+            background: #6B489D;
+            transition: 0.4s ease-in-out;
+        }
+    }
+
+    .avatarBtn {
+        padding-top: 0;
+    }
+
+
+    @media screen and (min--moz-device-pixel-ratio:0) {
+        .menu {
+            position: absolute;
+            right: -280px;
+            /* top: 29px; */
+            top: 11%;
+            z-index: 9999;
+            width: 280px;
+            height: 46%;
+            background: #6B489D;
+            transition: 0.4s ease-in-out;
+        }
+
+    }
+
+    .nav-item img {
+        margin: 0;
+    }
+
+    .menu ul li {
+        display: block;
+        text-align: left;
+        margin: 0;
+        padding: 10px 0 10px 26px;
+        border-bottom: 1px solid #fff;
+    }
+
+    .menu_icon {
+        /* display: inline-block;
+        position: relative;
+        right: 0;
+        top: 4px */
+
+        display: inline-block;
+        position: relative;
+        /* right: -102px; */
+        top: 25px;
+        margin-left: 90%;
+        /* left: 28%; */
+
+    }
+
+    .menu_res {
+        display: none;
+        transition: 0.1s ease-in-out;
+    }
+
+    .menu_icon span {
+        width: 32px;
+        height: 3px;
+        background: #fff;
+        display: block;
+        transition: 0.1s ease-in-out;
+
+    }
+
+    .menu_icon span:nth-child(2) {
+        margin: 4px 0;
+    }
+
+    .menu_icon_class span:nth-child(2) {
+        display: none;
+    }
+
+    .menu_icon_class span:nth-child(1) {
+        transform: rotate(40deg);
+    }
+
+    .menu_icon_class span:nth-child(3) {
+        transform: rotate(-40deg);
+        margin-top: -3px;
+    }
+
+    .menuClass {
+        right: 0;
+        transition: 0.4s ease-in-out;
+    }
+
+    .nav-link {
+        padding-top: 0;
+    }
+}

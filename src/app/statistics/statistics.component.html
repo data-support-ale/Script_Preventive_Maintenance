@@ -1,0 +1,92 @@
+<app-header></app-header>
+<div class="divbackground pb-5">
+    <div class="container px-0">
+        <div class="imgstyles pt-5  pb-4">
+            <img src="../../assets/Icon_statistics.png" alt="statistics-logo"> STATISTICS
+        </div>
+
+        <div class="box-shadow">
+            <div class="row m-2">
+                <div class="col-3 d-flex align-items-center font-size-l">
+                    Stats Retention Duration : <span *ngIf="fromDate && toDate"> {{ numberOfDays() }}
+                    </span>
+                </div>
+                <div class="col-3 d-flex align-items-center numberOfPages">
+                    <label for="fil" class="filter mx-3 font-size-l">Number of pages</label>
+                    <select [(ngModel)]="noOfPages" (ngModelChange)="noOfPagesChange()" style="width:auto"
+                        class="form-select">
+                        <option *ngFor="let in of counter(noOfPagesLength); let i = index" [value]="i + 1"> {{ i + 1 }}
+                        </option>
+                    </select>
+                </div>
+                <div class=" justify-content-end col-6 displayFlex">
+                    <div class="filterDisplay">
+                        <div class="d-flex align-items-center mr-2">
+                            <label style="white-space: nowrap;" class="font-size-l"> Date Range:</label>
+                        </div>
+
+                        <div class="d-flex" style="flex-wrap: wrap">
+                            <div style="display: flex">
+                                <mat-form-field appearance="fill" class="mr-2">
+                                    <mat-label>From</mat-label>
+                                    <input matInput (dateInput)="onDateChange()" [matDatepicker]="formPicker"
+                                        [(ngModel)]="fromDate" [min]="minDate" [max]="maxDate">
+                                    <mat-datepicker-toggle matSuffix [for]="formPicker"></mat-datepicker-toggle>
+                                    <mat-datepicker #formPicker></mat-datepicker>
+                                </mat-form-field>
+                            </div>
+
+                            <div style="display: flex">
+                                <mat-form-field appearance="fill" class="mr-2">
+                                    <mat-label>To</mat-label>
+                                    <input matInput (dateInput)="onDateChange()" [matDatepicker]="toPicker"
+                                        [(ngModel)]="toDate" [min]="fromDate" [max]="maxDate">
+                                    <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+                                    <mat-datepicker #toPicker></mat-datepicker>
+                                </mat-form-field>
+                            </div>
+                            <div class="d-flex align-items-center  mr-2">
+                                <button class="btn btn-primary bgcolor" [disabled]="this.filterButton"
+                                    (click)="searchData()">
+                                    Filter</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <p-table [value]="statistics" styleClass=" p-datatable-striped" [paginator]="true" [rows]="30"
+                responsiveLayout="scroll" [(first)]="first" (onPage)="paginate($event)">
+                <ng-template pTemplate="header">
+                    <tr class="headerstyle">
+                        <th class="textstyle ">Timestamp</th>
+                        <th class="textstyle ">Rule Name</th>
+                        <th class="textstyle ">Result</th>
+                        <th class="textstyle text-center">Details</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-statistic class="bodyStyle" let-index="rowIndex">
+                    <tr class="row-bg">
+                        <td>{{statistic.timestamp}}</td>
+                        <td>{{statistic.rule_name.rule_name}}</td>
+                        <td>
+                            <div *ngIf="typeCastToLower(statistic.result)==='success'" class="successcolor">Success
+                            </div>
+                            <div *ngIf="typeCastToLower(statistic.result)==='failure'" class="failcolor">Failure
+                            </div>
+                            <div *ngIf="statistic.result==='Fail'" class="failcolor">Failure</div>
+                        </td>
+                        <td>{{statistic?.details}}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage" let-columns>
+                    <tr class="row-bg">
+                        <td colspan="4" class="w-100" style="text-align: center;"><span>No data
+                                available for the filter value</span></td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+    </div>
+</div>

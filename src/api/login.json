@@ -1,0 +1,172 @@
+{
+  "login": {
+    "username": "wei7yfiu@u7dy.rfyhi",
+    "password": "xzvcbn"
+  },
+  "decision": [
+    {
+      "id": 1,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:5, Action:notification,Decision:No"
+    },
+    {
+      "id": 2,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:2, Action:notification,Decision:Yes and Remember"
+    },
+    {
+      "id": 3,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:5, Action:notification,Decision:No"
+    },
+    {
+      "id": 4,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:6, Action:Script Execution,Decision:No"
+    },
+    {
+      "id": 1,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:5, Action:notification,Decision:No"
+    },
+    {
+      "id": 2,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:2, Action:notification,Decision:Yes and Remember"
+    },
+    {
+      "id": 3,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:5, Action:notification,Decision:No"
+    },
+    {
+      "id": 4,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:6, Action:Script Execution,Decision:No"
+    },
+    {
+      "id": 1,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:5, Action:notification,Decision:No"
+    },
+    {
+      "id": 2,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:2, Action:notification,Decision:Yes and Remember"
+    },
+    {
+      "id": 3,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:5, Action:notification,Decision:No"
+    },
+    {
+      "id": 4,
+      "rule_name": "Port Flapping",
+      "last_decision_made": "Port Flapping-> 192.168.1.100, Port:6, Action:Script Execution,Decision:No"
+    }
+  ],
+  "rules": {
+    "status": "success",
+    "message": "Success",
+    "code": "200",
+    "data": [
+      {
+        "rule_type": "default",
+        "rules": [
+          {
+            "rule_id": "1",
+            "rule_name": "Port Flapping",
+            "action": "Collect log",
+            "enabled": "false",
+            "description": "description"
+          },
+          {
+            "rule_id": "2",
+            "rule_name": "Port Flapping",
+            "action": "Send Notification",
+            "enabled": "true",
+            "description": "description"
+          }
+        ]
+      },
+      {
+        "rule_type": "custom",
+        "rules": [
+          {
+            "rule_id": "3",
+            "rule_name": "Port Flapping",
+            "action": "Collect log",
+            "enabled": "false",
+            "description": "description"
+          },
+          {
+            "rule_id": "4",
+            "rule_name": "Port Flapping",
+            "action": "Send Notification",
+            "enabled": "true",
+            "description": "description"
+          }
+        ]
+      }
+    ]
+  },
+  "statistics": {
+    "status": "success",
+    "message": "Success",
+    "code": "200",
+    "statistics": [
+      {
+        "timestamp": "6-DEC-2021 11:12:13",
+        "rule_name": "Port Flapping",
+        "action": "Collect log",
+        "result": "success"
+      },
+      {
+        "timestamp": "[dd-mm-yyyy hh:mm:ss]",
+        "rule_name": "Port Flapping",
+        "action": "Send Notification",
+        "result": "failure"
+      }
+    ]
+  },
+  "about": {
+    "status": "success",
+    "message": "success",
+    "code": "200",
+    "version": {
+      "current_release": "<release number>",
+      "ale_repository_build_available": "<ale build release number>",
+      "build": "<build number>",
+      "vna_rainbow_status": "<status>"
+    },
+    "system": {
+      "hostname": "<hostname>",
+      "ip_address": "<ip address>",
+      "mac_address": "<mac address>",
+      "operatingsystem": "<operatingsystem>",
+      "version_distribution": "SUSE Lserver 12 SPS",
+      "architecture": "<os architecture>",
+      "total_memory": "<total memory of ram>",
+      "free_memory": "<free memory of ram>",
+      "cpu": "<number of cpu used>"
+    },
+    "hard_disk": {
+      "total_memory": "100",
+      "free_memory": "30",
+      "local_disk": "<local disk>"
+    }
+  },
+  "settings": [
+    {
+      "status": "success",
+      "message": "Success",
+      "code": "200",
+      "settings": {
+        "ssh_port": "[integer]",
+        "rsyslog_port": "[integer]",
+        "Grafana_port": "[string]",
+        "company_name": "[string]"
+      }
+    }
+  ]
+}

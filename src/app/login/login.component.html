@@ -1,0 +1,75 @@
+<div class="container">
+  <form class="login-form" [formGroup]="loginForm" (ngSubmit)="OnSubmit()" #formGroupRef="ngForm" autocomplete="off">
+    <p class="h5">
+      Welcome to <span class="login-title">Preventive maintenance</span>
+    </p>
+    <div class="login-container">
+      <div class="row login-image"></div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group login-info has-feedback">
+            <label class="login-label">Please enter your login details</label>
+            <img class="input-icon-l" src="assets/icons/icon-email.svg" />
+            <input matInput type="email" name="username" id="username" class="form-control px-5"
+              [(ngModel)]="login.username" formControlName="username" placeholder="john_smith@al-enterprise.com"
+              required autocomplete="disabled" />
+            <div *ngIf="submitted && f['username'].errors" class="error">
+              <div *ngIf="f['username'].errors['required']" class="error">
+                E-mail is required
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="form-group">
+              <img class="input-icon-p" src="assets/icons/icon-password.svg" />
+              <input matInput type="password" name="password" id="password" class="form-control px-5"
+                [(ngModel)]="login.password" formControlName="password" placeholder="Password" required />
+              <div *ngIf="submitted && f['password'].errors" class="error">
+                <div *ngIf="f['password'].errors['required']" class="error">
+                  Password is required
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="error">
+          <div class="col-md-12">
+            <div class="alert alert-danger">
+              <!--{{ error }}-->
+              Invalid Username or Password
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row" class="{{ error ? '' : 'remind-me' }}">
+        <div class="col-md-12">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="exampleCheck1" (change)="remindMeHandler($event)" />
+            <label class="form-check-label" for="exampleCheck1">Keep me logged in</label>
+          </div>
+        </div>
+      </div>
+      <div class="row" class="{{
+          submitted && f['password'].errors && f['username'].errors
+            ? 'login-button-error'
+            : 'login-button'
+        }}">
+        <div class="col-md-12">
+          <div class="form-group">
+            <button type="submit" [disabled]="this.loginForm.invalid" class="btn login-btn">
+              Connect
+            </button>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row login-footer">
+      <p class="h5">
+        More information on
+        <span class="login-link">Preventive Maintenance</span>
+      </p>
+      <p class="h6">Copyright &copy; 2022 Alcatel Lucent Enterprise</p>
+    </div>
+  </form>
+</div>

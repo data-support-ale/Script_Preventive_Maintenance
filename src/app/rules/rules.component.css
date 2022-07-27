@@ -1,0 +1,159 @@
+.imgstyles {
+    background: #F0F0F0 0% 0% no-repeat padding-box;
+    color: #6B489D;
+}
+
+.filter {
+    text-align: left;
+    font: normal normal medium 13px/24px ClanOT;
+    letter-spacing: 0px;
+    color: #76777D;
+    opacity: 1;
+}
+
+.headerstyle>th {
+    background: white !important;
+    /* #9b9999 !important */
+    color: DodgerBlue;
+    /* background-color: #707070 0% 0% no-repeat padding-box;   */
+}
+
+.textstyle {
+    text-align: left;
+    font: normal normal medium 16px/24px ClanOT;
+    letter-spacing: 0px;
+    color: #0085CA;
+    opacity: 1;
+}
+
+.enablestyle {
+    text-align: left;
+    font: normal normal normal 15px/5px ClanOT;
+    letter-spacing: 0px;
+    color: #34B233;
+    opacity: 1;
+}
+
+.disablestyle {
+    text-align: left;
+    font: normal normal normal 15px/5px ClanOT;
+    letter-spacing: 0px;
+    color: #FF4500;
+    opacity: 1;
+}
+
+.success {
+    background: #00B502;
+}
+
+.iconstyle {
+    color: #fff;
+    text-shadow: 1px 1px 1px #ccc;
+    font-size: 2em;
+}
+
+.fail {
+    background: #FF4500;
+}
+
+.failicon {
+    color: #fff;
+    text-shadow: 1px 1px 1px #ccc;
+    font-size: 2em;
+}
+
+.greatstyle {
+    text-align: center;
+    font: normal normal medium 28px/24px ClanOT;
+    color: #00B502;
+    opacity: 1;
+}
+
+.sorrystyle {
+    text-align: center;
+    font: normal normal medium 28px/24px ClanOT;
+    color: #FF4500;
+    opacity: 1;
+}
+
+.row-bg:nth-child(odd) {
+    /*background: #e3e1e1 !important; */
+
+    background: #DBDBDB;
+}
+
+.row-bg:nth-child(even) {
+    /*background: #e3e1e1 !important; */
+
+    background: #F0F0F0;
+}
+
+.borderStyle {
+    border: none;
+}
+
+.rulecolor {
+    color: #0085CA;
+}
+
+.font-size-l {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.font-size-m {
+    font-size: 18px;
+}
+
+.inputcolor {
+    background: #E4E4E4;
+    /* width: 80%; */
+}
+
+.btn-link {
+    text-decoration: none;
+    font-size: 20px;
+}
+
+.selectedcolor {
+    background: #0085CA !important;
+    color: white !important;
+}
+
+.editDotsStyle {
+    border: none;
+}
+
+.editDotsStyle .dropdown-toggle::after {
+    display: none;
+}
+
+.message {
+    color: #0085CA;
+}
+
+
+.delete-model {
+    width: 35%;
+}
+
+.box-shadow {
+    box-shadow: 0 10px 16px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%) !important;
+    padding: 16px 18px;
+}
+
+.font-size-l {
+    font-size: 18px;
+}
+
+.w--10 {
+    width: 10%;
+}
+
+.w--30 {
+    width: 30%;
+}
+
+.w--40 {
+    width: 40%;
+}

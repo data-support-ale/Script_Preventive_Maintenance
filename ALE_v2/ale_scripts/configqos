@@ -1,0 +1,5 @@
+policy condition scanner_ee:69:41:eb:24:41 source mac ee:69:41:eb:24:41
+policy action block_mac disposition deny
+policy rule scanner_ee:69:41:eb:24:41 condition scanner_ee:69:41:eb:24:41 action block_mac
+qos apply
+qos enable

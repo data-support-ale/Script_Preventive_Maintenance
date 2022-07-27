@@ -1,12 +1,18 @@
-git_usage
-__pycache__/
-openssl*/
-Python*/
-.vscode
-test.*
-Analytics/influxdb/data/*
+node_modules
+.angular
 
-*.gz
-*.tar
-*.tgz
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__
+db.sqlite3
+media
 
+# Visual Studio Code # 
+.vscode/* 
+!.vscode/settings.json 
+!.vscode/tasks.json 
+!.vscode/launch.json 
+!.vscode/extensions.json 
+.history

@@ -1,0 +1,22 @@
+.imgstyles {
+    background: #F0F0F0 0% 0% no-repeat padding-box;
+    color: #6B489D;
+}
+
+.form-label {
+    color: #0085CA;
+    font: normal normal medium 13px/24px ClanOT;
+}
+
+.form-control {
+    background: #DBDBDB;
+}
+
+.font-size-l {
+    font-size: 18px;
+}
+
+.box-shadow {
+    box-shadow: 0 10px 16px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%) !important;
+    padding: 16px 18px;
+}

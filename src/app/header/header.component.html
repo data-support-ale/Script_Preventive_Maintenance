@@ -1,0 +1,183 @@
+<header>
+    <div class="container">
+        <div class="row align-items-end" style="display:flex">
+            <div class="col-md-3 col-sm-3 col-3 " style="display:flex">
+                <div class="logo ">
+                    <p class="child "><span>Preventive</span>&nbsp; <span><b>Maintenance</b></span></p>
+                </div>
+            </div>
+            <div class="col-md-9 col-sm-9 col-9 " style="display:flex;justify-content: end;">
+
+                <div class="menu_icon" [class.menu_icon_class]="menu_icon_variable" (click)="openMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="menu" [class.menuClass]="menuVariable" [class.menu_res]="menu_res">
+                    <ul class="menu_item">
+                        <li class="nav-item" *ngFor="let tabItem of tabs" [routerLink]="tabItem.route"
+                            [ngClass]="{ 'active': tabItem.route == router?.url }">
+                            <a class="nav-link" routerLink="{{ tabItem.route }}">
+                                <img alt="ALE logo" *ngIf="tabItem.route == router?.url"
+                                    src="assets/{{ tabItem.activeIcon }}" />
+                                <img alt="ALE logo" *ngIf="tabItem.route != router?.url"
+                                    src="assets/icons/{{ tabItem.icon }}" />
+                                {{ tabItem.label }}
+                            </a>
+                        </li>
+                    </ul>
+
+                </div>
+                <div class=" text-end">
+                    <button type="button" class="btn btn-drop avatarBtn" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <span class="avatar">{{ loginDataName }}</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item"><i class="fas fa-circle circlecolor"></i>Connect</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider" />
+                        </li>
+                        <li>
+                            <a class="dropdown-item" routerLink="/editprofile"><i class="fal fa-user"></i>Edit
+                                Profile</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider" />
+                        </li>
+                        <li>
+                            <a (click)="openAboutUsModal()" class="dropdown-item"><i
+                                    class="fal fa-question-circle"></i>About</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider" />
+                        </li>
+                        <li>
+                            <a (click)="logout()" class="dropdown-item"><i class="fal fa-sign-out"></i>Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</header>
+<div class="modal fade" id="aboutUsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="d-flex justify-content-end p-3">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center p-2">
+                    <i class="fal fa-info-circle aboutcolor font-size-l"></i>
+                    <!-- <img src="assets/icons8-info-32.png" />-->
+                </div>
+                <div class="d-flex justify-content-center">
+                    <h4 class="modal-title aboutcolor font-size-l" id="exampleModalLabel">ABOUT</h4>
+                </div>
+                <div class="ms-4">
+                    <h6 class="headings font-size-m">VERSION</h6>
+                    <p class="font-size-s">Current Release: {{ aboutObject?.version?.current_release }}</p>
+                    <p class="font-size-s">Build:{{ aboutObject?.version?.build }}</p>
+                    <p class="font-size-s">
+                        Ale Repository Build available:
+                        {{ aboutObject?.version?.ale_repository_build_available }}
+                    </p>
+                    <p *ngIf="aboutObject?.version?.vna_rainbow_status==='Success'" class="font-size-s">
+                        VNA/Rainbow Status:<span class="success-dot"></span>
+                    </p>
+                    <p *ngIf="aboutObject?.version?.vna_rainbow_status==='Fail'" class="font-size-s">
+                        VNA/Rainbow Status:<span class="error-dot"></span>
+                    </p>
+                </div>
+                <div class="ms-4">
+                    <h6 class="headings font-size-m">SYSTEM</h6>
+                    <p class="font-size-s">Hostname : {{ aboutObject?.system?.hostname }}</p>
+                    <p class="font-size-s">IP Address :{{ aboutObject?.system?.ip_address }}</p>
+                    <p class="font-size-s">Mac Address : {{ aboutObject?.system?.mac_address }}</p>
+                    <p class="font-size-s">Operating system : {{ aboutObject?.system?.operating_system }}</p>
+                    <p class="font-size-s">
+                        Version/Distribution :
+                        {{ aboutObject?.system?.version_distribution }}
+                    </p>
+                    <p class="font-size-s">Architecture : {{ aboutObject?.system?.architecture }}</p>
+                    <p class="font-size-s">Total Memory : {{ aboutObject?.system?.total_memory }} GB</p>
+                    <p class="font-size-s">Free memory : {{ aboutObject?.system?.free_memory }} GB</p>
+                    <p class="font-size-s">CPUs : {{ aboutObject?.system?.cpu }}</p>
+                    <p class="font-size-s">Hard disk(s) drive(s):</p>
+                    <div class="col-5 progress font-size-s">
+                        <div class="progress-bar barcolor w-75" role="progressbar"
+                            aria-valuenow="aboutObject?.hard_disk.free_memory" aria-valuemin="0"
+                            aria-valuemax="aboutObject?.hard_disk.total_memory"></div>
+                    </div>
+                    <div>
+                        {{ aboutObject?.hard_disk.free_memory }}GB free on
+                        {{ aboutObject?.hard_disk.total_memory }} GB
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center m-4">
+                    <button type="button" class="btn btn-primary ms-2" data-bs-dismiss="modal"
+                        (click)="openAleRepoModel()">
+                        Upgrade from ALE Repository
+                    </button>
+                    <button type="button" class="btn btn-primary ms-2" data-bs-dismiss="modal"
+                        (click)="openOfflineUpgradeModel()">
+                        Upgrade from offline
+                    </button>
+                    <button type="button" class="btn btn-primary ms-2" data-bs-dismiss="modal"
+                        (click)="opendownloadModel()">
+                        Download logs files
+                    </button>
+                </div>
+                <div class="ms-4">
+                    <h3 class="headings">www.al-enterprise.com</h3>
+                    <p>
+                        The Alcatel-Lucent name and logo are trademark of Nokia used under
+                        license by ALE. <br />
+                        © 2022 ALE International. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="downloadModel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="d-flex justify-content-end p-3 downloadcolor">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body mt-3">
+                <h4 class="logoutstyle">Download completed!</h4>
+                <div class="progress my-5">
+                    <div class="progress-bar w-100 progress-bar-striped" role="progressbar" aria-valuenow="100"
+                        aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="OfflineUpgradeModel" tabindex="-1" aria-labelledby="OfflineUpgradeModel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="d-flex justify-content-end p-3">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="form" (ngSubmit)="submitForm()">
+                    <div class="form-group mb-4 pb-4">
+                        <label class="font-size-u" for="file">Please upload the Zip File</label>
+                        <input type="file" accept=".zip" #myInput class="form-control" (change)="uploadFile($event)">
+                        <!-- <input type="file" (change)="uploadFile($event)"> -->
+                    </div>
+                    <button class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<router-outlet></router-outlet>

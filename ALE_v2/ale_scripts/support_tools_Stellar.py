@@ -1,0 +1,547 @@
+#!/usr/bin/env python3
+
+from asyncio.subprocess import PIPE
+from copy import error
+import sys
+import os
+import logging
+import datetime
+
+from support_send_notification import *
+import subprocess
+import re
+import requests
+import paramiko
+# from database_conf import *
+
+from pattern import mysql_save
+from time import localtime, strftime
+
+# This script contains all functions interacting with Stellar APs
+
+# Function for extracting environment information from ALE_script.conf file
+
+path = os.path.dirname(__file__)
+
+def get_credentials(attribute=None):
+    """ 
+    This function collects all the information about the switch's credentials in the log. 
+    It collects also the information usefull for  notification sender in the file ALE_script.conf.
+
+    :param:                         None
+    :return str user:               Switch user login
+    :return str password:           Switch user password
+    :return str jid:                 Rainbow JID  of recipients
+    :return str gmail_usr:          Sender's email userID
+    :return str gmail_passwd:       Sender's email password               
+    :return str mails:              List of email addresses of recipients
+    """
+    from mysql.connector import connect
+    from cryptography.fernet import Fernet
+    db_key=b'gP6lwSDvUdI04A8fC4Ib8PXEb-M9aTUbeZTBM6XAhpI='
+    dbsecret_password=b'gAAAAABivYWTJ-2OZQW4Ed2SGRNGayWRUIQZxLckzahNUoYSJBxsg5YZSYlMdiegdF1RCAvG4FqjMXD-nNeX0i6eD7bdFV8BEw=='
+    fernet = Fernet(db_key)
+    db_password = fernet.decrypt(dbsecret_password).decode()
+    database = connect(
+		host='localhost',
+		user='aletest',
+		password=db_password,
+		database='aledb'
+		)
+    db = database.cursor()
+    query = "SELECT * FROM ALEUser_settings_value"
+    db.execute(query)
+    result = json.loads(db.fetchall()[1][2])
+    return result.values()
+
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+
+# Function SSH for checking connectivity before collecting logs
+def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
+    """ 
+    This function takes entry the command to push remotely on Stellar AP by SSH with support account with Python Paramiko module
+    Paramiko exceptions are handled for notifying Network Administrator if the SSH Session does not establish
+
+    :param str cmd                  Command pushed by SSH on Stellar AP
+    :param str ipadd                    Stellar IP address
+    :return:  stdout, stderr          If exceptions is returned on stderr a notification is sent to Network Administrator, else we log the session was established
+    """
+    print(cmd)
+    runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
+
+    try:
+        p = paramiko.SSHClient()
+        p.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        p.connect(ipadd, port=22, username=login_AP,
+                  password=pass_AP, timeout=60.0, banner_timeout=200)
+    except ConnectionError as exception:
+        print(exception)
+        print("SSH not allowed when establishing SSH Session")
+        info = ("SSH Connection fails when establishing SSH Session to Stellar AP {0}, please verify if SSH is enabled on the AP Group").format(ipadd)
+        _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
+        os.system('logger -t montag -p user.info ' + info)
+        # send_message_detailed(info, jid1, jid2, jid3)
+        send_message_detailed(info, jid1, jid2, jid3)
+        try:
+            mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(0)
+        except Exception as error:
+            print(error)
+            pass
+    except TimeoutError as exception:
+        print(exception)
+        print("Timeout when establishing SSH Session")
+        info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+        _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
+        os.system('logger -t montag -p user.info ' + info)
+        # send_message_detailed(info, jid1, jid2, jid3)
+        send_message_detailed(info, jid1, jid2, jid3)
+        try:
+            mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(0)
+        except Exception as error:
+            print(error)
+            pass  
+    except paramiko.AuthenticationException:
+        exception = "AuthenticationException"
+        print("Authentication failed enter valid user name and password")
+        info = ("SSH Authentication failed when connecting to Stellar AP {0}, we cannot collect logs").format(ipadd)
+        _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
+        os.system('logger -t montag -p user.info ' + info)
+        # send_message_detailed(info, jid1, jid2, jid3)
+        send_message_detailed(info, jid1, jid2, jid3)
+        try:
+            mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(0)
+        except Exception as error:
+            print(error)
+            pass 
+    except paramiko.SSHException as error:
+        print(error)
+        exception = error.readlines()
+        exception = str(exception)
+        print("Device unreachable")
+        logging.info(' SSH session does not establish on Stellar AP ' + ipadd)
+        info = ("Stellar AP {0} is unreachable, we cannot collect logs").format(ipadd)
+        print(info)
+        _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
+        os.system('logger -t montag -p user.info ' + info)
+        # send_message_detailed(info, jid1, jid2, jid3)
+        send_message_detailed(info, jid1, jid2, jid3)
+        try:
+            mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(0)
+        except Exception as error:
+            print(error)
+            pass
+    except:
+        logging.info(' SSH session does not establish on Stellar AP, please verify SSH is enabled on the AP Group ' + ipadd)
+        info = ("Stellar AP {0} is unreachable, please verify SSH is enabled on the AP Group").format(ipadd)
+        print(info)
+        _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
+        os.system('logger -t montag -p user.info ' + info)
+        # send_message_detailed(info, jid1, jid2, jid3)
+        send_message_detailed(info, jid1, jid2, jid3)
+        try:
+            mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception="SSH_disabled_on_AP_Group")
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(0)
+        except Exception as error:
+            print(error)
+            pass
+    try:
+        stdin, stdout, stderr = p.exec_command(cmd, timeout=120)
+        #stdin, stdout, stderr = threading.Thread(target=p.exec_command,args=(cmd,))
+        # stdout.start()
+        # stdout.join(1200)
+    except Exception:
+        exception = "SSH Timeout"
+        info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+        print(info)
+        _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
+        os.system('logger -t montag -p user.info ' + info)
+        # send_message_detailed(info, jid1, jid2, jid3)
+        send_message_detailed(info, jid1, jid2, jid3)
+        try:
+            mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+        sys.exit() 
+    exception = stderr.readlines()
+    exception = str(exception)
+    connection_status = stdout.channel.recv_exit_status()
+    print(connection_status)
+    print(exception)
+    if connection_status == 1:
+        pass
+    elif connection_status != 0 :
+        info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+        _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
+        # send_message_detailed(info, jid1, jid2, jid3)
+        send_message_detailed(info, jid1, jid2, jid3)
+        os.system('logger -t montag -p user.info ' + info)
+        try:
+            mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit(2)
+        except Exception as error:
+            print(error)
+            pass 
+    else:
+        info = ("SSH Session established successfully on Stellar AP {0}").format(ipadd)
+        _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
+        os.system('logger -t montag -p user.info ' + info)
+        try:
+            mysql_save(runtime=runtime, ip_address=ipadd, result='success', reason=_info, exception='')
+        except UnboundLocalError as error:
+            print(error)
+        except Exception as error:
+            print(error)
+            pass 
+        output = stdout.readlines()
+        # We close SSH Session once retrieved command output
+        p.close()
+        return output
+
+def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):
+    """ 
+    This function returns the neighbor channel scanned and current channel set on AP
+
+    :param str login_AP:                   Stellar AP support login
+    :param str pass_AP:                    Stellar AP support password
+    :param str neighbor_ip:                Stellar Neighbor IP Address when scanning
+    :return:                               filename_path,subject,action,result,category
+    """
+    runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
+    l_stellar_cmd = []
+    l_stellar_cmd.append("ssudo tech_support_command 13")
+    for stellar_cmd in l_stellar_cmd:
+        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, neighbor_ip, stellar_cmd)
+        try:
+            output = ssh_connectivity_check(login_AP, pass_AP, neighbor_ip, stellar_cmd)
+            output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
+            if output != None:
+                output = output.decode('UTF-8').strip()
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(neighbor_ip)
+                print(info)
+                _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
+                os.system('logger -t montag -p user.info ' + info)
+                # send_message_detailed(info, jid1, jid2, jid3)
+                send_message_detailed(info, jid1, jid2, jid3)
+                try:
+                    mysql_save(runtime=runtime, ip_address=neighbor_ip, result='failure', reason=_info, exception=exception)
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on Stellar AP {0} failed - {1}").format(neighbor_ip, exception)
+            print(info)
+            _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
+            os.system('logger -t montag -p user.info ' + info)
+            # send_message_detailed(info, jid1, jid2, jid3)
+            send_message_detailed(info, jid1, jid2, jid3)
+            try:
+                mysql_save(runtime=runtime, ip_address=neighbor_ip, result='failure', reason=_info, exception=exception)
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+    print(output)
+    if "Channel" in output:
+        try:
+            my_channel = re.findall(r"    Channel:(.*)", output)
+            print(my_channel)
+        except IndexError:
+            print("Index error in regex")
+            exit()
+    return my_channel
+
+def  channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization):
+    """ 
+    This function returns the neighbor channel scanned and current channel set on AP
+
+    :param str login_AP:                   Stellar AP support login
+    :param str pass_AP:                    Stellar AP support password
+    :param str channel_utilization:        Stellar AP channel utilization
+    :return:                               filename_path,subject,action,result,category, channel, band
+    """
+    runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
+    l_stellar_cmd = []
+    l_stellar_cmd.append("ssudo tech_support_command 13")
+    for stellar_cmd in l_stellar_cmd:
+        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, ipadd, stellar_cmd)
+        try:
+            output = ssh_connectivity_check(login_AP, pass_AP, ipadd, stellar_cmd)
+            output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
+            if output != None:
+                output = output.decode('UTF-8').strip()
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
+                os.system('logger -t montag -p user.info ' + info)
+                # send_message_detailed(info, jid1, jid2, jid3)
+                send_message_detailed(info, jid1, jid2, jid3)
+                try:
+                    mysql_save(runtime=runtime, ip_address=neighbor_ip, result='failure', reason=_info, exception=exception)
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
+            os.system('logger -t montag -p user.info ' + info)
+            # send_message_detailed(info, jid1, jid2, jid3)
+            send_message_detailed(info, jid1, jid2, jid3)
+            try:
+                mysql_save(runtime=runtime, ip_address=neighbor_ip, result='failure', reason=_info, exception=exception)
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+    print(output)
+    if "Channel" in output:
+        try:
+            channel = re.findall(r"    Channel:(.*)", output)
+            print(channel)
+        except IndexError:
+            print("Index error in regex")
+            exit()
+    if "Utilization" in output:
+        try:
+            utilization = re.findall(r"    Utilization:(.*)", output)
+            print(utilization)
+        except IndexError:
+            print("Index error in regex")
+            exit()
+    return channel
+
+def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
+    """ 
+    This function returns file path containing the tech_support command outputs and the notification subject, body used when calling VNA API
+
+    :param str login_AP:                   Stellar AP support login
+    :param str pass_AP:                    Stellar AP support password
+    :param str ipadd:                      Switch IP address
+    :return:                               filename_path,subject,action,result,category
+    """
+    text = "More logs about the Stellar AP : {0} \n\n\n".format(ipadd)
+
+    runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
+    l_stellar_cmd = []
+    l_stellar_cmd.append("ssudo tech_support_command 1")
+    l_stellar_cmd.append("ssudo tech_support_command 2")
+    l_stellar_cmd.append("ssudo tech_support_command 16")
+    l_stellar_cmd.append("ssudo tech_support_command 27")
+    l_stellar_cmd.append("ssudo tech_support_command 12 " + ip_server)
+    for stellar_cmd in l_stellar_cmd:
+        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, ipadd, stellar_cmd)
+        try:
+            output = ssh_connectivity_check(login_AP, pass_AP, ipadd, stellar_cmd)
+            output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
+            if output != None:
+                output = output.decode('UTF-8').strip()
+                text = "{0}{1}: \n{2}\n\n".format(text, stellar_cmd, output)
+            else:
+                exception = "Timeout"
+                info = (
+                    "Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
+                os.system('logger -t montag -p user.info ' + info)
+                # send_message_detailed(info, jid1, jid2, jid3)
+                send_message_detailed(info, jid1, jid2, jid3)
+                try:
+                    mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = (
+                "The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
+            os.system('logger -t montag -p user.info ' + info)
+            # send_message_detailed(info, jid1, jid2, jid3)
+            send_message_detailed(info, jid1, jid2, jid3)
+            try:
+                mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+    date = datetime.date.today()
+    date_hm = datetime.datetime.today()
+
+    filename = "{0}_{1}-{2}_{3}_sta_limit_reached_logs".format(
+        date, date_hm.hour, date_hm.minute, ipadd)
+    filename_path = (path + '/{0}.txt').format(filename)
+    f_logs = open(filename_path, 'w')
+    f_logs.write(text)
+    f_logs.close()
+    subject = ("Preventive Maintenance Application - The number of associated WLAN Clients to BSSID on Stellar AP {0} reached the limit").format(ipadd)
+    action = "Attached to this notification the command outputs, please check if the number of associated clients corresponds to the maximum number of clients allowed per band (default: 64) "
+    result = ("Stellar AP snapshot logs are collected and stored on /tftpboot/ directory on server {0}. If you observe disprecancies between the number of clients associated versus number of clients allowed please contact ALE Customer Support").format(ip_server)
+    category = "sta_limit"
+    return filename_path, subject, action, result, category
+
+def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
+    """ 
+    This function returns file path containing the tech_support command outputs and the notification subject, body used when calling VNA API
+
+    :param str login_AP:                   Stellar AP support login
+    :param str pass_AP:                    Stellar AP support password
+    :param str ipadd:                      Switch IP address
+    :return:                               filename_path,subject,action,result,category
+    """
+    text = "More logs about the Stellar AP : {0} \n\n\n".format(ipadd)
+
+    runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
+    l_stellar_cmd = []
+    l_stellar_cmd.append("ssudo tech_support_command 1")
+    l_stellar_cmd.append("ssudo tech_support_command 2")
+    l_stellar_cmd.append("ssudo tech_support_command 16")
+    l_stellar_cmd.append("ssudo tech_support_command 21")
+    l_stellar_cmd.append("ssudo tech_support_command 27")
+    l_stellar_cmd.append("cat /var/config/access_role.conf")
+    l_stellar_cmd.append("ssudo tech_support_command 12 " + ip_server)
+    for stellar_cmd in l_stellar_cmd:
+        cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(pass_AP, login_AP, ipadd, stellar_cmd)
+        try:
+            output = ssh_connectivity_check(login_AP, pass_AP, ipadd, stellar_cmd)
+            output = subprocess.check_output(cmd, stderr=PIPE, timeout=40, shell=True)
+            if output != None:
+                output = output.decode('UTF-8').strip()
+                text = "{0}{1}: \n{2}\n\n".format(text, stellar_cmd, output)
+            else:
+                exception = "Timeout"
+                info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
+                print(info)
+                _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
+                os.system('logger -t montag -p user.info ' + info)
+                # send_message_detailed(info, jid1, jid2, jid3)
+                send_message_detailed(info, jid1, jid2, jid3)
+                try:
+                    mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
+                except UnboundLocalError as error:
+                    print(error)
+                except Exception as error:
+                    print(error)
+                    pass 
+                sys.exit()
+        except subprocess.TimeoutExpired as exception:
+            info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
+            print(info)
+            _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
+            os.system('logger -t montag -p user.info ' + info)
+            # send_message_detailed(info, jid1, jid2, jid3)
+            send_message_detailed(info, jid1, jid2, jid3)
+            try:
+                mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
+            except UnboundLocalError as error:
+                print(error)
+            except Exception as error:
+                print(error)
+                pass 
+            sys.exit()
+    date = datetime.date.today()
+    date_hm = datetime.datetime.today()
+
+    filename = "{0}_{1}-{2}_{3}_vlan_limit_reached_logs".format(date, date_hm.hour, date_hm.minute, ipadd)
+    filename_path = (path + '{0}.txt').format(filename)
+    f_logs = open(filename_path, 'w')
+    f_logs.write(text)
+    f_logs.close()
+    subject = ("Preventive Maintenance Application - The number of created VLAN reached the limit on Stellar AP {0}").format(ipadd)
+    action = "Depending of the Stellar AP model, the VLAN count differs. AP1101/AP1201H(L) (4 VLANs), AP1201 (16 VLANs), others models (32 VLANs)"
+    result = ("Stellar AP snapshot logs are collected and stored on /tftpboot/ directory on server {0}. If you observe disprecancies between the number of VLAN created versus number of VLAN allowed on your Stellar AP model, please contact ALE Customer Support").format(ip_server)
+    category = "vlan_limit"
+    return filename_path, subject, action, result, category
+
+def send_file(filename_path, subject, action, result, category):
+    """ 
+    This function takes as argument the file containins command outputs, the notification subject, notification action and result. 
+    This function is called for attaching file on Rainbow or Email notification
+    :param str filename_path:                  Path of file attached to the notification
+    :param str subject:                        Notification subject
+    :param str action:                         Preventive Action done
+    :param str result:                         Preventive Result
+    :param int Card:                           Set to 0 for sending notification without card
+    :param int Email:                          0 if email is disabled, 1 if email is enabled
+    :return:                                   None
+    """
+    url = "https://tpe-vna.al-mydemo.com/api/flows/NBDNotif_File_" + company
+    request_debug = "Call VNA REST API Method POST path %s" % url
+    print(request_debug)
+    os.system('logger -t montag -p user.info Call VNA REST API Method POST')
+    headers = {
+        'Content-type': "text/plain", 
+        'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+        'Content-Disposition': ("attachment;filename={0}_troubleshooting.log").format(category), 
+        # 'jid1': '{0}'.format(jid), 
+        # 'tata': '{0}'.format(subject), 
+        # 'toto': '{0}'.format(action), 
+        # 'tutu': '{0}'.format(result), 
+        # 'Card': '0', 
+        # 'Email': '0',
+        'jid1': '{0}'.format(jid1), 
+        'subject': '{0}'.format(subject),
+        'action': '{0}'.format(action),
+        'result': '{0}'.format(result),
+        'Email': '0'
+    }
+    files = {'file': open(filename_path, 'r')}
+    response = requests.post(url, files=files, headers=headers)
+    print(response)
+    response = str(response)
+    response = re.findall(r"<Response \[(.*?)\]>", response)
+    if "200" in response:
+        os.system('logger -t montag -p user.info 200 OK')
+    else:
+        os.system('logger -t montag -p user.info REST API Call Failure')
+
+if __name__ == "__main__":
+    jid = "570e12872d768e9b52a8b975@openrainbow.com"
+    pass_AP = "Letacla01*"
+    login_AP = "support"
+    ipadd = "10.130.7.70"
+    cmd = "/usr/sbin/showsysinfo"
+    host = "10.130.7.76"
+    pass_root = ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd)
+#    get_snapshot_tftp(pass_root, ipadd)
+    filename_path, subject, action, result, category = sta_limit_reached_tools(login_AP, pass_AP, ipadd)
+    send_file(filename_path, subject, action, result, category)
+    filename_path, subject, action, result, category = vlan_limit_reached_tools(login_AP, pass_AP, ipadd)
+    send_file(filename_path, subject, action, result, category)

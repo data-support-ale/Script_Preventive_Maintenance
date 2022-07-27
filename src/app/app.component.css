@@ -1,0 +1,164 @@
+.body {
+  font-family: "ClanOT";
+}
+
+.app-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 3rem;
+  background-color: #6b489d;
+  box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 5%), inset 0 -1px 0 rgb(0 0 0 / 10%);
+}
+
+.nav-item {
+  height: 80px;
+  padding-top: 0.4rem;
+  padding-right: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.nav-item img {
+  display: block;
+  margin: 0 auto;
+  padding-bottom: 5px;
+}
+
+.app-header .h6 {
+  position: relative;
+  left: 2rem;
+  top: 1.5rem;
+  width: 15rem;
+  float: left;
+  color: #ffff;
+}
+
+.app-header .nav {
+  position: relative;
+  left: 17rem;
+  top: 0rem;
+  float: left;
+}
+
+.app-header .nav li a {
+  color: #ffff;
+}
+
+.profile-block {
+  float: right;
+  margin-right: 3rem;
+  margin-top: 17px;
+}
+
+.avatar {
+  vertical-align: middle;
+  line-height: 3em;
+  text-align: center;
+  border-radius: 50%;
+  background: #0085ca;
+  color: white;
+  display: inline-block;
+  font-size: 1em;
+  width: 3em;
+  height: 3em;
+}
+
+.btn-drop {
+  background: #6b489d !important;
+}
+
+.btn-drop:focus {
+  box-shadow: none;
+}
+
+.success-dot {
+  height: 15px;
+  width: 15px;
+  background-color: #34b233;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.error-dot {
+  height: 15px;
+  width: 15px;
+  background-color: #d3143d;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.circlecolor {
+  color: #34b233;
+}
+
+.aboutcolor {
+  color: #0085ca;
+}
+
+.headings {
+  color: #0085ca;
+}
+
+p {
+  line-height: 1;
+  font-size: 0.875em;
+  /* 14px/16=0.875em */
+}
+
+.logoutheader {
+  background: #0085ca;
+}
+
+.logoutcircle {
+  vertical-align: middle;
+  line-height: 3em;
+  text-align: center;
+  border-radius: 50%;
+  background: white;
+  color: #0085ca;
+  display: inline-block;
+  font-size: 1em;
+  width: 3em;
+  height: 3em;
+}
+
+.logoutstyle {
+  text-align: center;
+  font: normal normal medium 28px/24px ClanOT;
+  color: #0085ca;
+  opacity: 1;
+}
+
+.barcolor {
+  background: #0085ca;
+}
+
+.progress-bar-striped {
+  border-radius: 20px;
+  background: #34b233;
+  background-image: linear-gradient(45deg,
+      rgba(255, 255, 255, 0.15) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0.15) 75%,
+      transparent 75%,
+      transparent);
+}
+
+.downloadcolor {
+  background: #dbdbdb 0% 0% no-repeat padding-box;
+}
+
+.active {
+  background: #f0f0f0;
+}
+
+.active a {
+  color: #0085ca !important;
+}
+
+.active img {
+  /* background: #0085ca !important; */
+}

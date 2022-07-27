@@ -1,0 +1,1 @@
+INSERT INTO `ALEUser_rules` VALUES(@counter,@rule_name,TRUE,5,3,1,'');

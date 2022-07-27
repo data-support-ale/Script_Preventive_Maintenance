@@ -1,0 +1,14 @@
+This document must contains all this essentials IP, on which preventive Maintenance will not be allowed to interfere. Format: {ip address}; {name or comment};
+10.130.7.17;UPAM;
+10.130.7.14;PREVENTIVE;
+10.130.7.13;PREVENTIVE;
+8.8.8.8;DNS;
+8.8.4.4;DNS;
+172.25.179.237;AD;
+10.130.7.66;PC_Titouan;
+192.168.80.81;TEST-1;
+10.130.7.247;
+10.130.7.246;
+10.130.7.244;
+10.130.7.1;
+10.130.7.254;

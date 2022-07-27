@@ -1,0 +1,84 @@
+<app-header></app-header>
+<div class="divbackground pb-5">
+    <div class="container px-0">
+        <div class="imgstyles pt-5 pb-4">
+            <img src="../../assets/Icon_parametres.png" alt="settings icon"> SETTINGS
+        </div>
+        <div class="box-shadow">
+            <div class="row">
+                <div class="mx-5 mt-2">
+                    <div class="sub-head my-3 font-size-l">
+                        <label>Security related port details</label>
+                    </div>
+                    <form [formGroup]="settingsForm">
+                        <div class="row pb-2 mb-4">
+                            <label class="form-label mx-1 text-color font-size-m">SSH Port</label>
+                            <div class="col-11">
+                                <input type="number" class="form-control" name="ssh_port" formControlName="ssh_port"
+                                    placeholder="2222" [readonly]="isAdmin ==='Yes' ?false : true">
+                            </div>
+                        </div>
+                        <div class="row pb-2 mb-4">
+                            <label for="Rsyslog Port" class="form-label mx-1 text-color font-size-m">RSyslog
+                                Port</label>
+                            <div class="col-11">
+                                <input type="number" class="form-control" name="rsyslog_port"
+                                    formControlName="rsyslog_port" placeholder="10514"
+                                    [readonly]="isAdmin==='Yes' ? false :true">
+                            </div>
+                        </div>
+
+                        <div class="row pb-2 mb-4">
+                            <label for="email" class="form-label mx-1 text-color font-size-m">Grafana Port</label>
+                            <div class="col-11"><input type="text" class="form-control inputboxcolor"
+                                    name="grafana_port" formControlName="grafana_port" [readonly]="true"
+                                    placeholder="3000" value="3000">
+                            </div>
+                        </div>
+
+                        <div class="row mt-5  ">
+                            <div class="col-11">
+                                <div class="d-flex justify-content-center">
+                                    <button type="submit" class="btn btn-primary px-4" (click)="saveSettings()"
+                                        [disabled]="settingsForm.valid && isAdmin==='Yes' ?false:true">Save</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sub-head my-3 font-size-l">
+                            <label>Rainbow settings details</label>
+                        </div>
+                        <!-- <div class="row pb-2 mb-4">
+                                <label for="email" class="form-label mx-1 text-color">Rainbow JID</label>
+                                <div class="col-11"><input type="email" class="form-control inputboxcolor" name="email"
+                                        formcontrolname="rainbow_jid" placeholder="John_Smith@gmail.com">
+                                </div>
+                            </div> -->
+                        <div class="row pb-2 mb-4">
+                            <label class="form-label mx-1 text-color font-size-m">Company Name</label>
+                            <div class="col-11"> <input type="text" class="form-control  inputboxcolor"
+                                    name="company_name" formControlName="company_name" [readonly]="true">
+                            </div>
+                        </div>
+                        <div class="my-5  d-flex justify-content-start">
+                            <button type="submit" class="btn  border px-3" (click)="testRainbow()">Test
+                                Rainbow</button>
+                            <span *ngIf="testConnectSucess==='true'"
+                                style="color:green;margin-left: 5%;padding-top: 1%;">
+                                Connection Established
+                            </span>
+                            <span *ngIf="testConnectSucess==='false'"
+                                style="color:rgb(117, 25, 2);margin-left: 5%;padding-top: 1%;">
+                                Connection was not able to establish
+                            </span>
+                        </div>
+
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

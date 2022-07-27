@@ -1,0 +1,55 @@
+<app-header></app-header>
+<div class="divbackground pb-5">
+    <div class="container px-0">
+        <div class="imgstyles pt-5 pb-4">
+            <i class="fal fa-user"></i> EDIT PROFILE
+        </div>
+        <div class="box-shadow">
+            <div class="row">
+                <div class="mx-5 mt-2">
+                    <form [formGroup]="editprofileForm">
+                        <div class="row pb-2 mb-4">
+                            <label class="form-label mx-1 font-size-l"> Name</label>
+                            <div class="col-11"> <input type="text" class="form-control" name="name"
+                                    formControlName="name" placeholder="Test">
+                            </div>
+                        </div>
+                        <div class="row pb-2 mb-4">
+                            <label for="email" class="form-label mx-1 font-size-l">Email Adress</label>
+                            <div class="col-11"><input type="email" id="email" class="form-control"
+                                    formControlName="email" name="email" placeholder="John_Smith@gmail.com">
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div *ngIf="error">
+                                <div class="col-md-8">
+                                    <div class="alert alert-danger">
+                                        The email Id already exist
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row pb-2 mb-4">
+                            <label for="email" class="form-label mx-1 font-size-l">Rainbow JID</label>
+                            <div class="col-11"><input type="email" class="form-control" formControlName="rainbowJid"
+                                    name="rainbowJid" placeholder="Enter RainbowJid">
+                            </div>
+
+                        </div>
+                        <div class="row mt-5 mb-2">
+                            <div class="col-11">
+                                <div class=" d-flex justify-content-center">
+                                    <button type="buton" [disabled]="!editprofileForm.valid" class="btn btn-primary"
+                                        (click)="submitProfile()">Save</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

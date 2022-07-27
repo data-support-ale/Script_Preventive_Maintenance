@@ -1,0 +1,81 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@import "~bootstrap/dist/css/bootstrap.css";
+
+@font-face {
+  font-family: ClanOT;
+  src: url("./assets/fonts/ClanOT/ClanOT.otf") format("truetype");
+}
+
+html,
+body {
+  height: 100%;
+  background: #f0f0f0;
+}
+
+body {
+  margin: 0;
+  font-family: ClanOT;
+}
+
+.bgcolor {
+  background: #0085ca 0% 0% no-repeat padding-box;
+}
+
+.headerstyle>th {
+  color: #0085ca;
+  background: white !important;
+}
+
+.imgstyles {
+  background: #f0f0f0 0% 0% no-repeat padding-box;
+  color: #6b489d;
+}
+
+.filter {
+  text-align: left;
+  font: normal normal medium 13px/24px ClanOT;
+  letter-spacing: 0px;
+  color: #76777d;
+  opacity: 1;
+}
+
+.textstyle {
+  text-align: left;
+  font: normal normal medium 16px/24px ClanOT;
+  letter-spacing: 0px;
+  color: #0085ca;
+  opacity: 1;
+}
+
+.evenClass {
+  /*background: #fcfcfc; */
+  background: #f0f0f0 !important;
+}
+
+.oddClass {
+  /*background: #e3e1e1 !important; */
+
+  background: #dbdbdb !important;
+}
+
+.divbackground {
+  background: #f0f0f0;
+}
+
+.container {
+  background: #ffffff 0% 0% no-repeat padding-box;
+  max-width: 1750px !important;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
