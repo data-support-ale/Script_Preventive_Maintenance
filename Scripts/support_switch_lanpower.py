@@ -374,12 +374,11 @@ if answer == '1':
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
     syslog.syslog(syslog.LOG_INFO, "SSH Session end")
 
-    if jid1 != '':
-        notif = "Preventive Maintenance Application - PoE is administratively disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-        send_message_detailed(notif)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+    notif = "Preventive Maintenance Application - PoE is administratively disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
+    syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+    send_message_detailed(notif)
+    syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 elif answer == '2':
     syslog.syslog(syslog.LOG_INFO, "Decision is Yes and Remember - PoE is administratively disabled on port")
