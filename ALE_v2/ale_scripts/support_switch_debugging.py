@@ -30,7 +30,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 print(sys.executable)
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog.json", "r", errors='ignore') as log_file:

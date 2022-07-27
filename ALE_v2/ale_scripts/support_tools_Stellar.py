@@ -54,7 +54,7 @@ def get_credentials(attribute=None):
     result = json.loads(db.fetchall()[1][2])
     return result.values()
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 # Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
@@ -80,8 +80,8 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         info = ("SSH Connection fails when establishing SSH Session to Stellar AP {0}, please verify if SSH is enabled on the AP Group").format(ipadd)
         _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
         os.system('logger -t montag -p user.info ' + info)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         try:
             mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
         except UnboundLocalError as error:
@@ -96,8 +96,8 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         info = ("Timeout when establishing SSH Session to Stellar AP {0}, we cannot collect logs").format(ipadd)
         _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
         os.system('logger -t montag -p user.info ' + info)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         try:
             mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
         except UnboundLocalError as error:
@@ -112,8 +112,8 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         info = ("SSH Authentication failed when connecting to Stellar AP {0}, we cannot collect logs").format(ipadd)
         _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
         os.system('logger -t montag -p user.info ' + info)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         try:
             mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
         except UnboundLocalError as error:
@@ -132,8 +132,8 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         print(info)
         _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
         os.system('logger -t montag -p user.info ' + info)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         try:
             mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
         except UnboundLocalError as error:
@@ -148,8 +148,8 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         print(info)
         _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
         os.system('logger -t montag -p user.info ' + info)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         try:
             mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception="SSH_disabled_on_AP_Group")
         except UnboundLocalError as error:
@@ -169,8 +169,8 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         print(info)
         _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
         os.system('logger -t montag -p user.info ' + info)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         try:
             mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
         except UnboundLocalError as error:
@@ -189,8 +189,8 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
     elif connection_status != 0 :
         info = ("The python script execution on Stellar AP {0} failed - {1}").format(ipadd, exception)
         _info = info + ' ; ' + 'command executed - {0}'.format(cmd)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         os.system('logger -t montag -p user.info ' + info)
         try:
             mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
@@ -241,8 +241,8 @@ def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):
                 print(info)
                 _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
                 os.system('logger -t montag -p user.info ' + info)
-                # send_message_detailed(info, jid1, jid2, jid3)
-                send_message_detailed(info, jid1, jid2, jid3)
+                
+                send_message(info)
                 try:
                     mysql_save(runtime=runtime, ip_address=neighbor_ip, result='failure', reason=_info, exception=exception)
                 except UnboundLocalError as error:
@@ -256,8 +256,8 @@ def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):
             print(info)
             _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
             os.system('logger -t montag -p user.info ' + info)
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=runtime, ip_address=neighbor_ip, result='failure', reason=_info, exception=exception)
             except UnboundLocalError as error:
@@ -301,8 +301,8 @@ def  channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization)
                 print(info)
                 _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
                 os.system('logger -t montag -p user.info ' + info)
-                # send_message_detailed(info, jid1, jid2, jid3)
-                send_message_detailed(info, jid1, jid2, jid3)
+                
+                send_message(info)
                 try:
                     mysql_save(runtime=runtime, ip_address=neighbor_ip, result='failure', reason=_info, exception=exception)
                 except UnboundLocalError as error:
@@ -316,8 +316,8 @@ def  channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization)
             print(info)
             _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
             os.system('logger -t montag -p user.info ' + info)
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=runtime, ip_address=neighbor_ip, result='failure', reason=_info, exception=exception)
             except UnboundLocalError as error:
@@ -376,8 +376,8 @@ def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
                 print(info)
                 _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
                 os.system('logger -t montag -p user.info ' + info)
-                # send_message_detailed(info, jid1, jid2, jid3)
-                send_message_detailed(info, jid1, jid2, jid3)
+                
+                send_message(info)
                 try:
                     mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
                 except UnboundLocalError as error:
@@ -392,8 +392,8 @@ def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
             print(info)
             _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
             os.system('logger -t montag -p user.info ' + info)
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
             except UnboundLocalError as error:
@@ -451,8 +451,8 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
                 print(info)
                 _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
                 os.system('logger -t montag -p user.info ' + info)
-                # send_message_detailed(info, jid1, jid2, jid3)
-                send_message_detailed(info, jid1, jid2, jid3)
+                
+                send_message(info)
                 try:
                     mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
                 except UnboundLocalError as error:
@@ -466,8 +466,8 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
             print(info)
             _info = info + ' ; ' + 'command executed - {0}'.format(stellar_cmd)
             os.system('logger -t montag -p user.info ' + info)
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=runtime, ip_address=ipadd, result='failure', reason=_info, exception=exception)
             except UnboundLocalError as error:

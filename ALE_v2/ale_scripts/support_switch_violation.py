@@ -31,7 +31,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_violation.json", "r", errors='ignore') as log_file:
@@ -100,7 +100,7 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
     notif = "A port violation occurs on OmniSwitch " + nom + "port " + port + \
         ", source: " + reason + ". Do you want to clear the violation? " + ip_server
     # answer = send_message_request(notif, jid)
-    answer =  send_message_request_detailed(notif, jid1, jid2, jid3)
+    answer =  send_message_request(notif)
 
     set_decision(ip, answer)
 
@@ -124,13 +124,6 @@ if answer == '1':
     cmd = "clear violation port " + port
     os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(
         switch_password, switch_user, ip, cmd))
-    # if jid1 != '' or jid2 != '' or jid3 != '':
-    #     info = "Log of device : {0}".format(ip)
-    #     # send_file(info, jid, ip)
-    #     info = "A port violation has been cleared up on device {}".format(ip)
-    #     # send_message_detailed(info, jid1, jid2, jid3)
-    #     send_message_detailed(info, jid1, jid2, jid3)
-
     sleep(2)
     filename_path = "/var/log/devices/" + nom + "/syslog.log"
     category = "port_violation"
@@ -138,7 +131,7 @@ if answer == '1':
     action = "Violation on OmniSwitch {0}, port {1} has been cleared up".format(nom, port)
     result = "Find enclosed to this notification the log collection"
 #    support_tools_OmniSwitch.send_file(filename_path, subject, action, result, category)
-    send_file_detailed(subject, jid1, action, result, company, filename_path)
+    send_file(filename_path, subject, action, result, category)
     mysql_save(runtime=_runtime, ip_address=ip, result='success', reason=action, exception='')
 
 elif answer == '2':

@@ -64,7 +64,7 @@ def get_credentials(attribute=None):
     result = json.loads(db.fetchall()[1][2])
     return result.values()
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 # Function SSH for checking connectivity before collecting logs
 
@@ -2598,7 +2598,7 @@ def isUpLink(switch_user, switch_password, port_number, ipadd):
                 send_message(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
-                    write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                    mysql_save(runtime=runtime, ip_address=ipadd, result='failure',reason=notif, exception=exception)
                     syslog.syslog(syslog.LOG_INFO, "Statistics saved")
                 except UnboundLocalError as error:
                     print(str(error))
@@ -2614,7 +2614,7 @@ def isUpLink(switch_user, switch_password, port_number, ipadd):
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
+                mysql_save(runtime=runtime, ip_address=ipadd, result='failure',reason=notif, exception=exception)
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(str(error))
@@ -2695,7 +2695,7 @@ if __name__ == "__main__":
 #    print(b)
     try:
         syslog.syslog(syslog.LOG_INFO, "Starting tests") 
-        switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+        switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company = get_credentials()
         jid = "570e12872d768e9b52a8b975@openrainbow.com"
         switch_password = "switch"
         switch_user = "admin"
@@ -2713,7 +2713,7 @@ if __name__ == "__main__":
         #get_file_sftp(switch_user, switch_password, ipadd, filename_pmd, localFilePath)
         #filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
         filename_path = "/var/log/server/support_tools_OmniSwitch.log"
-        #send_file_detailed(filename_path, subject, action, result, category)
+        #send_file(filename_path, subject, action, result, category)
         #filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
         #send_file(filename_path, subject, action, result,category, jid)
         #filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)
@@ -2785,8 +2785,6 @@ if __name__ == "__main__":
         lldp_port_capability = collect_command_output_lldp_port_capability(switch_user, switch_password, port, ipadd)
         device_ip = get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd)
         type = "ddos"
-        check_save(ipadd, port, type)
-        add_new_save(ipadd, port, type, choice="never")
         isEssential(ipadd)
         isUpLink(switch_user, switch_password, port, ipadd)
         port_monitoring(switch_user, switch_password, port, ipadd)

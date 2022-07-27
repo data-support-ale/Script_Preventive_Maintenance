@@ -36,7 +36,7 @@ if result == 2:
     sys.exit()
 
 # Script init
-script_name, switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = sys.argv
+script_name, switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, company = sys.argv
 os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
@@ -75,7 +75,6 @@ try:
             'login_AP': login_AP,
             'pass_AP': pass_AP,
             'tech_pass': tech_pass,
-            'random_id': random_id,
             'company': company,
             'room_id': room
         }

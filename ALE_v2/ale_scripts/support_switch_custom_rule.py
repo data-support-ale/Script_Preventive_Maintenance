@@ -29,7 +29,7 @@ _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 print(sys.executable)
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_custom.json", "r", errors='ignore') as log_file:
@@ -57,23 +57,23 @@ if alelog.rsyslog_script_timeout(ipadd + "0" + pattern, time.time()):
 
 if command in ["Send Notification", "Collect log and send notification"]:
     info = "The Custom Rule Pattern is deteched on device : {0} for Pattern : {1}".format(ipadd, pattern)
-    send_message_detailed(info, jid1, jid2, jid3)
+    send_message(info)
     
 if command in ["Increase log verbosity", "Collect log and send notification"]:
     info = "Log of device : {0} for Pattern : {1}".format(ipadd, pattern)
     filename_path = "/var/log/devices/lastlog_custom.json"
-    send_file_detailed(info, jid1, 'Custom Rule Triggered', 'Status: File sent', company, filename_path)
+    send_file(filename_path, 'Custom Rule Triggered', info, 'Status: File sent', category)
     
 if command in ["Increase log verbosity", "Collect log and send notification"]:
     info = "Log of device : {0} for Pattern : {1}".format(ipadd, pattern)
     filename_path = "/var/log/devices/lastlog_custom.json"
-    send_file_detailed(info, jid1, jid2, jid3, 'Custom Rule Triggered', 'Status: File sent', ipadd, company, filename_path)
+    send_file(filename_path, 'Custom Rule Triggered', info, 'Status: File sent', category)
 
 if command in ["Collect log and send notification"]:
     set_decision(ipadd, "2")
     if ipadd == host:
         filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
-        send_file_detailed(filename_path, subject, action, result, category)
+        send_file(filename_path, subject, action, result, category)
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 
     else:
@@ -84,7 +84,7 @@ if command in ["Collect log and send notification"]:
         result = "Please contact ALE Customer Support team for further troubleshooting"
         filename_path = "/var/log/devices/lastlog_custom.json"
         category = "custom_rule"
-        send_file_detailed(filename_path, subject, action, result, category)
+        send_file(filename_path, subject, action, result, category)
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 
 mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')

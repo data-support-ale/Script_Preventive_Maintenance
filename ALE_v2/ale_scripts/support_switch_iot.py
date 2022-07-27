@@ -33,7 +33,7 @@ set_rule_pattern(pattern)
 # os.system('logger -t montag -p user.info ' + info)
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file:
@@ -84,7 +84,7 @@ with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file
 
             info = ("IoT Profiling module disconnected on the Stellar AP {0} - IoT Service is {1} on AP").format(ipadd, service_status)
             # send_message(info,jid)
-            send_message_detailed(info, jid1, jid2, jid3)
+            send_message(info)
             try:
                 mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
             except UnboundLocalError as error:
@@ -106,7 +106,7 @@ with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file
             ov_ip = re.findall(r"Unable to connect (.*?):1883", msg)[0]
             info = ("IoT Profiling module is enabled but OmniSwitch {0} / {1} cannot reach OmniVista IP Address {2} port 1883 - please ensure OmniVista is reachable from default-VRF (Device Profiling feature is not VRF-Aware)").format(ipadd, host, ov_ip)
             # send_message(info,jid)
-            send_message_detailed(info, jid1, jid2, jid3)
+            send_message(info)
             try:
                 mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
             except UnboundLocalError as error:

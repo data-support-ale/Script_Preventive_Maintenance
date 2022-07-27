@@ -4,8 +4,8 @@ import sys
 import os
 import json
 from time import strftime, localtime
-from support_tools_OmniSwitch import get_credentials, send_file_detailed, collect_command_output_ovc, check_save, add_new_save, ssh_connectivity_check
-from support_send_notification import send_message_detailed, send_message_request_advanced
+from support_tools_OmniSwitch import get_credentials, send_file, collect_command_output_ovc, check_save, add_new_save, ssh_connectivity_check
+from support_send_notification import send_message, send_message_request_advanced
 from database_conf import *
 import re
 import syslog
@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file:
@@ -64,7 +64,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         except UnboundLocalError as error:
@@ -88,7 +88,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         except UnboundLocalError as error:
@@ -113,7 +113,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         except UnboundLocalError as error:
@@ -140,7 +140,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         except UnboundLocalError as error:
@@ -163,14 +163,14 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             notif = "Preventive Maintenance Application - A Fatal TLS error has been detected on OmniSwitch (IP : {0} / {1}) syslogs on the OPENVPN task.\nPlease check the certificate status (must be Consistent).\nAs a workaround you can restart the cloud-agent (cloud-agent admin-state restart).".format(ipadd, host)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            send_message_detailed(notif)
+            send_message(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             filename_path, subject, action, result, category = collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, host, ipadd)
             syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 
@@ -242,7 +242,7 @@ if answer == '1':
         syslog.syslog(syslog.LOG_INFO, "SSH Session end")
     notif = "Cloud-Agent service is stopped on OmniSwitch: {}/{}".format(host,ipadd)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-    answer = send_message_detailed(notif)
+    answer = send_message(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")       
 
 elif answer == '2':
@@ -266,7 +266,7 @@ elif answer == '3':
     syslog.syslog(syslog.LOG_INFO, "SSH Session end")
     notif = "Cloud-Agent is restarted on OmniSwitch: {}/{}".format(host,ipadd)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-    answer = send_message_detailed(notif)
+    answer = send_message(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent") 
 
 else:

@@ -4,6 +4,7 @@ from http.client import NOT_MODIFIED
 import sys
 import os
 import json
+import syslog
 from time import strftime, localtime, sleep
 from support_tools_OmniSwitch import get_credentials, collect_command_output_poe, ssh_connectivity_check
 from support_send_notification import *
@@ -32,7 +33,7 @@ set_rule_pattern(pattern)
 # os.system('logger -t montag -p user.info ' + info)
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log_file:
@@ -74,11 +75,11 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file_detailed(subject, jid1, action, result, company, filename_path)
+            send_file(filename_path, subject, action, result, category)
             set_decision(ipadd, "4")
             mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message_detailed(info, jid1, jid2, jid3)
+#            send_message(info)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -106,12 +107,12 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file_detailed(subject, jid1, action, result, company, filename_path)
+            send_file(filename_path, subject, action, result, category)
             set_decision(ipadd, "4")
             mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message_detailed(info, jid1, jid2, jid3)
+#            send_message(info)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -139,12 +140,12 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file_detailed(subject, jid1, action, result, company, filename_path)
+            send_file(filename_path, subject, action, result, category)
             set_decision(ipadd, "4")
             mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message_detailed(info, jid1, jid2, jid3)
+#            send_message(info)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -171,12 +172,12 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             else:
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
-            send_file_detailed(subject, jid1, action, result, company, filename_path)
+            send_file(filename_path, subject, action, result, category)
             set_decision(ipadd, "4")
             mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message_detailed(info, jid1, jid2, jid3)
+#            send_message(info)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -204,12 +205,12 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
 #            support_tools_OmniSwitch.send_file(filename_path, subject, action, result, category)
-            send_file_detailed(subject, jid1, action, result, company, filename_path)
+            send_file(filename_path, subject, action, result, category)
             set_decision(ipadd, "4")
             mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message_detailed(info, jid1, jid2, jid3)
+#            send_message(info)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -237,12 +238,12 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
 #            support_tools_OmniSwitch.send_file(filename_path, subject, action, result, category)
-            send_file_detailed(subject, jid1, action, result, company, filename_path)
+            send_file(filename_path, subject, action, result, category)
             set_decision(ipadd, "4")
             mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message_detailed(info, jid1, jid2, jid3)
+#            send_message(info)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -276,12 +277,12 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
                 pass
             filename_path, subject, action, result, category, capacitor_detection_status, high_resistance_detection_status = collect_command_output_poe(switch_user, switch_password, host, ipadd, port, reason)
 #            support_tools_OmniSwitch.send_file(filename_path, subject, action, result, category)
-            send_file_detailed(subject, jid1, action, result, company, filename_path)
+            send_file(filename_path, subject, action, result, category)
             set_decision(ipadd, "4")
             mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 
 #            info = "Port {} from device {} has been detected in LANPOWER Fault state reason - {}".format(port, ipadd, reason)
-#            send_message_detailed(info, jid1, jid2, jid3)
+#            send_message(info)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -307,7 +308,7 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
         notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} \
            , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
         # answer = send_message_request_advanced(notif, jid,feature)
-        answer = send_message_request_advanced(notif, jid1, jid2, jid3, feature)
+        answer = send_message_request_advanced(notif, feature)
         print(answer)
         set_decision(ipadd, answer)
              
@@ -316,7 +317,7 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
         notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} \
             , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
         # answer = send_message_request_advanced(notif, jid, feature)
-        answer = send_message_request_advanced(notif, jid1, jid2, jid3, feature)
+        answer = send_message_request_advanced(notif, feature)
         print(answer)
         set_decision(ipadd, answer)
 
@@ -347,12 +348,21 @@ if answer == '1':
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
     os.system("sshpass -p '{0}' ssh -v  -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ipadd, cmd))
      
-    if jid1 != '' or jid2 != '' or jid3 != '':
-        info = "PoE is administratively disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
-        set_decision(ipadd, "4")
-        mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
+    info = "PoE is administratively disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
+    syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+    send_message(notif)
+    syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+    set_decision(ipadd, "4")
+    try:
+        mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
+        syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except Exception as error:
+        print(error)
+        pass   
 
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')
@@ -369,8 +379,8 @@ elif answer == '3':
         cmd = "lanpower slot 1/1 capacitor-detection disable"
         ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
         info = "Capacitor-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         set_decision(ipadd, "3")
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
 
@@ -378,8 +388,8 @@ elif answer == '3':
         cmd = "lanpower slot 1/1 high-resistance-detection disable"
         info = "High-Resistance-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
         ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         set_decision(ipadd, "3")
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
 
@@ -387,8 +397,8 @@ elif answer == '3':
         cmd = "lanpower port 1/1/" + port + " 4pair disable"
         info = "4Pair is disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
         ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
-        # send_message_detailed(info, jid1, jid2, jid3)     
-        send_message_detailed(info, jid1, jid2, jid3)
+             
+        send_message(info)
         set_decision(ipadd, "3")
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
            
@@ -401,8 +411,8 @@ elif answer == '3':
         for switch_cmd in l_switch_cmd:
             ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
         info = "PoE is reloaded on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
-        # send_message_detailed(info, jid1, jid2, jid3)        
-        send_message_detailed(info, jid1, jid2, jid3)
+                
+        send_message(info)
         set_decision(ipadd, "3")
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
 

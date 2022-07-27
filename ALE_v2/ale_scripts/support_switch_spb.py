@@ -35,7 +35,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 # Log sample
 #{"@timestamp":"2022-01-11T14:30:23+01:00","type":"syslog_json","relayip":"10.130.7.245","hostname":"os6900_vc_core","message":"<134>Jan 11 14:30:23 OS6900_VC_Core swlogd isis_spb_0 ADJACENCY INFO: Lost L1 adjacency with e8e7.32f5.b58b on ifId 1013","end_msg":""}
@@ -86,22 +86,13 @@ if alelog.rsyslog_script_timeout(ip + port + pattern, time.time()):
     print("Less than 5 min")
     exit(0)
 
-if jid1 != '' or jid2 != '' or jid3 != '':
-    filename_path, subject, action, result, category = collect_command_output_spb(switch_user, switch_password, host, ip, adjacency_id, port)
-    syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
-    syslog.syslog(syslog.LOG_INFO, "Action: " + action)
-    syslog.syslog(syslog.LOG_INFO, "Result: " + result)
-    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")  
-    set_decision(ip, "4")
-    mysql_save(runtime=_runtime, ip_address=ip, result='success', reason=action, exception='')
-    # send_message(notif, jid)
-    send_file_detailed(filename_path, subject, action, result, category)
-    syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-else:
-    set_decision(ip, "4")
-    mysql_save(runtime=_runtime, ip_address=ip, result='success', reason="Mail request set as no", exception='')
-
-    print("Mail request set as no")
-    os.system('logger -t montag -p user.info Mail request set as no')
-    sleep(1)
-    open('/var/log/devices/lastlog_spb.json', 'w').close()
+filename_path, subject, action, result, category = collect_command_output_spb(switch_user, switch_password, host, ip, adjacency_id, port)
+syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
+syslog.syslog(syslog.LOG_INFO, "Action: " + action)
+syslog.syslog(syslog.LOG_INFO, "Result: " + result)
+syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")  
+set_decision(ip, "4")
+mysql_save(runtime=_runtime, ip_address=ip, result='success', reason=action, exception='')
+# send_message(notif, jid)
+send_file(filename_path, subject, action, result, category)
+syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")

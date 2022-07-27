@@ -6,19 +6,34 @@ import json
 import re
 from time import strftime, localtime
 from datetime import datetime, timedelta
-from support_tools_OmniSwitch import get_credentials, collect_command_output_health_port, collect_command_output_health_memory, collect_command_output_health_cpu, send_file_detailed, get_tech_support_sftp
+from support_tools_OmniSwitch import get_credentials, collect_command_output_health_port, collect_command_output_health_memory, collect_command_output_health_cpu, send_file, get_tech_support_sftp
 from support_send_notification import *
 from database_conf import *
+import time
 import syslog
 
 syslog.openlog('support_switch_health')
 syslog.syslog(syslog.LOG_INFO, "Executing script")
 
+from pattern import set_rule_pattern, set_portnumber, set_decision, mysql_save
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
-script_name = sys.argv[0]
+_runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+path = os.path.dirname(__file__)
+print(os.path.abspath(os.path.join(path,os.pardir)))
+sys.path.insert(1,os.path.abspath(os.path.join(path,os.pardir)))
+from alelog import alelog
+
+# Script init
+script_name = sys.argv[0]
+os.system('logger -t montag -p user.info Executing script ' + script_name)
+
+pattern = sys.argv[1]
+print(pattern)
+set_rule_pattern(pattern)
+
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') as log_file:
@@ -47,6 +62,12 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
         syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_switch_health.json - Index error in regex")
         exit()
 
+    set_portnumber("0")
+    set_decision(ipadd, "4")
+    if alelog.rsyslog_script_timeout(ipadd + "0" + pattern, time.time()):
+        print("Less than 5 min")
+        exit(0)
+
     # Sample log
     # swlogd OS6860E_VC_Core swlogd healthCmm main EVENT: CUSTLOG CMM Port 1/1/15 rising above receive threshold
     #{"@timestamp":"2022-07-20T14:45:27+02:00","type":"syslog_json","relayip":"10.130.7.228","hostname":"OS2360","message":"<134>Jul 20 14:45:27 OS2360 swlogd healthCmm main EVENT: CUSTLOG CMM Port 1\/1\/4 rising above receive\/transmit threshold.","end_msg":""}
@@ -63,18 +84,17 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Health": "PORT", "Port": port, "Type": type}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
             except Exception as error:
-                print(error)
-                pass 
+               print(error)
+               pass 
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -99,7 +119,7 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
                 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
                 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-                send_file_detailed(filename_path, subject, action, result, category)
+                send_file(filename_path, subject, action, result, category)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             elif topic == "memory":
                 syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_health_memory")
@@ -108,17 +128,16 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
                 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
                 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-                send_file_detailed(filename_path, subject, action, result, category)
+                send_file(filename_path, subject, action, result, category)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Health": topic, "VC_Unit": nb_vc}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()
             except Exception as error:
-                print(error)
-                pass 
+               print(error)
+               pass 
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -134,8 +153,16 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
                 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
                 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-                send_file_detailed(filename_path, subject, action, result, category)
+                send_file(filename_path, subject, action, result, category)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+                try:
+                    mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
+                except UnboundLocalError as error:
+                    print(error)
+                    sys.exit()
+                except Exception as error:
+                    print(error)
+                    pass 
             except IndexError as error:
                 print(error)
                 sys.exit()
@@ -152,12 +179,11 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
             syslog.syslog(syslog.LOG_INFO, "Result: Find enclosed to this notification the log collection for further analysis")
             syslog.syslog(syslog.LOG_INFO, " Executing function get_tech_support_sftp")
             get_tech_support_sftp(switch_user, switch_password, host, ipadd)
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Health": "MEMORY"}, "fields": {"count": 1}}])
-                syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
             except UnboundLocalError as error:
                 print(error)
                 sys.exit()

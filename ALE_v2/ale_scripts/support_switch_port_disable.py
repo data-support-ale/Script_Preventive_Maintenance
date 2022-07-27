@@ -32,7 +32,7 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 #### New rules to be added in the Rsyslog.conf ####
 #if $msg contains 'slNi MACMOVE' and $msg contains 'macCallBackProcessing' then {
@@ -88,13 +88,13 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
     answer = "1"
     if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
         info = "A loop has been detected on your network from the port {0} on device {1}.\nIf you click on Yes, the following action will be done: Port Admin Down".format(port, ipadd)
-        answer = send_message_request_detailed(info, jid1, jid2, jid3)
+        answer = send_message_request(info)
 
         set_decision(ipadd, answer)
     elif 'No' in decision: 
         # Disable debugging logs "swlog appid slNi subapp 20 level debug2"
         info = "Preventive Maintenance Application - A loop has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Never, we do not proceed further".format(port, ipadd, ip_server)
-        send_message_detailed(info, jid1, jid2, jid3)
+        send_message(info)
 
 
         appid = "slNi"
@@ -117,7 +117,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
 
         os.system('logger -t montag -p user.info Port disabled')
         filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
-        send_file_detailed(subject, jid1, action, result, company, filename_path)
+        send_file(filename_path, subject, action, result, category)
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='') 
         sleep(5)
         # Disable debugging logs "swlog appid slNi subapp all level info"

@@ -35,7 +35,7 @@ set_rule_pattern(pattern)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 
 last = ""
@@ -97,10 +97,10 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
     answer = "0"
     port_monitoring(switch_user, switch_password, port, ipadd)
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ipadd)
-    send_file_detailed(subject, jid1, action, result, company, filename_path)
+    send_file(filename_path, subject, action, result, category)
     sleep(2)
     info = ("A {0} Storm Threshold violation occurs on OmniSwitch {1} / {2} port {3}.Do you want to disable this port?\nThe port-monitoring capture of port {3} is available on Server directory /tftpboot/").format(reason,host,ipadd,port)
-    answer = send_message_request_detailed(info, jid1, jid2, jid3)
+    answer = send_message_request(info)
     print(answer)
     set_decision(ipadd, answer)
     mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=subject, exception='')
@@ -115,25 +115,25 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
 elif 'No' in decision:
     answer = "0"
     info = "Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Never, we do not proceed further".format(port, ipadd, ip_server)
-    send_message_detailed(info, jid1, jid2, jid3)
+    send_message(info)
     sys.exit()
 
 elif 'yes and remember' in [d.lower() for d in decision]:
     answer = '2'
 #    info = ("Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.Decision saved for this switch/port is set to Always, we do proceed for disabling the interface").format(port, ipadd, ip_server)
 #    print(info)
-#    send_message_detailed(info, jid1, jid2, jid3)
+#    send_message(info)
 else:
     answer = '1'
 
 if answer == '1':
     os.system('logger -t montag -p user.info Process terminated')
     filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, reason, answer, host, ipadd)
-    send_file_detailed(subject, jid1, action, result, company, filename_path)
+    send_file(filename_path, subject, action, result, category)
     mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 elif answer == '2':
     info = ("Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.Decision saved for this switch/port is set to Always, we do proceed for disabling the interface").format(port, ipadd, ip_server)
-    send_message_detailed(info, jid1, jid2, jid3)
+    send_message(info)
     mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
     os.system('logger -t montag -p user.info Process terminated')
     cmd = "clear violation port " + port

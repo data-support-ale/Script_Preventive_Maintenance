@@ -24,7 +24,7 @@ print(pattern)
 set_rule_pattern(pattern)
 os.system('logger -t montag -p user.info Executing script ' + script_name + ' pattern: ' + pattern)
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_wlan_operations.json", "r", errors='ignore') as log_file:
@@ -57,7 +57,7 @@ with open("/var/log/devices/lastlog_wlan_operations.json", "r", errors='ignore')
             subject = ("Preventive Maintenance Application - There is an unexpected reboot detected on server {0} from WLAN Stellar AP {1}").format(ip_server, ipadd)
             action = "Please check the LANPOWER is running fine on LAN OmniSwitch and verify the capacitor-detection is disabled"
             result = "More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000066402"
-            send_message_detailed(subject, jid1, jid2, jid3)
+            send_message(subject, jid1, jid2, jid3)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -83,7 +83,7 @@ with open("/var/log/devices/lastlog_wlan_operations.json", "r", errors='ignore')
             subject = ("Preventive Maintenance Application - There is an upgrade detected on server {0} from WLAN Stellar AP: {1} - Version: {2}").format(ip_server, ipadd, upgrade_version)
             action = " "
             result = " "
-            send_message_detailed(subject, jid1, jid2, jid3)
+            send_message(subject, jid1, jid2, jid3)
         except UnboundLocalError as error:
             print(error)
             sys.exit()

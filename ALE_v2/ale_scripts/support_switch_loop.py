@@ -8,7 +8,7 @@ import re  # Regex
 import json
 import time
 import datetime
-from support_send_notification import send_message_request_detailed, send_message_detailed
+from support_send_notification import send_message_request, send_message
 # from database_conf import *
 
 
@@ -34,7 +34,7 @@ set_rule_pattern(pattern)
 runtime = time.strftime("%d_%b_%Y_%H_%M_%S", time.localtime())
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 subject = "A port flapping was detected in your network !"
 
 
@@ -46,7 +46,7 @@ def process(ip, hostname, port, agg):
         if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
             info = "A network loop has been detected on your network on the linkagg {} - System Description: N/A - OmniSwitch {}/{}.\nIf you click on Yes, the following actions will be done: Linkagg disable.".format(
             agg, ip, hostname)
-            answer = send_message_request_detailed(info, jid1, jid2, jid3)
+            answer = send_message_request(info)
             set_decision(ip, answer)
             if answer == "2":
                 answer = '1'
@@ -61,7 +61,7 @@ def process(ip, hostname, port, agg):
         if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
             info = "A network loop has been detected on your network on the access port {} - System Description: {} - OmniSwitch {}/{}.\nIf you click on Yes, the following actions will be done: Port Admin Down.".format(
             port, lldp_port_description, ip, hostname)
-            answer = send_message_request_detailed(info, jid1, jid2, jid3)
+            answer = send_message_request(info)
             set_decision(ip, answer)
             if answer == "2":
                 answer = '1'
@@ -87,7 +87,7 @@ def process(ip, hostname, port, agg):
             info = "Preventive Maintenance Application - A network loop has been detected on your network and the port {0} is administratively down on OmniSwitch {1}/{2}".format(port, ip, hostname)
 
         open('/var/log/devices/lastlog_loop.json', 'w').close()
-        answer = send_message_detailed(info, jid1, jid2, jid3)
+        answer = send_message(info)
         mysql_save(runtime=_runtime, ip_address=ip, result='success', reason=info, exception='')
         # disable_debugging
         ipadd = ip

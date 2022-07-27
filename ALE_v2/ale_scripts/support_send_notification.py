@@ -3,6 +3,7 @@
 import sys
 import os
 import requests
+import syslog
 from time import strftime, localtime
 import re
 import json
@@ -44,14 +45,14 @@ def get_credentials():
 
 
 # Gathering of user settings
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
-
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
+site = "https://vna.preprod.omniaccess-stellar-asset-tracking.com"
 #######################################
 #### New API's ########################
 #######################################
 
 
-def send_message_detailed(info, jid1, jid2, jid3):
+def send_message(info):
     """ 
     Send the message in info to a Rainbowbot. This bot will send this message to the jid in parameters
     """
@@ -62,7 +63,7 @@ def send_message_detailed(info, jid1, jid2, jid3):
     for _ in range(len(text), 10):
         text += [""]
 
-    url = "https://vna.preprod.omniaccess-stellar-asset-tracking.com/api/flows/NBDNotif_Classic_{0}".format(company)
+    url = site + "/api/flows/NBDNotif_Classic_{0}".format(company)
     headers = {
         'Content-type': 'application/json', 
         "Accept-Charset": "UTF-8",
@@ -84,37 +85,57 @@ def send_message_detailed(info, jid1, jid2, jid3):
         'email': '0',
         'advanced': '0'
     }
-
+    syslog.syslog(syslog.LOG_INFO, "URL: " + url)
+    syslog.syslog(syslog.LOG_INFO, "Headers: " + str(headers))
     try:
+        syslog.syslog(syslog.LOG_INFO, "Calling VNA API - send_message - method GET")
         response = requests.get(url, headers=headers, timeout=5)
+        syslog.syslog(syslog.LOG_INFO, "Notification sent - VNA Answer: " + str(response))
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
-            os.system('logger -t montag -p user.info 200 OK')
+            syslog.syslog(syslog.LOG_INFO, "VNA Answer HTTP 200 OK")
             print("Response  Text from VNA")
             value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
             print(value)
             print(code)
             pass
+        elif "404" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Internal Server Error")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+        elif "401" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Authentication failed")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+        elif "408" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Timeout")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
         else:
-            os.system('logger -t montag -p user.info REST API Timeout')
-            pass
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+        pass
     except requests.exceptions.ConnectionError as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Connection Error - " + str(response))
         print(response)
     except requests.exceptions.Timeout as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Timeout - " + str(response))
         print("Request Timeout when calling URL: " + url)
         print(response)
     except requests.exceptions.TooManyRedirects as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: TooManyRedirects - " + str(response))
         print("Too Many Redirects when calling URL: " + url)
         print(response)
     except requests.exceptions.RequestException as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: " + str(response))
         print("Request exception when calling URL: " + url)
         print(response)
 
-def send_alert_detailed(info, jid1, jid2, jid3, action, result, company):
+def send_alert(subject, action, result):
     """
     Send the alert in info to a Rainbowbot. This bot will send this message to the jid in parameters
     """
-    url = "https://vna.preprod.omniaccess-stellar-asset-tracking.com/api/flows/NBDNotif_Alert_{0}".format(company)
+    url = site + "/api/flows/NBDNotif_Alert_{0}".format(company)
     headers = {
         'Content-type': 'application/json', 
         "Accept-Charset": "UTF-8",
@@ -123,39 +144,59 @@ def send_alert_detailed(info, jid1, jid2, jid3, action, result, company):
         'jid1': '{0}'.format(jid1),
         'jid2': '{0}'.format(jid2),
         'jid3': '{0}'.format(jid3),              
-        'subject': '{0}'.format(action),
-        'action': '{0}'.format(info),
+        'subject': '{0}'.format(subject),
+        'action': '{0}'.format(action),
         'result': '{0}'.format(result),
         'card': '0',
         'email': '0',
         'advanced': '0'
     }
-
+    syslog.syslog(syslog.LOG_INFO, "URL: " + url)
+    syslog.syslog(syslog.LOG_INFO, "Headers: " + str(headers))
     try:
+        syslog.syslog(syslog.LOG_INFO, "Calling VNA API - send_alert - method GET")
         response = requests.get(url, headers=headers, timeout=5)
+        syslog.syslog(syslog.LOG_INFO, "Notification sent - VNA Answer: " + str(response))
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
-            os.system('logger -t montag -p user.info 200 OK')
+            syslog.syslog(syslog.LOG_INFO, "VNA Answer HTTP 200 OK")
             print("Response  Text from VNA")
             value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
             print(value)
             print(code)
+        elif "404" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Internal Server Error")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+        elif "401" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Authentication failed")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+        elif "408" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Timeout")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
         else:
-            os.system('logger -t montag -p user.info REST API Timeout')
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
             pass
     except requests.exceptions.ConnectionError as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Connection Error - " + str(response))
         print(response)
     except requests.exceptions.Timeout as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Timeout - " + str(response))
         print("Request Timeout when calling URL: " + url)
         print(response)
     except requests.exceptions.TooManyRedirects as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: TooManyRedirects - " + str(response))
         print("Too Many Redirects when calling URL: " + url)
         print(response)
     except requests.exceptions.RequestException as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: " + str(response))
         print("Request exception when calling URL: " + url)
         print(response)
         
-def send_message_request_detailed(info, jid1, jid2, jid3):
+def send_message_request(info):
     """ 
     Send the message, with a URL requests  to a Rainbowbot. This bot will send this message and request to the jid in parameters
     """
@@ -168,7 +209,7 @@ def send_message_request_detailed(info, jid1, jid2, jid3):
             text += [""]
 
     try:
-        url = "https://vna.preprod.omniaccess-stellar-asset-tracking.com/api/flows/NBDNotif_Classic_{0}".format(company)
+        url = site + "/api/flows/NBDNotif_Classic_{0}".format(company)
         headers = {
             'Content-type': 'application/json', 
             "Accept-Charset": "UTF-8",
@@ -190,52 +231,73 @@ def send_message_request_detailed(info, jid1, jid2, jid3):
             'Email': '0',
             'Advanced': '0'
         }
-
-        print(runtime)
+        syslog.syslog(syslog.LOG_INFO, "URL: " + url)
+        syslog.syslog(syslog.LOG_INFO, "Headers: " + str(headers))
+        print("Sending request")
+        syslog.syslog(syslog.LOG_INFO, "Calling VNA API - send_message_request - method GET")
         response = requests.get(url, headers=headers, timeout=600)
         print("Response from VNA")
-        print(runtime)
         print(response)
-
+        syslog.syslog(syslog.LOG_INFO, "Notification sent - VNA Answer: " + str(response))
         code = re.findall(r"<Response \[(.*?)\]>", str(response))
         if "200" in code:
-            os.system('logger -t montag -p user.info 200 OK')
             print("Response  Text from VNA")
             value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
             print(value)
             pass
+        elif "404" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Internal Server Error")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+        elif "401" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Authentication failed")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+        elif "408" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Timeout")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
         else:
-            os.system('logger -t montag -p user.info REST API Timeout')
-            info = "No answer received from VNA/Rainbow application - Answer Yes set by default"
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Timeout")
+            notif = "No answer received from VNA/Rainbow application - Answer Yes set by default"
+            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+            send_message(notif)
+            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+            syslog.syslog(syslog.LOG_INFO, "Value set to 1")
             value = "1"
     except requests.exceptions.ConnectionError as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Connection Error - " + str(response))
         print(response)
+        syslog.syslog(syslog.LOG_INFO, "Value set to 1")
         value = "1"
     except requests.exceptions.Timeout as response:
-        print("Request Timeout when calling URL: " + url)
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Timeout - " + str(response))
         print(response)
+        syslog.syslog(syslog.LOG_INFO, "Value set to 1")
         value = "1"
     except requests.exceptions.TooManyRedirects as response:
-        print("Too Many Redirects when calling URL: " + url)
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: TooManyRedirects - " + str(response))
         print(response)
+        syslog.syslog(syslog.LOG_INFO, "Value set to 1")
         value = "1"
     except requests.exceptions.RequestException as response:
-        print("Request exception when calling URL: " + url)
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: " + str(response))
         print(response)
+        syslog.syslog(syslog.LOG_INFO, "Value set to 1")
         value = "1"
     return value
 
-def send_file_detailed(subject, jid1, action, result, company, filename_path):
+def send_file(filename_path, subject, action, result, category):
         """ 
             Send the attachement to a Rainbowbot. This bot will send this file to the jid in parameters
-        """					  
-        url = "https://vna.preprod.omniaccess-stellar-asset-tracking.com/api/flows/NBDNotif_File_{0}".format(company)
+        """				  
+        url = site + "/api/flows/NBDNotif_File_{0}".format(company)
         headers = {
             'Content-type': "text/plain",
             'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
-            'Content-Disposition': "attachment;filename=troubleshooting.log", 									  
+            'Content-Disposition': ("attachment;filename={0}.log").format(category), 									  
             'jid1': '{0}'.format(jid1),
             'roomid': '{0}'.format(room_id), 
             'subject': '{0}'.format(subject),
@@ -244,36 +306,65 @@ def send_file_detailed(subject, jid1, action, result, company, filename_path):
             'Email': '0'
         }
         try:
-           files = {'file': open(filename_path, 'r')}
-        except:
-           pass
+            files = {'file': open(filename_path, 'r')}
+            syslog.syslog(syslog.LOG_DEBUG, "Payload: " + str(files))
+        except FileNotFoundError as exception:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: FileNotFoundError - " + str(exception))
+            filename_path = "/var/log/server/support_send_notification.log"
+            files = {'file': open(filename_path, 'r')}
+            syslog.syslog(syslog.LOG_DEBUG, "Payload: " + str(files))
+            pass          
+        except  UnboundLocalError as exception:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: UnboundLocalError - " + str(exception))
+            pass 
         try:
+            syslog.syslog(syslog.LOG_INFO, "URL: " + url)
+            syslog.syslog(syslog.LOG_INFO, "Headers: " + str(headers))
+            print("Sending request")
+            syslog.syslog(syslog.LOG_INFO, "Calling VNA API - send_file - method POST")
             response = requests.post(url, files=files, headers=headers, timeout=20)
-															   
+            syslog.syslog(syslog.LOG_INFO, "Notification sent - VNA Answer: " + str(response))															   
             code = re.findall(r"<Response \[(.*?)\]>", str(response))
             if "200" in code:
-                os.system('logger -t montag -p user.info 200 OK')
+                syslog.syslog(syslog.LOG_INFO, "VNA Answer HTTP 200 OK")
                 print("Response  Text from VNA")
                 value = response.text
+                syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
                 print(value)
                 print(code)
+            elif "404" in code:
+                syslog.syslog(syslog.LOG_INFO, "VNA API Call - Internal Server Error")
+                value = response.text
+                syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+            elif "401" in code:
+                syslog.syslog(syslog.LOG_INFO, "VNA API Call - Authentication failed")
+                value = response.text
+                syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+            elif "408" in code:
+                syslog.syslog(syslog.LOG_INFO, "VNA API Call - Timeout")
+                value = response.text
+                syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
             else:
-                os.system('logger -t montag -p user.info REST API Timeout')
+                syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
                 pass
         except requests.exceptions.ConnectionError as response:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Connection Error - " + str(response))
             print(response)
         except requests.exceptions.Timeout as response:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Timeout - " + str(response))
             print("Request Timeout when calling URL: " + url)
             print(response)
         except requests.exceptions.TooManyRedirects as response:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: TooManyRedirects - " + str(response))
             print("Too Many Redirects when calling URL: " + url)
             print(response)
         except requests.exceptions.RequestException as response:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: " + str(response))
             print("Request exception when calling URL: " + url)
             print(response)
 
 
-def send_message_request_advanced(info, jid1, jid2, jid3, feature):
+def send_message_request_advanced(info, feature):
     """ 
     Send the message, with a URL requests  to a Rainbowbot. This bot will send this message and request to the jid in parameters
     """
@@ -285,9 +376,10 @@ def send_message_request_advanced(info, jid1, jid2, jid3, feature):
             text += [""]
 
     if feature != "":
+        syslog.syslog(syslog.LOG_INFO, "Rainbow Adaptive Card with 4th option: " + feature)
         try:
 
-            url = "https://vna.preprod.omniaccess-stellar-asset-tracking.com/api/flows/NBDNotif_Classic_"+company
+            url = site + "/api/flows/NBDNotif_Classic_"+company
             headers = {
                 'Content-type': 'application/json', 
                 "Accept-Charset": "UTF-8",
@@ -309,50 +401,154 @@ def send_message_request_advanced(info, jid1, jid2, jid3, feature):
                 'Email': '0',
                 'Advanced': '{0}'.format(feature)
             }
-
-            print(runtime)
+            syslog.syslog(syslog.LOG_INFO, "URL: " + url)
+            syslog.syslog(syslog.LOG_INFO, "Headers: " + str(headers))
+            print("Sending request")
+            syslog.syslog(syslog.LOG_INFO, "Calling VNA API - send_message_request_advanced - method GET")
             response = requests.get(url, headers=headers, timeout=600)
+            syslog.syslog(syslog.LOG_INFO, "Notification sent - VNA Answer: " + str(response))
             print("Response from VNA")
-            print(runtime)
             print(response)
 
             code = re.findall(r"<Response \[(.*?)\]>", str(response))
             if "200" in code:
-                os.system('logger -t montag -p user.info 200 OK')
                 print("Response  Text from VNA")
                 value = response.text
+                syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
                 print(value)
+            elif "404" in code:
+                syslog.syslog(syslog.LOG_INFO, "VNA API Call - Internal Server Error")
+                value = response.text
+                syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+            elif "401" in code:
+                syslog.syslog(syslog.LOG_INFO, "VNA API Call - Authentication failed")
+                value = response.text
+                syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+            elif "408" in code:
+                syslog.syslog(syslog.LOG_INFO, "VNA API Call - Timeout")
+                value = response.text
+                syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
             else:
-                os.system('logger -t montag -p user.info REST API Timeout')
-                info = "No answer received from VNA/Rainbow application - Answer Yes set by default"
-                # send_message_detailed(info, jid1, jid2, jid3)
-                send_message_detailed(info, jid1, jid2, jid3)
+                syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Timeout")
+                notif = "No answer received from VNA/Rainbow application - Answer Yes set by default"
+                syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+                send_message(notif)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+                syslog.syslog(syslog.LOG_INFO, "Value set to 1")
                 value = "1"
         except requests.exceptions.ConnectionError as response:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Connection Error - " + str(response))
             print(response)
+            syslog.syslog(syslog.LOG_INFO, "Value set to 1")
             value = "1"
         except requests.exceptions.Timeout as response:
-            print("Request Timeout when calling URL: " + url)
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Timeout - " + str(response))
             print(response)
+            syslog.syslog(syslog.LOG_INFO, "Value set to 1")
             value = "1"
         except requests.exceptions.TooManyRedirects as response:
-            print("Too Many Redirects when calling URL: " + url)
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: TooManyRedirects - " + str(response))
             print(response)
+            syslog.syslog(syslog.LOG_INFO, "Value set to 1")
             value = "1"
         except requests.exceptions.RequestException as response:
-            print("Request exception when calling URL: " + url)
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: " + str(response))
             print(response)
+            syslog.syslog(syslog.LOG_INFO, "Value set to 1")
             value = "1"
     else:
         print("feature variable empty")
+        syslog.syslog(syslog.LOG_INFO, "Feature variable is empty - script exit")
         sys.exit()
-
     return value
 
+def send_test(subject,action,result):
+    """ 
+    API for testing VNA and Rainbow reachability
+
+    :param str info:                Message to send to the rainbow bot
+    :param str jid:                 Rainbow jid where the message will be send
+    :return:                        None
+    """
+    url = site + "/api/flows/NBDNotif_Test_"+company
+    headers = {
+                'Content-type': 'application/json', 
+                "Accept-Charset": "UTF-8",
+                'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+                'jid1': '{0}'.format(jid1),
+                'roomid': '{0}'.format(room_id), 
+                'subject': '{0}'.format(subject),
+                'action': '{0}'.format(action),
+                'result': '{0}'.format(result),
+                'Card': '0',
+               }
+    syslog.syslog(syslog.LOG_INFO, "URL: " + url)
+    syslog.syslog(syslog.LOG_INFO, "Headers: " + str(headers))
+    try:
+        syslog.syslog(syslog.LOG_INFO, "Calling VNA API - send_test - method GET")
+        response = requests.get(url, headers=headers, timeout=0.5)
+        syslog.syslog(syslog.LOG_INFO, "Notification sent - VNA Answer: " + str(response))
+        code = re.findall(r"<Response \[(.*?)\]>", str(response))
+        if "200" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA Answer HTTP 200 OK")
+            print("Response  Text from VNA")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+            print(value)
+            print(code)
+        elif "404" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Internal Server Error")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+        elif "401" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Authentication failed")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+        elif "408" in code:
+            syslog.syslog(syslog.LOG_INFO, "VNA API Call - Timeout")
+            value = response.text
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+        else:
+            syslog.syslog(syslog.LOG_INFO, "VNA value: " + response.text)
+    except requests.exceptions.ConnectionError as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Connection Error - " + str(response))
+        print(response)
+    except requests.exceptions.Timeout as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: Timeout - " + str(response))
+        print("Request Timeout when calling URL: " + url)
+        print(response)
+    except requests.exceptions.TooManyRedirects as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: TooManyRedirects - " + str(response))
+        print("Too Many Redirects when calling URL: " + url)
+        print(response)
+    except requests.exceptions.RequestException as response:
+        syslog.syslog(syslog.LOG_INFO, "VNA API Call exception: " + str(response))
+        print("Request exception when calling URL: " + url)
+        print(response)
 
 if __name__ == "__main__":
-    switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
-    send_message_detailed("1\n2\n3\n4", jid1, jid2, jid3)
-    send_message_request_detailed("1\n2\n3\n4", jid1, jid2, jid3)
-    send_message_request_advanced("1\n2\n3\n4", jid1, jid2, jid3, "TEST")
+    try:
+        send_message("info")
+        action = result = ""
+        subject = "Le vélo est le moyen de transport le plus démocratique. Le vélo est le plus audacieux, stimulant car il donne à son propriétaire le sentiment tentant de liberté, c'est pourquoi on peut dire sans aucune exagération, le vélo est un symbole de liberté."
+        send_test(subject, action, result)
+        subject = "Alerte canicule en Bretagne!"
+        send_alert(subject, action, result)
+        filename_path = ""
+        subject = "Preventive Maintenance application - Ceci est un test"
+        action = "Aucun resultat n est attendu"
+        result = "Ni auncune action"
+        category = "test"
+        send_file(filename_path, subject, action, result, category)
+    except (RuntimeError, TypeError, NameError):
+        raise
+    except OSError:
+        raise
+    except KeyboardInterrupt:
+        syslog.syslog(syslog.LOG_INFO, "KeyboardInterrupt")
+        raise
+    finally:
+        print("End of tests")
+        syslog.syslog(syslog.LOG_INFO, "End of tests")
     

@@ -31,13 +31,13 @@ runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company = get_credentials()
 
 set_portnumber("1/1/36")
 print("test1")
 ipadd = "10.130.7.36"
 notif = "Preventive Maintenance Application - Test1 coke and stock"
-send_message_detailed(info)
+send_message(info)
 set_decision(ipadd, "1")
 mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
 sys.exit(0)

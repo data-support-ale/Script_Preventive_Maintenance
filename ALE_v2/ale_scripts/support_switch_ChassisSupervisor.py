@@ -8,16 +8,31 @@ from support_tools_OmniSwitch import get_credentials, collect_command_output_ps,
 from support_send_notification import *
 from database_conf import *
 import re
+import time
 import syslog
 
 syslog.openlog('support_switch_ChassisSupervisor')
 syslog.syslog(syslog.LOG_INFO, "Executing script")
 
+from pattern import set_rule_pattern, set_portnumber, set_decision, get_decision, mysql_save
 
-runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+path = os.path.dirname(__file__)
+print(os.path.abspath(os.path.join(path,os.pardir)))
+sys.path.insert(1,os.path.abspath(os.path.join(path,os.pardir)))
+from alelog import alelog
+
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+pattern = sys.argv[1]
+print(pattern)
+set_rule_pattern(pattern)
+# info = ("We received following pattern from RSyslog {0}").format(pattern)
+# os.system('logger -t montag -p user.info ' + info)
+
+runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+_runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
+
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_power_supply_down.json", "r", errors='ignore') as log_file:
@@ -46,17 +61,15 @@ with open("/var/log/devices/lastlog_power_supply_down.json", "r", errors='ignore
         syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_power_supply_down.json - Index error in regex")
         exit()
 
-# always 1
-#never -1
-# ? 0
-syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
-save_resp = check_save(ipadd, "1", "power_supply")
-save_resp = check_save(ipadd, "2", "power_supply")
-save_resp = check_save(ipadd, "Unknown", "power_supply")
-save_resp = check_save(ipadd, "", "fan")
+set_portnumber("0")
+if alelog.rsyslog_script_timeout(ipadd+ "0" + pattern, time.time()):
+    print("Less than 5 min")
+    syslog.syslog(syslog.LOG_INFO, "Script executed within 5 minutes interval - script exit")
+    exit(0)
 
+decision = get_decision(ipadd)
 
-if save_resp == "0":
+if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):  
     syslog.syslog(syslog.LOG_INFO, "No Decision saved")
    # Sample log
     # OS6860 swlogd ChassisSupervisor MipMgr EVENT: CUSTLOG CMM chassisTrapsAlert - All power supplies OK
@@ -74,7 +87,7 @@ if save_resp == "0":
             category = "ps"
             filename_path = "/var/log/devices/lastlog_power_supply_down.json"
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API")
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         except UnboundLocalError as error:
             print(error)
@@ -97,23 +110,18 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, fan_id, "fan", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Fan ID: " + fan_id + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, fan_id, "fan", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Fan ID: " + fan_id + " Choice: " + " Never")
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Fan_Unit": fan_id}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -139,24 +147,18 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, fan_id, "fan", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Fan ID: " + fan_id + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, fan_id, "fan", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Fan ID: " + fan_id + " Choice: " + " Never")
-
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Fan_Unit": fan_id}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -188,24 +190,18 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, ps_id, "ps", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + ps_id + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, ps_id, "ps", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + ps_id + " Choice: " + " Never")
-
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "PS_Unit": ps_id}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -237,24 +233,18 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             
-            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, fan_id, "fan", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Fan ID: " + fan_id + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, fan_id, "fan", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Fan ID: " + fan_id + " Choice: " + " Never")
-
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Fan_Unit": fan_id}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -279,24 +269,18 @@ if save_resp == "0":
             notif = ("Preventive Maintenance Application - The {0} CMM is rebooting on OmniSwitch {1} / {2}.\n\nReason:\n- {3}\nIf CFM is inoperable the CMM will not come UP.").format(cmm,host,ipadd,reason)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification:" + notif) 
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Message") 
-            send_message_detailed(notif)
+            send_message(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Notification sent")
 
-            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, cmm, "cmm", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " CMM ID: " + cmm + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, cmm, "cmm", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " CMM ID: " + cmm + " Choice: " + " Never")
-
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "CMM_Unit": cmm}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -321,24 +305,18 @@ if save_resp == "0":
             notif = ("Preventive Maintenance Application - The {0} CMM ID {1} does not reload on OmniSwitch {2} / {3}.\n\nReason: Image verification failure.").format(cmm,cmm_id,host,ipadd)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification:" + notif) 
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Message") 
-            send_message_detailed(notif)
+            send_message(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, cmm_id, "cmm", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " CMM ID: " + cmm_id + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, cmm_id, "cmm", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " CMM ID: " + cmm_id + " Choice: " + " Never")
-
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "CMM_Unit": cmm_id}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -366,24 +344,18 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, ni_id, "ni", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " NI ID: " + ni_id + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, ni_id, "ni", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " NI ID: " + ni_id + " Choice: " + " Never")
-
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "NI_Unit": ni_id}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -414,24 +386,18 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, fan_id, "fan", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Fan ID: " + fan_id + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, fan_id, "fan", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Fan ID: " + fan_id + " Choice: " + " Never")
-
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Fan_Unit": fan_id}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -464,22 +430,18 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, nb_power_supply, "power_supply", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + nb_power_supply + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, nb_power_supply, "power_supply", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + nb_power_supply + " Choice: " + " Never")
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "PS_Unit": nb_power_supply}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -493,6 +455,7 @@ if save_resp == "0":
         except IndexError as error:
             print(error)
             sys.exit()
+
     # Sample log
     # OS6860 swlogd ChassisSupervisor fpgaMgr ERR message: +++ Unsupported power supply detected in PS1.
     elif "Unsupported power supply" in msg:
@@ -510,22 +473,18 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, nb_power_supply, "power_supply", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + nb_power_supply + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, nb_power_supply, "power_supply", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + nb_power_supply + " Choice: " + " Never")
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "PS_Unit": nb_power_supply}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -539,6 +498,7 @@ if save_resp == "0":
         except IndexError as error:
             print(error)
             sys.exit()
+
     # Sample log
     # OS6860E swlogd ChassisSupervisor Power Mgr INFO: Power Supply 1 Removed
     elif "Removed" in msg:
@@ -552,23 +512,18 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, nb_power_supply, "power_supply", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + nb_power_supply + " Choice: " + " Always")
-            elif answer == "0":
-                add_new_save(ipadd, nb_power_supply, "power_supply", choice="never")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " PS ID: " + nb_power_supply + " Choice: " + " Never")
             try:
-                write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "PS_Unit": nb_power_supply}, "fields": {"count": 1}}])
+                set_decision(ipadd, answer)
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Answer received: " + answer, exception='')
                 syslog.syslog(syslog.LOG_INFO, "Statistics saved")
             except UnboundLocalError as error:
                 print(error)
@@ -595,12 +550,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -638,12 +593,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file_detailed(filename_path, subject, action, result, category)
+            send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request_detailed(notif)
+            answer = send_message_request(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -704,7 +659,7 @@ if answer == '2':
     syslog.syslog(syslog.LOG_INFO, "Action: " + action)
     syslog.syslog(syslog.LOG_INFO, "Result: " + result)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-    send_file_detailed(filename_path, subject, action, result, category)
+    send_file(filename_path, subject, action, result, category)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 else:
     print("No decision matching - script exit")

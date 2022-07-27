@@ -4,6 +4,7 @@ import sys
 import os
 import re
 import json
+import syslog
 from time import strftime, localtime
 from support_tools_OmniSwitch import get_credentials, collect_command_output_ddm
 from time import strftime, localtime
@@ -34,7 +35,7 @@ _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 path = os.path.dirname(__file__)
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 # Log sample
 # OS6860E_VC_Core swlogd intfCmm Mgr WARN: cmmEsmCheckDDMThresholdViolations: SFP/XFP Rx Power=-26.8 dBm on slot=1 port=9, crossed DDM threshold low alarm
@@ -75,17 +76,24 @@ if alelog.rsyslog_script_timeout(ipadd + port + pattern, time.time()):
     print("Less than 5 min")
     exit(0)
 
-if jid1 != '' or jid2 != '' or jid3 != '':
-    filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power)
-    print(subject)
-    send_file_detailed(subject, jid1, action, result, company, filename_path)
-    
-    set_decision(ipadd, "4")
+
+filename_path, subject, action, result, category = collect_command_output_ddm(switch_user, switch_password, host, ipadd, port, slot, ddm_type, threshold, sfp_power)
+print(subject)
+send_file(filename_path, subject, action, result, category)
+syslog.syslog(syslog.LOG_INFO, "Notification: " + action)
+syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+set_decision(ipadd, "4")
+try:
     mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
-else:
-    print("Mail request set as no")
-    set_decision(ipadd, "4")
-    mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason="Mail request set as no", exception='')
+    syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+except UnboundLocalError as error:
+    print(error)
+    sys.exit()
+except Exception as error:
+    print(error)
+    pass   
+
 
 '''
 try:

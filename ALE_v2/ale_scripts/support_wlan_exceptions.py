@@ -24,7 +24,7 @@ print(pattern)
 set_rule_pattern(pattern)
 os.system('logger -t montag -p user.info Executing script ' + script_name + ' pattern: ' + pattern)
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore') as log_file:
@@ -58,7 +58,7 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
             subject = ("Preventive Maintenance Application - There is a Target Asserted error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
             result = "This is a known issue fixed in AWOS 4.0.0 MR-3, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058976"
-            send_alert_detailed(subject, jid1, jid2, jid3, action, result, company)
+            send_alert(subject, action, result)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -84,7 +84,7 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
             subject = ("Preventive Maintenance Application - There is an Internal Error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
             result = "If WLAN Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737"
-            send_alert_detailed(subject, jid1, jid2, jid3, action, result, company)
+            send_alert(subject, action, result)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -110,7 +110,7 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
             subject = ("Preventive Maintenance Application - There is a Kernel Panic error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
             result = "This is a known issue fixed in AWOS 4.0.4 MR-4, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000067381"
-            send_alert_detailed(subject, jid1, jid2, jid3, action, result, company)
+            send_alert(subject, action, result)
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -136,7 +136,7 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
             subject = ("Preventive Maintenance Application - An unhandled exception occurred on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
             action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
             result = "Please contact ALE Customer Support"
-            send_alert_detailed(subject, jid1, jid2, jid3, action, result, company)
+            send_alert(subject, action, result)
         except UnboundLocalError as error:
             print(error)
             sys.exit()

@@ -4,7 +4,7 @@ import sys
 import os
 import json
 import re
-import pysftp
+import syslog
 from support_tools_OmniSwitch import isEssential, get_credentials, ssh_connectivity_check, file_setup_qos
 from time import strftime, localtime, sleep
 from support_send_notification import *
@@ -48,8 +48,8 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
                 "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=_runtime, ip_address=ipadd, result='failure', reason=info, exception=exception)
             except UnboundLocalError as error:
@@ -61,8 +61,8 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
                 "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             print(info)
             os.system('logger -t montag -p user.info ' + info)
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=_runtime, ip_address=ipadd, result='failure', reason=info, exception=exception)
             except UnboundLocalError as error:
@@ -74,8 +74,8 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             "The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         try:
             mysql_save(runtime=_runtime, ip_address=ipadd, result='failure', reason=info, exception=exception)
         except UnboundLocalError as error:
@@ -101,7 +101,7 @@ set_rule_pattern(pattern)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 last = ""
 with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_file:
     for line in log_file:
@@ -121,7 +121,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         ip_switch_ddos = re.findall(r" ([.0-9]*)$", msg)[0]
         try:
             # Log sample if DDOS Attack of type invalid-ip
-            # OS6860E swlogd ipni dos WARN: VRF 0: DoS type invalid ip from 158.42.253.193/e8:e7:32:fb:47:4b on port 1/1/22
+            # OS6860E swlogd ipni dos WARN: VRF 0: DoS type invalid ipadd from 158.42.253.193/e8:e7:32:fb:47:4b on port 1/1/22
             # Log sample if DDOS Attack of type loopback-src
             # 6860E swlogd ipv4 dos EVENT: CUSTLOG CMM Denial of Service attack detected: <loopback-src>
             # OS6860E swlogd ipni dos WARN: VRF 0: DoS type loopback-src from 127.10.1.65\/2c:fa:a2:c0:fd:a3 on port 1\/1\/6
@@ -154,13 +154,13 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         if port != 0:
             notif = "Preventive Maintenance Application - A DDOS Attack of type {0} has been detected on your network - Source IP Address {1}  on OmniSwitch {2} / {3} port {4}.\nIf you click on Yes, the following actions will be done: Policy action block.".format(ddos_type, ip_switch_ddos, host, ip_switch, port)
             feature = "Disable port " + port
-            answer = send_message_request_advanced(notif, jid1, jid2, jid3, feature)
+            answer = send_message_request_advanced(notif, feature)
             set_decision(ip_switch, answer)
             mysql_save(runtime=_runtime, ip_address=ip_switch, result='success', reason=notif, exception='')
 
         else:
             notif = "Preventive Maintenance Application - A DDOS Attack of type {0} has been detected on your network - Source IP Address {1}  on OmniSwitch {2} / {3}.\nIf you click on Yes, the following actions will be done: Policy action block.".format(ddos_type, ip_switch_ddos, host, ip_switch)
-            answer = send_message_request_detailed(notif, jid1, jid2, jid3)
+            answer = send_message_request(notif)
             set_decision(ip_switch, answer)
             mysql_save(runtime=_runtime, ip_address=ip_switch, result='success', reason=notif, exception='')
 
@@ -168,7 +168,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
             answer = "0"
             notif = "Preventive Maintenance Application - A DDOS Attack has been detected on your network however it involves essential IP Address {} we do not proceed further.".format(ip_switch_ddos)
             print(notif)
-            send_message_detailed(notif, jid1, jid2, jid3)
+            send_message(notif)
             set_decision(ip_switch, "4")
             mysql_save(runtime=_runtime, ip_address=ip_switch, result='success', reason=notif, exception='')
             sys.exit(0)
@@ -184,17 +184,25 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
     if answer == '1':
         enable_qos_ddos(switch_user, switch_password,ip_switch, ip_switch_ddos)
         os.system('logger -t montag -p user.info Process terminated')
-        if jid1 != '' or jid2 != '' or jid3 != '':
-            filename_path = "/var/log/devices/" + host + "/syslog.log"
-            subject = "Preventive Maintenance Application - A {0} attack is detected:".format(ddos_type)
-            action = "A {0} attack is detected on your network and QOS policy is applied to prevent access for the IP Address {1} to access OmniSwitch {2} / {3}".format(ddos_type, ip_switch_ddos, host, ip_switch)
-            result = "Find enclosed to this notification the log collection. More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000063327"
-            send_file_detailed(subject, jid1, action, result, company, filename_path)
-            set_decision(ip_switch, "4")
-            mysql_save(runtime=_runtime, ip_address=ip_switch, result='success', reason=action, exception='')
-            #info = "A port scan has been detected on your network and QOS policy has been applied to prevent access for the IP Address {0} to device {1}".format(ip_switch_ddos, ip_switch)
-            # send_message_detailed(info, jid1, jid2, jid3)
-            #send_message_detailed(info, jid1, jid2, jid3)
+        filename_path = "/var/log/devices/" + host + "/syslog.log"
+        subject = "Preventive Maintenance Application - A {0} attack is detected:".format(ddos_type)
+        action = "A {0} attack is detected on your network and QOS policy is applied to prevent access for the IP Address {1} to access OmniSwitch {2} / {3}".format(ddos_type, ip_switch_ddos, host, ip_switch)
+        result = "Find enclosed to this notification the log collection. More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000063327"
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + action)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+        send_file(filename_path, subject, action, result, category)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+        set_decision(ip_switch_ddos, "4")
+        try:
+            mysql_save(runtime=_runtime, ip_address=ip_switch_ddos, result='success', reason=notif, exception='')
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass   
+
 
         cmd = "swlog appid ipv4 subapp all level info"
         # ssh session to start python script remotely
@@ -212,10 +220,10 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         cmd = "interfaces port " + port + " admin-state disable"
         ssh_connectivity_check(switch_user, switch_password, ip_switch, cmd)
         filename_path = "/var/log/devices/" + host + "/syslog.log"
-        subject = "Preventive Maintenance Application - A DDOS Attack of type invalid-ip is detected:".format(host, ip_switch)
+        subject = "Preventive Maintenance Application - A DDOS Attack of type invalid-ipadd is detected:".format(host, ip_switch)
         action = "DDOS Attack is detected on your network and interface port {0} is disabled to prevent access to OmniSwitch {2} / {3}".format(port,ip_switch_ddos, host, ip_switch)
         result = "Find enclosed to this notification the log collection."
-        send_file_detailed(subject, jid1, action, result, company, filename_path)
+        send_file(filename_path, subject, action, result, category)
         mysql_save(runtime=_runtime, ip_address=ip_switch, result='success', reason=action, exception='')
         # We disable debugging logs
         cmd = "swlog appid ipv4 subapp all level info"

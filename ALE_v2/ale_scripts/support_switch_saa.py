@@ -18,7 +18,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 syslog.syslog(syslog.LOG_INFO, "   ")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company = get_credentials()
 
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
@@ -62,7 +62,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
             notif = ("Service Assurance Agent - SAA probe {0} configured on OmniSwitch {1} / {2} failed").format(saa_name,ipadd,host)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Notification")
-            send_message_detailed(notif)
+            send_message(notif)
             syslog.syslog(syslog.LOG_INFO, "Notification sent")
 
             l_switch_cmd = []
@@ -92,7 +92,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                         print(info)
                         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                         syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Notification")
-                        send_message_detailed(notif)
+                        send_message(notif)
                         syslog.syslog(syslog.LOG_INFO, "Notification sent")
 
                 except Exception as exception:

@@ -75,7 +75,7 @@ db.execute(query)
 result = json.loads(db.fetchall()[1][2])
 print(result) """
 # Insert a row of data
-"""switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+"""switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 room_id = get_credentials("room_id")
 settings = {
     'switch_user': switch_user, 
@@ -88,7 +88,7 @@ settings = {
     'login_AP': login_AP,
     'pass_AP': pass_AP,
     'tech_pass': tech_pass,
-    'random_id': random_id,
+    'random_id': 
     'company': company,
     'room_id': room_id
 }

@@ -30,7 +30,7 @@ set_rule_pattern(pattern)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_file:
@@ -64,8 +64,8 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
                 r"bootMgrVCMTopoDataEventHandler: remote chassis (.*?) no longer in the topology", msg)[0]
             info = "The Virtual Chassis Unit " + nb_vc + \
                 " of OmniSwitch \"" + host + "\" IP: " + ipadd + " is DOWN"
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
             except UnboundLocalError as error:
@@ -85,8 +85,8 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
                 r"CSLIB_EVENT_NIDOWN event for chassis=(.*?) slot", msg)[0]
             info = "The Virtual Chassis Unit " + nb_vc + \
                 " of OmniSwitch \"" + host + "\" IP: " + ipadd + " is DOWN"
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
             except UnboundLocalError as error:
@@ -103,8 +103,8 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
     elif "VC Takeover" in msg:
         info = "The Virtual Chassis \"" + host + \
             "\" IP: " + ipadd + " is doing a TakeOver"
-        # send_message_detailed(info, jid1, jid2, jid3)
-        send_message_detailed(info, jid1, jid2, jid3)
+        
+        send_message(info)
         try:
             mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
         except UnboundLocalError as error:
@@ -119,8 +119,8 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
             info = "The Virtual Chassis \"" + host + \
                 "\" IP: " + ipadd + " did reload by " + reason
             print(info)
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
             except UnboundLocalError as error:

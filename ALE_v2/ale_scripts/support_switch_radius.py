@@ -26,7 +26,7 @@ set_rule_pattern(pattern)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 _runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_radius_down.json", "r", errors='ignore') as log_file:
@@ -58,8 +58,8 @@ with open("/var/log/devices/lastlog_radius_down.json", "r", errors='ignore') as 
         try:
             radius_server, status = re.findall(r"RADIUS Primary Server - (.*?) is (.*)", msg)[0]
             info = "The Primary Radius Server " + radius_server + " set on the OmniSwitch " + host + "\" IP: " + ipadd + " aaa settings is " + status
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
             except UnboundLocalError as error:
@@ -77,8 +77,8 @@ with open("/var/log/devices/lastlog_radius_down.json", "r", errors='ignore') as 
         try:
             radius_server, status = re.findall(r"RADIUS Backup Server - (.*?) is (.*)", msg)[0]
             info = "The Primary Radius Server " + radius_server + " set on the OmniSwitch " + host + "\" IP: " + ipadd + " aaa settings is " + status
-            # send_message_detailed(info, jid1, jid2, jid3)
-            send_message_detailed(info, jid1, jid2, jid3)
+            
+            send_message(info)
             try:
                 mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
             except UnboundLocalError as error:

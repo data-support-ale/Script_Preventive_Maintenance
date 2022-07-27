@@ -33,7 +33,7 @@ set_rule_pattern(pattern)
 # os.system('logger -t montag -p user.info ' + info)
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
 
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
@@ -87,13 +87,13 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
     port_monitoring(switch_user, switch_password, port, ip)
     notif = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg
     # send_message(notif, jid)
-    send_message_detailed(notif, jid1, jid2, jid3)
+    send_message(notif)
     lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port, ip)  
     if lldp_port_description == 0:
         set_decision(ip, "4")
         device_type = answer = 0
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
-        send_file_detailed(subject, jid1, action, result, company, filename_path) 
+        send_file(filename_path, subject, action, result, category) 
         mysql_save(runtime=_runtime, ip_address=ip, result='success', reason=action, exception='')
     elif "OAW-AP" in str(lldp_port_description):
         # If LLDP Remote System is Stellar AP we search for IP Address in ARP Table
@@ -102,7 +102,7 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
         notif = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". Stellar AP " + device_ip + "/" + lldp_mac_address + " is connected to this port, do you want to collect AP logs? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
         # If LLDP Remote System is Stellar AP we propose to collect AP Logs
         # answer = send_message_request(notif, jid)
-        answer = send_message_request_detailed(notif, jid1, jid2, jid3)
+        answer = send_message_request(notif)
         print(answer)      
         mysql_save(runtime=_runtime, ip_address=ip, result='success', reason=notif, exception='')
     
@@ -111,7 +111,7 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
         device_type = "Others"
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
         action = "A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
-        send_file_detailed(subject, jid1, action, result, company, filename_path) 
+        send_file(filename_path, subject, action, result, category) 
         mysql_save(runtime=_runtime, ip_address=ip, result='success', reason=action, exception='')
     sleep(2)
     #### Download port monitoring capture ###
@@ -131,7 +131,7 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
 
     notif = "Preventive Maintenance Application - LinkAgg issue detected on OmniSwitch " + host + ". Do you want to keep being notified? " + ip_server        #send_message(info, jid)
     # answer = send_message_request(notif, jid)
-    answer = send_message_request_detailed(notif, jid1, jid2, jid3)
+    answer = send_message_request(notif)
     print(answer)
     set_decision(ip, answer)
     # if answer == "2":
@@ -161,11 +161,11 @@ elif 'yes and remember' in [d.lower() for d in decision]:
     answer = '2'
     info = "A LinkAgg Port Leave has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ip, ip_server)
     # send_message(info,jid)
-    send_message_detailed(info, jid1, jid2, jid3)
+    send_message(info)
 else:
     info = "A LinkAgg Port Leave has been detected on your network from the port {0} on device {1}. Decision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ip, ip_server)
     # send_message(info,jid)
-    send_message_detailed(info, jid1, jid2, jid3)
+    send_message(info)
 
 if answer == '1':
     if device_type == "OAW-AP":
@@ -174,11 +174,11 @@ if answer == '1':
         ssh_connectivity_check(login_AP, pass_AP, device_ip, cmd)
         os.system('logger -t montag -p user.info Collecting logs on OmniSwitch')
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
-        send_file_detailed(subject, jid1, action, result, company, filename_path)
+        send_file(filename_path, subject, action, result, category)
     else:
         os.system('logger -t montag -p user.info Collecting logs on OmniSwitch')
         filename_path, subject, action, result, category = collect_command_output_linkagg(switch_user, switch_password, agg, host, ip)
-        send_file_detailed(subject, jid1, action, result, company, filename_path)
+        send_file(filename_path, subject, action, result, category)
 
 elif answer == '2':
     os.system('logger -t montag -p user.info Process terminated')
