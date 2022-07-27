@@ -1,4 +1,0 @@
-policy condition scanner_192.168.80.28 source ip 192.168.80.28
-policy action block_scanner port-disable
-policy rule rule_192.168.80.28 condition scanner_192.168.80.28 action block_scanner
-qos apply
