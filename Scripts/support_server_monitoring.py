@@ -5,7 +5,7 @@ import os
 import json
 from time import strftime, localtime
 from support_tools_OmniSwitch import get_credentials
-from support_send_notification import send_message, send_message_request
+from support_send_notification import *
 from database_conf import *
 import re
 import syslog
@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_server_monitoring.json", "r", errors='ignore') as log_file:
@@ -58,10 +58,10 @@ if "Failed to start LSB" in msg:
     try:
         pattern = "TFTP Service issue"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        notif = ("Preventive Maintenance Application - TFTP Service issue detected on Preventive Maintenance server {0}.\nThis service is used for log collection of WLAN Stellar AP. Do you want to restart the TFTP Service?").format(ip_server)        #send_message(info, jid)
+        notif = ("Preventive Maintenance Application - TFTP Service issue detected on Preventive Maintenance server {0}.\nThis service is used for log collection of WLAN Stellar AP. Do you want to restart the TFTP Service?").format(ip_server)        #send_message_detailed(info)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-        answer = send_message_request(notif, jid)
+        answer = send_message_request_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     except UnboundLocalError as error:
         print(error)
@@ -79,10 +79,10 @@ elif "Failed password" in msg:
         pattern = "SSH Authentication issue"
         login,user_ip,port,service = re.findall(r"Failed password for (.*?) from (.*?) port (.*?) (.*)", msg)[0]
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        notif = ("Preventive Maintenance Application - SSH Authentication failure when connecting to Preventive Maintenance server {0} .\n\nDetails: \n- User: {1}\n- IP Address: {2}\n- Protocol: {3}").format(ip_server,login,user_ip,service)      #send_message(info, jid)
+        notif = ("Preventive Maintenance Application - SSH Authentication failure when connecting to Preventive Maintenance server {0} .\n\nDetails: \n- User: {1}\n- IP Address: {2}\n- Protocol: {3}").format(ip_server,login,user_ip,service)      #send_message_detailed(info)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     except UnboundLocalError as error:
         print(error)
@@ -99,10 +99,10 @@ elif "Disconnecting authenticating user" in msg:
         pattern = "Disconnecting authenticating user"
         login,user_ip,port = re.findall(r"Disconnecting authenticating user (.*?) (.*?) port (.*?): Too many authentication failures", msg)[0]
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        notif = ("Preventive Maintenance Application - SSH Authentication failure when connecting to Preventive Maintenance server {0} .\n\nDetails: \n- User: {1}\n- IP Address: {2}.").format(ip_server,login,user_ip)      #send_message(info, jid)
+        notif = ("Preventive Maintenance Application - SSH Authentication failure when connecting to Preventive Maintenance server {0} .\n\nDetails: \n- User: {1}\n- IP Address: {2}.").format(ip_server,login,user_ip)      #send_message_detailed(info)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     except UnboundLocalError as error:
         print(error)
@@ -117,10 +117,10 @@ elif "No space left on device" in msg:
     try:
         pattern = "No space left on device"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        notif = ("Preventive Maintenance Application - No space left on device issue detected on Preventive Maintenance server {0}").format(ip_server)      #send_message(info, jid)
+        notif = ("Preventive Maintenance Application - No space left on device issue detected on Preventive Maintenance server {0}").format(ip_server)      #send_message_detailed(info)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     except UnboundLocalError as error:
         print(error)
@@ -132,10 +132,10 @@ elif "No space left on device" in msg:
 else:
     try:
         service_issue_reason = re.findall(r"Failed to start (.*)", msg)[0]
-        notif = ("Preventive Maintenance Application - Service failure detected on Preventive Maintenance server {0} .\n\nDetails: \n- Reason: {1}").format(ip_server,service_issue_reason)      #send_message(info, jid)
+        notif = ("Preventive Maintenance Application - Service failure detected on Preventive Maintenance server {0} .\n\nDetails: \n- Reason: {1}").format(ip_server,service_issue_reason)      #send_message_detailed(info)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     except UnboundLocalError as error:
         print(error)

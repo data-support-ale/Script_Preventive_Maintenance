@@ -86,7 +86,7 @@ import re
 import json
 from support_tools import enable_debugging, disable_debugging, disable_port, extract_ip_port, check_timestamp, get_credentials,extract_ip_ddos,disable_debugging_ddos,enable_qos_ddos,get_id_client,get_server_log_ip
 from time import strftime, localtime, sleep
-from support_send_notification import send_message, send_mail,send_file
+from support_send_notification import send_message_detailed, send_mail,send_file
 import requests
 
 # Script init
@@ -95,7 +95,7 @@ os.system('logger -t montag -p user.info Executing script ' + script_name)
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user,switch_password,mails,jid,ip_server,login_AP,pass_AP,tech_pass,random_id,company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 ip_server_log = get_server_log_ip()
 company=0
 
@@ -150,7 +150,7 @@ import logging
 import datetime
 from time import gmtime, strftime, localtime,sleep
 from support_tools import get_credentials,get_server_log_ip,get_jid,get_mail,send_python_file_sftp,get_file_sftp
-from support_send_notification import send_message,send_file,send_mail
+from support_send_notification import send_message_detailed,send_file,send_mail
 import subprocess
 import re
 import requests
@@ -210,14 +210,14 @@ except paramiko.ssh_exception.AuthenticationException:
    print("Authentication failed enter valid user name and password")
    info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs").format(ipadd)
    os.system('logger -t montag -p user.info {0}').format(info)
-   send_message(info,jid)
+   send_message_detailed(info)
    sys.exit(0)
 except paramiko.ssh_exception.NoValidConnectionsError:
    print("Device unreachable")
    logging.info(runtime + ' SSH session does not establish on OmniSwitch ' + ipadd)
    info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
    os.system('logger -t montag -p user.info {0}').format(info)
-   send_message(info,jid)
+   send_message_detailed(info)
    sys.exit(0)
 cmd = ("rm -rf {0}").format(filename)
 stdin, stdout, stderr = p.exec_command(cmd)
@@ -226,7 +226,7 @@ exception = str(exception)
 connection_status = stdout.channel.recv_exit_status()
 if connection_status != 0:
    info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd,exception)
-   send_message(info,jid)
+   send_message_detailed(info)
    os.system('logger -t montag -p user.info ' + info)
    sys.exit(2)
 
@@ -236,7 +236,7 @@ exception = str(exception)
 connection_status = stdout.channel.recv_exit_status()
 if connection_status != 0:
    info = ("\"The show tech support eng complete\" command on OmniSwitch {0} failed - {1}").format(ipadd,exception)
-   send_message(info,jid)
+   send_message_detailed(info)
    os.system('logger -t montag -p user.info ' + info)
    sys.exit(2)
 
@@ -294,7 +294,7 @@ f_logs.close()
 
 if jid !='':
          info = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. A snapshot has been sent in the directory /tftpboot/ on syslog server".format(ipadd,pattern)
-         send_message(info,jid)
+         send_message_detailed(info)
          send_message(msg,jid)
 
 open('/var/log/devices/get_log_switch.json','w').close()

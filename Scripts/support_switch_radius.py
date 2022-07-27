@@ -6,7 +6,7 @@ import json
 import re
 from time import strftime, localtime
 from support_tools_OmniSwitch import get_credentials
-from support_send_notification import send_message
+from support_send_notification import send_message_detailed
 from database_conf import *
 import syslog
 
@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_radius_down.json", "r", errors='ignore') as log_file:
@@ -55,7 +55,7 @@ with open("/var/log/devices/lastlog_radius_down.json", "r", errors='ignore') as 
             notif = "The Primary Radius Server " + radius_server + " set on the OmniSwitch " + host + "\" IP: " + ipadd + " aaa settings is " + status
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Radius_Server": radius_server, "Status": status}, "fields": {"count": 1}}])
@@ -82,7 +82,7 @@ with open("/var/log/devices/lastlog_radius_down.json", "r", errors='ignore') as 
             notif = ("Preventive Maintenance Application - The Primary Radius Server{0} set on the OmniSwitch {1} / {2} aaa settings is {3}").format(radius_server,host,ipadd,status)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:

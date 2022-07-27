@@ -21,7 +21,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 syslog.syslog(syslog.LOG_INFO, "   ")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
@@ -103,7 +103,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
             notif = ("Service Assurance Agent - SAA probe {0} configured on OmniSwitch {1} / {2} failed").format(saa_name,ipadd,host)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Notification sent")
 
             l_switch_cmd = []
@@ -136,7 +136,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                             print(info)
                             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                             syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Notification")
-                            send_message(notif, jid)
+                            send_message_detailed(notif)
                             syslog.syslog(syslog.LOG_INFO, "Notification sent")
 
                     except Exception as exception:
@@ -220,7 +220,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 filename_path = "/var/log/devices/{0}".format(logfilename)
                 if os.path.exists(filename_path) == False:
                     info = ("Service Assurance Agent - OmniSwitch {0} is unreachable for log collection of CLI command output").format(ipaddress)
-                    send_message(info,jid)                    
+                    send_message_detailed(info)                    
                     continue
  
                 subject = ("Service Assurance Agent - SAA probe {0} configured on OmniSwitch {1} / {2} failed").format(saa_name,ipadd,host)
@@ -231,7 +231,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
                 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-                send_file(filename_path, subject, action, result, category, jid)
+                send_file_detailed(filename_path, subject, action, result, category)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             for ipaddress in ipadd_list:
@@ -241,7 +241,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 filename_path = "/var/log/devices/{0}".format(logfilename)
                 if os.path.exists(filename_path) == False:
                     info = ("Service Assurance Agent - OmniSwitch {0} is unreachable for log collection of BSHELL command output").format(ipaddress)
-                    send_message(info,jid)   
+                    send_message_detailed(info)   
                     continue
 
                 subject = ("Service Assurance Agent - SAA probe {0} configured on OmniSwitch {1} / {2} failed").format(saa_name,ipadd,host)
@@ -252,7 +252,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
                 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-                send_file(filename_path, subject, action, result, category, jid)
+                send_file_detailed(filename_path, subject, action, result, category)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             ##### Port monitoring to check if frames are received with VLAN Tag 4095 #####
@@ -281,7 +281,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)    
             except:
                 info = "Service Assurance Agent - Port Monitoring failed on OmniSwitch {0}".format(ip)
-                send_message(info,jid)
+                send_message_detailed(info)
                 pass
             
             sleep(120)
@@ -292,10 +292,10 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ip,filename)
                 get_file_sftp(switch_user, switch_password, ip, remoteFilePath, localFilePath)
                 info = "Service Assurance Agent - Port Monitoring capture {0} - download success".format(localFilePath)
-                send_message(info,jid)               
+                send_message_detailed(info)               
             except:
                 info = "Service Assurance Agent - Port Monitoring capture - download failed"
-                send_message(info,jid)
+                send_message_detailed(info)
                 pass
             '''
         except UnboundLocalError as error:

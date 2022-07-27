@@ -6,7 +6,7 @@ import re
 import json
 from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
-from support_send_notification import send_message
+from support_send_notification import *
 from database_conf import *
 import sys
 import syslog
@@ -18,7 +18,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_authfail.json", "r", errors='ignore') as log_file:
@@ -55,14 +55,14 @@ with open("/var/log/devices/lastlog_authfail.json", "r", errors='ignore') as log
 notif = "Preventive Maintenance Application - Authentication failed on OmniSwitch {0} / {1}\n\nDetails:\n- User Login : {2}\n- Source IP Address : {3}\n- Protocol : {4}\n".format(host, ipadd, user, source_ip, protocol)
 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Notification")
-send_message(notif, jid)
+send_message_detailed(notif)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 sleep(1)
 open('/var/log/devices/lastlog_authfail.json', 'w').close()
 
 try:
-    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"user": user, "IP": ip, "protocol": protocol, "source_ip": source_ip}, "fields": {"count": 1}}])
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"user": user, "IP": ipadd, "protocol": protocol, "source_ip": source_ip}, "fields": {"count": 1}}])
     syslog.syslog(syslog.LOG_INFO, "Statistics saved")
 except UnboundLocalError as error:
     print(error)

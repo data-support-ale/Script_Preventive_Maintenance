@@ -4,8 +4,8 @@ import sys
 import os
 import json
 from time import strftime, localtime
-from support_tools_OmniSwitch import get_credentials, send_file, collect_command_output_ovc, check_save, add_new_save, ssh_connectivity_check
-from support_send_notification import send_message, send_message_request_advanced
+from support_tools_OmniSwitch import get_credentials, send_file_detailed, collect_command_output_ovc, check_save, add_new_save, ssh_connectivity_check
+from support_send_notification import send_message_detailed, send_message_request_advanced
 from database_conf import *
 import re
 import syslog
@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file:
@@ -74,7 +74,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -117,7 +117,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -162,7 +162,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -207,7 +207,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -249,7 +249,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             notif = "Preventive Maintenance Application - A Fatal TLS error has been detected on OmniSwitch (IP : {0} / {1}) syslogs on the OPENVPN task.\nPlease check the certificate status (must be Consistent).\nAs a workaround you can restart the cloud-agent (cloud-agent admin-state restart).".format(ipadd, host)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "VPN": vpn_ip, "Reason": reason}, "fields": {"count": 1}}])
@@ -265,7 +265,7 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 
@@ -287,7 +287,7 @@ if save_resp == "0":
             notif = "An OpenVPN issue is detected on OmniSwitch " + host + " reason: " + reason + ".\nDo you want to disable the Cloud-Agent on this switch? This command will result in device being disconnected from OV in cloud." + ip_server
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Adaptive Card of type Advanced")
-            answer = send_message_request_advanced(notif, jid,feature)
+            answer = send_message_request_advanced(notif, feature)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             syslog.syslog(syslog.LOG_INFO, "Rainbow Adaptive Card Answer: " + answer)
             print(answer)
@@ -300,7 +300,7 @@ if save_resp == "0":
             notif = "A Cloud-Agent issue is detected on OmniSwitch " + host + " reason: " + reason + ".\nDo you want to disable the Cloud-Agent on this switch? This command will result in device being disconnected from OV in cloud. " + ip_server
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Adaptive Card of type Advanced")
-            answer = send_message_request_advanced(notif, jid,feature)
+            answer = send_message_request_advanced(notif, feature)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             syslog.syslog(syslog.LOG_INFO, "Rainbow Adaptive Card Answer: " + answer)
             print(answer)
@@ -350,7 +350,7 @@ if answer == '1':
         syslog.syslog(syslog.LOG_INFO, "SSH Session end")
     notif = "Cloud-Agent service is stopped on OmniSwitch: {}/{}".format(host,ipadd)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-    answer = send_message(notif, jid)
+    answer = send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")       
 
 elif answer == '2':
@@ -374,7 +374,7 @@ elif answer == '3':
     syslog.syslog(syslog.LOG_INFO, "SSH Session end")
     notif = "Cloud-Agent is restarted on OmniSwitch: {}/{}".format(host,ipadd)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-    answer = send_message(notif, jid)
+    answer = send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent") 
 
 else:

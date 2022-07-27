@@ -6,8 +6,8 @@ import datetime
 import sys
 import re
 import configparser
-from support_send_notification import send_message, send_message_request
-from support_tools_OmniSwitch import check_save, add_new_save, send_file
+from support_send_notification import *
+from support_tools_OmniSwitch import check_save, add_new_save
 from time import gmtime, strftime, localtime, sleep, time
 import paramiko
 from database_conf import *
@@ -368,7 +368,7 @@ def ssh_connectivity_check(User_root, Password_root, ipadd, cmd):
         print("Function ssh_connectivity_check - Timeout when establishing SSH Session")
         info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
+        send_message_detailed(info)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
@@ -382,7 +382,7 @@ def ssh_connectivity_check(User_root, Password_root, ipadd, cmd):
         print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
         info = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
         os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
+        send_message_detailed(info)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
@@ -399,7 +399,7 @@ def ssh_connectivity_check(User_root, Password_root, ipadd, cmd):
         info = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
+        send_message_detailed(info)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
@@ -421,7 +421,7 @@ def ssh_connectivity_check(User_root, Password_root, ipadd, cmd):
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         print(info)
         os.system('logger -t montag -p user.info ' + info)
-        send_message(info, jid)
+        send_message_detailed(info)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
         except UnboundLocalError as error:
@@ -437,7 +437,7 @@ def ssh_connectivity_check(User_root, Password_root, ipadd, cmd):
     print(exception)
     if connection_status != 0:
         info = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-        send_message(info, jid)
+        send_message_detailed(info)
         os.system('logger -t montag -p user.info ' + info)
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
@@ -481,7 +481,7 @@ def restart_freeradius_service():
                info = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ip)
                print(info)
                os.system('logger -t montag -p user.info ' + info)
-               send_message(info, jid)
+               send_message_detailed(info)
                try:
                   write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ip, "Exception": exception}, "fields": {"count": 1}}])
                except UnboundLocalError as error:
@@ -575,7 +575,7 @@ def rainbow_notif(user_type, value, threshold):
    if save_resp == "0":
       notif = "The Total number of {0} authenticated over the Radius Server is  {1} under the fixed Threshold : {2}. Do you want to restart the Radius services?".format(user_type,value,threshold)
 
-      answer = send_message_request(notif, jid)
+      answer = send_message_request_detailed(info)
       print(answer)
       if answer == "2":
          add_new_save(user_type, ip, "radius", choice="always")
@@ -600,7 +600,7 @@ def rainbow_notif(user_type, value, threshold):
         subject = "The number of devices authenticated on Radius Server {0} was below defined threshold.".format(ip)
         action = "Action done: the Radius services are restarted and we keep monitoring the number of authentications"
         result = "Find enclosed to this notification the log collection"
-        send_file(logfilepath, subject, action, result, category, jid)
+        send_file_detailed(logfilepath, subject, action, result, category)
 
    elif answer == '2':
         os.system('logger -t montag -p user.info Received Answer Yes and Remember')
@@ -614,6 +614,6 @@ while True:
       main()
    except Exception as e:
       info = "Error when collecting Radius data : {0} ".format(e)
-      send_message(info, jid)   
+      send_message_detailed(info)   
       entry_log(info)
    sleep(900)

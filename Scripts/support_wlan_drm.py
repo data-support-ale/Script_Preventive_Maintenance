@@ -5,13 +5,13 @@ import os
 import json
 import re
 from time import strftime, localtime
-from support_tools_Stellar import get_credentials
+from support_tools_OmniSwitch import get_credentials
 from support_send_notification import *
 from database_conf import *
 
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file:
@@ -56,7 +56,7 @@ with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file
         try:
             band, channel_utilization = re.findall(r"(.*?) channel utilization exceeded the threshold (.*?).", msg)[0]
             info = "Preventive Maintenance Application - WLAN Stellar AP {} Channel on Radio band {}Hz exceeds the threshold {}. Please increase the Channel Width on your RF Profile. Recommendation is to increase the width for closed location with lot of WLAN clients. Take care of overlap with other channels".format(ipadd, band, channel_utilization)
-            send_message(info, jid)
+            send_message_detailed(info)
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {
                                 "IP": ipadd, "Band": band, "Channel Utilization": channel_utilization}, "fields": {"count": 1}}])
@@ -95,17 +95,17 @@ with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file
             sys.exit()
         if my_channel_24==neighbor_channel_24:
             info = "Preventive Maintenance Application - WLAN Stellar AP {} Channel on Radio band 2.4GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel_24,neighbor_ip)
-            send_message(info, jid)
+            send_message_detailed(info)
         elif my_channel_5==neighbor_channel_5:
             print(neighbor_ip)
             print(neighbor_channel_5)
             info = "Preventive Maintenance Application - WLAN Stellar AP {} Channel on Radio band 5GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel_5,neighbor_ip)
-            send_message(info, jid)   
+            send_message_detailed(info)   
         elif my_channel_5_high==neighbor_channel_5_high:
             print(neighbor_ip)
             print(neighbor_channel_5_high)
             info = "Preventive Maintenance Application - WLAN Stellar AP {} Channel on Radio band 5GHz uses the same Channel {} as Neighbor AP {}. Please change the RF Profile Channel Setting/Channel List".format(ipadd,neighbor_channel_5_high,neighbor_ip)
-            send_message(info, jid) 
+            send_message_detailed(info) 
         else:
             print("Channels are differents")
     # Sample log
@@ -131,7 +131,7 @@ with open("/var/log/devices/lastlog_drm.json", "r", errors='ignore') as log_file
                 print(error)
                 pass
             info = "Preventive Maintenance Application - WLAN Stellar AP {} - Channel on Radio band {} changed to Channel {} reason ({}).".format(ipadd,band,best_channel,reason)
-            send_message(info, jid)
+            send_message_detailed(info)
         except UnboundLocalError as error:
             print(error)
             sys.exit()

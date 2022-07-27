@@ -8,7 +8,7 @@ from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check
 from time import strftime, localtime, sleep
 from support_send_notification import *
 from database_conf import *
-from support_tools_OmniSwitch import add_new_save, check_save, send_file
+from support_tools_OmniSwitch import add_new_save, check_save, send_file_detailed
 import syslog
 
 syslog.openlog('support_switch_violation')
@@ -18,7 +18,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 agg_id = "0"
 last = ""
@@ -146,7 +146,7 @@ if save_resp == "0":
         notif = ("Preventive Maintenance Application - A port violation occurs on OmniSwitch {0} / {1}. Port : {2} - Source : {3}.\nDo you want to clear the violation or administratively disable the Interface/Port?").format(host,ipadd,port,reason)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card of type Advanced")
-        answer = send_message_request_advanced(notif, jid,feature)
+        answer = send_message_request_advanced(notif, feature)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         if answer == "2":
             add_new_save(ipadd, port, "violation", choice="always")
@@ -162,7 +162,7 @@ if save_resp == "0":
         notif = "Preventive Maintenance Application - A port violation occurs on OmniSwitch " + host + " LinkAgg ID " + agg_id + ", source: " + reason + ".\nDo you want to clear the violation or administratively disable the Link Aggregate? " + ip_server
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card of type Advanced")
-        answer = send_message_request_advanced(notif, jid,feature)
+        answer = send_message_request_advanced(notif, feature)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         if answer == "2":
             add_new_save(ipadd, port, "violation", choice="always")
@@ -220,7 +220,7 @@ if answer == '1':
     syslog.syslog(syslog.LOG_INFO, "Action: " + action)
     syslog.syslog(syslog.LOG_INFO, "Result: " + result)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-    send_file(filename_path, subject, action, result, category, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 elif answer == '2':
@@ -259,7 +259,7 @@ elif answer == '3':
     syslog.syslog(syslog.LOG_INFO, "Action: " + action)
     syslog.syslog(syslog.LOG_INFO, "Result: " + result)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-    send_file(filename_path, subject, action, result, category, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 else:

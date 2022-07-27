@@ -5,9 +5,9 @@ import os
 import re
 import json
 from time import strftime, localtime, sleep
-from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, collect_command_output_ddm, send_file
+from support_tools_OmniSwitch import get_credentials, collect_command_output_ddm
+from support_send_notification import *
 from time import strftime, localtime, sleep
-from support_send_notification import send_message
 from database_conf import *
 import syslog
 
@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 chassis = "1"
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Log sample
 # OS6860E_VC_Core swlogd intfCmm Mgr WARN: cmmEsmCheckDDMThresholdViolations: SFP/XFP Rx Power=-26.8 dBm on slot=1 port=9, crossed DDM threshold low alarm
@@ -72,7 +72,7 @@ syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API")
-send_file(filename_path, subject, action, result, category, jid)
+send_file_detailed(filename_path, subject, action, result, category)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 try:

@@ -6,7 +6,7 @@ import re
 import json
 from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
-from support_send_notification import send_message
+from support_send_notification import *
 from database_conf import *
 import syslog
 
@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Log sample
 # Jan 13 17:34:45 OS6900-ISP-Orange swlogd bgp_0 peer INFO: [peer(172.16.40.1),100] transitioned to IDLE state.
@@ -53,13 +53,13 @@ if "ESTABLISHED" in final_state:
     notif = "Preventive Maintenance Application - BGP Peering state change on OmniSwitch {0} / {1}\n\nDetails:\n- BGP Peer IP Address/AS : {2} / {3}\n- State : {4}".format(host, ipadd, bgp_peer, bgp_as, final_state)
     syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
     syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Send notification")
-    send_message(notif, jid)
+    send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 else:
     notif = "Preventive Maintenance Application - BGP Peering state change on OmniSwitch {0} / {1}\n\nDetails:\n- BGP Peer IP Address/AS : {2} / {3}\n- State : {4}\n\nPlease check the BGP Peer Node connectivity.".format(host, ipadd, bgp_peer, bgp_as, final_state)
     syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send notification")
-    send_message(notif, jid)
+    send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 open('/var/log/devices/lastlog_bgp.json', 'w', errors='ignore').close()

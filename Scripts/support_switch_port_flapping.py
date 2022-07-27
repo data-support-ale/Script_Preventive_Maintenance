@@ -10,7 +10,7 @@ from support_tools_OmniSwitch import collect_command_output_lldp_port_capability
 from time import strftime, localtime, sleep
 from datetime import datetime, timedelta
 import re
-from support_send_notification import send_message, send_message_request_advanced
+from support_send_notification import send_message_detailed, send_message_request_advanced
 from database_conf import *
 import syslog
 
@@ -51,7 +51,7 @@ def process(ipadd, hostname, port, link):
         change and Link-Quality level (command show interfaces port x/x/x status).\nWe could consider this issue is related to \
         a Layer 1 connectivity issue and SFP/Cable shall be replaced.\n".format(port, hostname, ipadd, lldp_port_description, status_changes, link_quality)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         
     else:
@@ -63,14 +63,14 @@ def process(ipadd, hostname, port, link):
                 notif = "A port flapping has been detected on your network on the access port {0} - System Description: N/A - Number of Status Change : {2} - Link Quality : {3} on OmniSwitch {4}/{5}.\nIf you click on Yes, the following actions will be done: Port Admin Down/Up.".format(port, lldp_port_description, status_changes, link_quality, ipadd, hostname)
                 syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Adaptive Card Advanced")
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-                answer = send_message_request_advanced(notif, jid, "Admin down")
+                answer = send_message_request_advanced(notif, "Admin down")
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent - Adaptive Card answer: " + answer)
 
             else:
                 notif = "Preventive Maintenance Application - A port flapping has been detected on your network on the access port {0} - System Description: {1} - Number of Status Change : {2} - Link Quality : {3} on OmniSwitch {4}/{5}.\nIf you click on Yes, the following actions will be done: Port Admin Down/Up.".format(port, lldp_port_description, status_changes, link_quality, ipadd, hostname)
                 syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Adaptive Card")
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-                answer = send_message_request_advanced(notif, jid, "Admin down")
+                answer = send_message_request_advanced(notif, "Admin down")
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent - Adaptive Card answer: " + answer)
 
             if answer == "2":
@@ -107,7 +107,7 @@ def process(ipadd, hostname, port, link):
 
             notif = "Preventive Maintenance Application - A port flapping has been detected on your network and the port {0} is administratively updated  on OmniSwitch {1}/{2}".format(port, ipadd, hostname)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             # disable_debugging
@@ -138,7 +138,7 @@ def process(ipadd, hostname, port, link):
                 pass
             notif = "Preventive Maintenance Application - A port flapping has been detected on your network and the port {0} is administratively down  on OmniSwitch {1}/{2}".format(port, ipadd, hostname)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 
@@ -159,7 +159,7 @@ script_name = sys.argv[0]
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 subject = "A port flapping was detected in your network !"
 syslog.syslog(syslog.LOG_INFO, subject)
 

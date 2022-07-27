@@ -39,11 +39,11 @@ def get_credentials(attribute=None):
     """
 
     with open(dir + "/ALE_script.conf", "r") as content_variable:
-        login_switch, pass_switch, mails, rainbow_jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id, * \
+        login_switch, pass_switch, mails, rainbow_jid1, rainbow_jid2, rainbow_jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id, * \
             kargs = re.findall(
                 r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
         if attribute == None:
-            return login_switch, pass_switch, mails, rainbow_jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company
+            return login_switch, pass_switch, mails, rainbow_jid1, rainbow_jid2, rainbow_jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company
         elif attribute == "login_switch":
             return login_switch
         elif attribute == "pass_switch":
@@ -51,7 +51,7 @@ def get_credentials(attribute=None):
         elif attribute == "mails":
             return mails
         elif attribute == "rainbow_jid":
-            return rainbow_jid
+            return [rainbow_jid1, rainbow_jid2, rainbow_jid3]
         elif attribute == "ip_server":
             return ip_server
         elif attribute == "login_AP":
@@ -67,7 +67,8 @@ def get_credentials(attribute=None):
         elif attribute == "room_id":
             return room_id
 
-login_switch, pass_switch, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Function SSH for checking connectivity before collecting logs
 def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
@@ -97,7 +98,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         notif = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -115,7 +116,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         notif = ("SSH Authentication failed when connecting to WLAN Stellar AP {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -138,7 +139,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         notif = ("WLAN Stellar AP {0} is unreachable, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -161,7 +162,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         notif = ("WLAN Stellar AP {0} is unreachable, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)        
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -201,7 +202,7 @@ def ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd):
         notif = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -256,7 +257,7 @@ def  drm_neighbor_scanning(login_AP, pass_AP, neighbor_ip):
                 notif = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(neighbor_ip)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
                 try:
@@ -306,7 +307,7 @@ def  channel_utilization_per_band(login_AP, pass_AP, ipadd, channel_utilization)
                 notif = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -379,7 +380,7 @@ def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
                 notif = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -394,7 +395,7 @@ def sta_limit_reached_tools(login_AP, pass_AP, ipadd):
             notif = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -461,7 +462,7 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
                 notif = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -476,7 +477,7 @@ def vlan_limit_reached_tools(login_AP, pass_AP, ipadd):
             notif = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -539,7 +540,7 @@ def collect_logs(login_AP, pass_AP, ipadd, pattern):
                 notif = ("Timeout when establishing SSH Session to WLAN Stellar AP {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -554,7 +555,7 @@ def collect_logs(login_AP, pass_AP, ipadd, pattern):
             notif = ("The python script execution on WLAN Stellar AP {0} failed - {1}").format(ipadd, exception)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -589,9 +590,9 @@ if __name__ == "__main__":
     host = "StellarAP1361"
     #pass_root = ssh_connectivity_check(login_AP, pass_AP, ipadd, cmd)
     filename_path, subject, action, result, category = sta_limit_reached_tools(login_AP, pass_AP, ipadd)
-    send_file(filename_path, subject, action, result, category, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
     filename_path, subject, action, result, category = vlan_limit_reached_tools(login_AP, pass_AP, ipadd)
-    send_file(filename_path, subject, action, result, category, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
 
 else:
     print("Support_Tools_Stellar Script called by another script")

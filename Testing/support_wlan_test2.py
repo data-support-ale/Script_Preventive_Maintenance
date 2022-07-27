@@ -36,7 +36,7 @@ set_portnumber("1/1/6")
 print("test2")
 ipadd = "10.130.7.36"
 notif = "Preventive Maintenance Application - Test2 coke and stock"
-send_message_detailed(notif, jid1, jid2, jid3)
+send_message_detailed(info)
 set_decision(ipadd, "1")
 mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
 sys.exit(0)

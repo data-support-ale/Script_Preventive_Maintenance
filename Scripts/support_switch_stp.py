@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Sample log
 # swlogd stpCmm _VLNt ALRM: stpCMM_handleVmMsg@1319->vlan 531 may not be stp enabled
@@ -72,7 +72,7 @@ if save_resp == "0":
         notif = ("Spanning Tree is running per-vlan mode on OmniSwitch {0} / {1} and following SpanTree VLAN {2} is disabled.\nDo you want to enable STP on this VLAN?").format(host,ipadd,vlan)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-        answer = send_message_request(notif, jid)
+        answer = send_message_request_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     if answer == "2":
         add_new_save(ipadd, vlan, "stp", choice="always")
@@ -114,7 +114,7 @@ if answer == '1':
     syslog.syslog(syslog.LOG_INFO, "Action: " + action)
     syslog.syslog(syslog.LOG_INFO, "Result: " + result)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-    send_file(filename_path, subject, action, result, category, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
     try:

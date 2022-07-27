@@ -6,7 +6,7 @@ import json
 import re
 from support_tools_OmniSwitch import get_credentials, debugging, script_has_run_recently
 from time import gmtime, strftime, localtime, sleep
-from support_send_notification import send_message
+from support_send_notification import *
 from database_conf import *
 import syslog
 
@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_file:
@@ -59,19 +59,18 @@ with open("/var/log/devices/lastlog_ddos.json", "r", errors='ignore') as log_fil
         syslog.syslog(syslog.LOG_INFO, "Executing script exit because executed within 5 minutes time period")
         exit()
 
-if jid != '':
-    notif = "A Denial of Service Attack is detected on OmniSwitch \"" + host + "\" IP: " + ipadd + " of type " + ddos_type
-    syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-    #send_message(notif, jid)
-    try:
-        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "DDOS_Type": ddos_type}, "fields": {"count": 1}}])
-        syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-    except UnboundLocalError as error:
-        print(error)
-        sys.exit()
-    except Exception as error:
-        print(error)
-        pass
+notif = "A Denial of Service Attack is detected on OmniSwitch \"" + host + "\" IP: " + ipadd + " of type " + ddos_type
+syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+send_message_detailed(notif)
+try:
+    write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "DDOS_Type": ddos_type}, "fields": {"count": 1}}])
+    syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+except UnboundLocalError as error:
+    print(error)
+    sys.exit()
+except Exception as error:
+    print(error)
+    pass
 
 # Enable debugging logs for getting IP Attacker's IP Address "swlog appid ipv4 subapp all level debug3"
 appid = "ipv4"

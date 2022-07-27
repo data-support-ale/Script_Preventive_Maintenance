@@ -4,10 +4,10 @@ import sys
 import os
 import re
 import json
-from support_tools_OmniSwitch import collect_command_output_linkagg, get_credentials, send_file, script_has_run_recently, get_file_sftp, port_monitoring, collect_command_output_lldp_port_description, ssh_connectivity_check, get_arp_entry
+from support_tools_OmniSwitch import collect_command_output_linkagg, get_credentials, script_has_run_recently, get_file_sftp, port_monitoring, collect_command_output_lldp_port_description, ssh_connectivity_check, get_arp_entry
 from time import strftime, localtime, sleep
 import datetime
-from support_send_notification import send_message_request, send_message, send_message_request_advanced
+from support_send_notification import *
 from database_conf import *
 from support_tools_OmniSwitch import add_new_save, check_save
 import requests
@@ -20,7 +20,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
@@ -94,7 +94,7 @@ if save_resp == "0":
     notif = ("Preventive Maintenance Application - A LinkAgg Port Leave occurs on OmniSwitch {0} / {1}.\nPort: {2}\nLinkAgg: {3}").format(host,ipadd,port,agg)
     syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-    send_message(notif, jid)
+    send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     syslog.syslog(syslog.LOG_INFO, "Executing script collect_command_output_lldp_port_description")
     lldp_port_description, lldp_mac_address = collect_command_output_lldp_port_description(switch_user, switch_password, port, ipadd)  
@@ -107,7 +107,7 @@ if save_resp == "0":
         syslog.syslog(syslog.LOG_INFO, "Action: " + action)
         syslog.syslog(syslog.LOG_INFO, "Result: " + result)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-        send_file(filename_path, subject, action, result, category, jid)
+        send_file_detailed(filename_path, subject, action, result, category)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
     elif "OAW-AP" in str(lldp_port_description):
@@ -120,7 +120,7 @@ if save_resp == "0":
 #        notif = "Preventive Maintenance Application - A LinkAgg Port Leave occurs on OmniSwitch " + host + " port " + port + " LinkAgg " + agg + " - Port Description: " + lldp_port_description + ". WLAN Stellar AP " + device_ip + "/" + lldp_mac_address + " is connected to this port, do you want to collect AP logs? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
         # If LLDP Remote System is Stellar AP we propose to collect AP Logs
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-        answer = send_message_request(notif, jid)
+        answer = send_message_request_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         print(answer)      
     else:
@@ -134,7 +134,7 @@ if save_resp == "0":
         syslog.syslog(syslog.LOG_INFO, "Action: " + action)
         syslog.syslog(syslog.LOG_INFO, "Result: " + result)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-        send_file(filename_path, subject, action, result, category, jid)
+        send_file_detailed(filename_path, subject, action, result, category)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     sleep(2)
     #### Download port monitoring capture ###
@@ -161,9 +161,9 @@ if save_resp == "0":
     else:
         pass
 
-    notif = ("Preventive Maintenance Application - LinkAgg issue detected on OmniSwitch {0} / {1}.\nDo you want to keep being notified? ").format(host,ipadd)        #send_message(info, jid)
+    notif = ("Preventive Maintenance Application - LinkAgg issue detected on OmniSwitch {0} / {1}.\nDo you want to keep being notified? ").format(host,ipadd)        #send_message_detailed(info)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-    answer = send_message_request(notif, jid)
+    answer = send_message_request_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
     print(answer)
@@ -187,7 +187,7 @@ elif save_resp == "1":
     syslog.syslog(syslog.LOG_INFO, "Decision saved to Yes and remember")
     notif = "Preventive Maintenance Application - A LinkAgg Port Leave has been detected on your network from the port {0} on OmniSwitch {1} / {2}.\nDecision saved for this switch/port is set to Always.".format(port, host, ipadd)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-    answer = send_message(notif, jid)
+    answer = send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 else:
     syslog.syslog(syslog.LOG_INFO, "No answer - Decision set to Yes - Script exit - will be called by next occurence")    
@@ -206,7 +206,7 @@ if answer == '1':
         syslog.syslog(syslog.LOG_INFO, "Action: " + action)
         syslog.syslog(syslog.LOG_INFO, "Result: " + result)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-        send_file(filename_path, subject, action, result, category, jid)
+        send_file_detailed(filename_path, subject, action, result, category)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     else:
         syslog.syslog(syslog.LOG_INFO, "Device Type is not OAW-AP")
@@ -215,7 +215,7 @@ if answer == '1':
         syslog.syslog(syslog.LOG_INFO, "Action: " + action)
         syslog.syslog(syslog.LOG_INFO, "Result: " + result)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-        send_file(filename_path, subject, action, result, category, jid)
+        send_file_detailed(filename_path, subject, action, result, category)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 elif answer == '2':
@@ -224,7 +224,7 @@ elif answer == '2':
     syslog.syslog(syslog.LOG_INFO, "Action: " + action)
     syslog.syslog(syslog.LOG_INFO, "Result: " + result)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-    send_file(filename_path, subject, action, result, category, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 else:

@@ -5,7 +5,7 @@ import os
 import json
 from time import strftime, localtime
 from support_tools_OmniSwitch import get_credentials, collect_command_output_ps, collect_command_output_fan, collect_command_output_ni, check_save, add_new_save
-from support_send_notification import send_message, send_message_request, send_file
+from support_send_notification import *
 from database_conf import *
 import re
 import syslog
@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_power_supply_down.json", "r", errors='ignore') as log_file:
@@ -74,7 +74,7 @@ if save_resp == "0":
             category = "ps"
             filename_path = "/var/log/devices/lastlog_power_supply_down.json"
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API")
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         except UnboundLocalError as error:
             print(error)
@@ -97,12 +97,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -139,12 +139,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -188,12 +188,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -237,12 +237,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             
-            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -279,12 +279,12 @@ if save_resp == "0":
             notif = ("Preventive Maintenance Application - The {0} CMM is rebooting on OmniSwitch {1} / {2}.\n\nReason:\n- {3}\nIf CFM is inoperable the CMM will not come UP.").format(cmm,host,ipadd,reason)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification:" + notif) 
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Message") 
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Notification sent")
 
-            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -321,12 +321,12 @@ if save_resp == "0":
             notif = ("Preventive Maintenance Application - The {0} CMM ID {1} does not reload on OmniSwitch {2} / {3}.\n\nReason: Image verification failure.").format(cmm,cmm_id,host,ipadd)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification:" + notif) 
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send Message") 
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -366,12 +366,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - NI Module unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -414,12 +414,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Fan unit issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -464,12 +464,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             print(answer)
             if answer == "2":
@@ -510,12 +510,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             print(answer)
             if answer == "2":
@@ -552,12 +552,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -595,12 +595,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -638,12 +638,12 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message(info, jid)
+            notif = "Preventive Maintenance Application - Power Supply issue detected on OmniSwitch " + host + ".\nDo you want to keep being notified? " + ip_server        #send_message_detailed(info)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -704,7 +704,7 @@ if answer == '2':
     syslog.syslog(syslog.LOG_INFO, "Action: " + action)
     syslog.syslog(syslog.LOG_INFO, "Result: " + result)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-    send_file(filename_path, subject, action, result, category, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 else:
     print("No decision matching - script exit")

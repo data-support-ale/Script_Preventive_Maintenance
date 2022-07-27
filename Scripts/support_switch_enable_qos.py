@@ -4,10 +4,11 @@ import sys
 import os
 import json
 import re
-from support_tools_OmniSwitch import get_credentials, isEssential, ssh_connectivity_check, file_setup_qos, add_new_save, check_save, script_has_run_recently, send_file
+from support_tools_OmniSwitch import get_credentials, isEssential, ssh_connectivity_check, file_setup_qos, add_new_save, check_save, script_has_run_recently
 from time import gmtime, strftime, localtime, sleep
-from support_send_notification import send_message, send_message_request, send_message_request_advanced
+from support_send_notification import *
 from database_conf import *
+import traceback
 import paramiko
 import threading
 import syslog
@@ -19,7 +20,7 @@ attachment_path = "/var/log/server/log_attachment"
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
     syslog.syslog(syslog.LOG_INFO, "Executing function enable_qos_ddos")
@@ -45,7 +46,7 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
@@ -56,41 +57,79 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             except Exception as error:
                 print(error)
                 pass
-        except Exception:
-            exception = "SFTP Get Timeout"
-            syslog.syslog(syslog.LOG_INFO, "SSH Session - Exception: " + exception)
-            notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
-            syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
-            syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-            try:
-                write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                    "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-            except UnboundLocalError as error:
-                print(error)
-                sys.exit()
-            except Exception as error:
-                print(error)
-                pass
-            sys.exit()
-    except paramiko.AuthenticationException:
-        exception = "AuthenticationException"
-        syslog.syslog(syslog.LOG_INFO, "SSH Session - Exception: " + exception)
-        notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
+        except threading.ThreadError as exception:
+            syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
+            print(exception)
+            syslog.syslog(syslog.LOG_INFO, "SFTP Session aborted reason: " + exception)
+            pass       
+    except TimeoutError as exception:
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
+        exception = "SSH Timeout"
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Timeout when establishing SSH Session")
+        notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
-            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
-                "Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
-        except UnboundLocalError as error:
-            print(error)
-            sys.exit()
-        except Exception as error:
-            print(error)
-            pass  
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+        except UnboundLocalError as exception:
+            print(exception)
+        except Exception as exception:
+            print(exception)
+        syslog.syslog(syslog.LOG_INFO, "Script exit")
+        os._exit(1)
+    except paramiko.AuthenticationException:
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
+        exception = "AuthenticationException"
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        print("Function ssh_connectivity_check - Authentication failed enter valid user name and password")
+        notif = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message_detailed(notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+        except UnboundLocalError as exception:
+            print(exception)
+            return exception 
+        except Exception as exception:
+            print(exception)
+            return exception 
+        syslog.syslog(syslog.LOG_INFO, "Script exit")
+        os._exit(1)
+    except paramiko.SSHException as error:
+        syslog.syslog(syslog.LOG_DEBUG, "{0!s}".format(traceback.format_exc(chain=False,limit=None).encode("utf-8")))
+        syslog.syslog(syslog.LOG_INFO, "Exception: " + str(exception))
+        print("Function ssh_connectivity_check - " + str(exception))
+        #exception = exception.readlines()
+        exception = str(exception)
+        print("Function ssh_connectivity_check - Device unreachable")
+        syslog.syslog(syslog.LOG_INFO, " SSH session does not establish on OmniSwitch " + ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+        notif = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
+        send_message_detailed(notif)
+        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+        try:
+            write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+        except UnboundLocalError as exception:
+            print(exception)
+            return exception
+        except Exception as exception:
+            print(exception)
+            return exception
+        ssh.close()
+        syslog.syslog(syslog.LOG_INFO, "SSH Session end")
+        syslog.syslog(syslog.LOG_INFO, "Script exit")  
+        os._exit(1)
+    ssh.close()
 
     syslog.syslog(syslog.LOG_INFO, "SSH Session for applying configqos file on working directory")
     cmd = "configuration apply ./working/configqos "
@@ -169,14 +208,14 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
             syslog.syslog(syslog.LOG_INFO, "Advanced Feature: " + feature) 
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Adaptive Card of type Advanced")
-            answer = send_message_request_advanced(notif, jid,feature)
+            answer = send_message_request_advanced(notif, feature)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             syslog.syslog(syslog.LOG_INFO, "Rainbow Adaptive Card Answer: " + answer)
         else:
             notif = "Preventive Maintenance Application - A DDOS Attack of type {0} has been detected on your network - Source IP Address {1}  on OmniSwitch {2} / {3}.\nIf you click on Yes, the following actions will be done: Policy action block.".format(ddos_type, ip_switch_ddos, host, ip_switch)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)  
+            answer = send_message_request_detailed(notif)  
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         if isEssential(ip_switch_ddos):
@@ -184,7 +223,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
                 notif = "Preventive Maintenance Application - A DDOS Attack has been detected on your network however it involves essential IP Address {} we do not proceed further.".format(ip_switch_ddos)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Send Notification")
-                send_message(notif,jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent - exit")
                 sys.exit()
 
@@ -233,7 +272,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         syslog.syslog(syslog.LOG_INFO, "Action: " + action)
         syslog.syslog(syslog.LOG_INFO, "Result: " + result)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-        send_file(filename_path, subject, action, result, category, jid)
+        send_file_detailed(filename_path, subject, action, result, category)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         
         # We disable debugging logs
@@ -264,7 +303,7 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
         syslog.syslog(syslog.LOG_INFO, "Action: " + action)
         syslog.syslog(syslog.LOG_INFO, "Result: " + result)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-        send_file(filename_path, subject, action, result, category, jid)
+        send_file_detailed(filename_path, subject, action, result, category)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         # We disable debugging logs
         syslog.syslog(syslog.LOG_INFO, "SSH Session for disabling log verbosity - swlog appid ipv4 subapp all level info")

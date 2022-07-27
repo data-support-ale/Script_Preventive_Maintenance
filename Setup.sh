@@ -1056,10 +1056,10 @@ if \$msg contains 'stpCmm' and \$msg contains 'may not be stp enabled'  then {
 
 
 #### LINKAGG DOWN - LAN ####
-if \$msg contains ''Receive agg port leave request' and not (\$msg contains 'Port Leave') then {
+if \$msg contains 'Receive agg port leave request' and not (\$msg contains 'Port Leave') then {
      \$RepeatedMsgReduction on
      action(type=\"omfile\" DynaFile=\"deviceloghistory\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
-     action(type=\"omfile\" DynaFile=\"devicelogfan\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
+     action(type=\"omfile\" DynaFile=\"deviceloglinkagg\" template=\"json_syslog\" DirCreateMode=\"0755\" FileCreateMode=\"0755\")
      action(type=\"omprog\" name=\"support_lan_generic_linkagg\" binary=\"$dir/support_switch_linkagg.py\")
      stop
 }
@@ -1520,6 +1520,7 @@ python3 -m pip install asyncio
 python3 -m pip install requests
 #Used for BSHELL log collection 
 python3 -m pip install pexpect
+python3 -m pip install paramiko
 echo -e "\e[32mPython-pip packages Installation complete\e[39m"
 #Used for collecting AP snapshot logs - could be removed once WLAN Stellar AP support snapshot log download thru HTTP REST-API
 apt-get -qq -y install tftpd-hpa 

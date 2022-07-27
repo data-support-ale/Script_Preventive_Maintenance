@@ -6,7 +6,7 @@ import re
 import json
 from support_tools_OmniSwitch import get_credentials
 from time import strftime, localtime, sleep
-from support_send_notification import send_message
+from support_send_notification import send_message_detailed
 from database_conf import *
 import syslog
 
@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Log sample
 # OS6860E_VC_Core swlogd ospf_nbr.c ospfNbrStateMachine 0 ospf_0 STATE EVENT: CUSTLOG CMM OSPF neighbor state change for 172.25.136.2, router-id 172.25.136.2: FULL to DOWN
@@ -65,13 +65,13 @@ if "FULL" in final_state:
     notif = ("Preventive Maintenance Application - OSPF Neighbor state change on OmniSwitch {0} / {1}.\n\nDetails:\n- Router-ID: {2}\n- Neighbor-ID {3}\n- Initial State: {4}\n- Final State: {5}.").format(host,ipadd,router_id,neighbor_ip,initial_state,final_state)
     syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-    send_message(notif, jid)
+    send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 else:
     notif = ("Preventive Maintenance Application - OSPF Neighbor state change on OmniSwitch {0} / {1}.\n\nDetails:\n- Router-ID: {2}\n- Neighbor-ID {3}\n- Initial State: {4}\n- Final State: {5}\nPlease check the OSPF Neighbor node connectivity.").format(host,ipadd,router_id,neighbor_ip,initial_state,final_state)
     syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-    send_message(notif, jid)
+    send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 try:

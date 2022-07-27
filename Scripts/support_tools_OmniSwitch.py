@@ -51,11 +51,11 @@ def get_credentials(attribute=None):
     """
 
     with open(dir + "/ALE_script.conf", "r") as content_variable:
-        login_switch, pass_switch, mails, rainbow_jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id, * \
+        login_switch, pass_switch, mails, rainbow_jid1, rainbow_jid2, rainbow_jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company, room_id, * \
             kargs = re.findall(
                 r"(?:,|\n|^)(\"(?:(?:\"\")*[^\"]*)*\"|[^\",\n]*|(?:\n|$))", str(content_variable.read()))
         if attribute == None:
-            return login_switch, pass_switch, mails, rainbow_jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company
+            return login_switch, pass_switch, mails, rainbow_jid1, rainbow_jid2, rainbow_jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company
         elif attribute == "login_switch":
             return login_switch
         elif attribute == "pass_switch":
@@ -63,7 +63,7 @@ def get_credentials(attribute=None):
         elif attribute == "mails":
             return mails
         elif attribute == "rainbow_jid":
-            return rainbow_jid
+            return [rainbow_jid1, rainbow_jid2, rainbow_jid3]
         elif attribute == "ip_server":
             return ip_server
         elif attribute == "login_AP":
@@ -79,7 +79,8 @@ def get_credentials(attribute=None):
         elif attribute == "room_id":
             return room_id
 
-login_switch, pass_switch, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Function used to pass command remotely in different shell like bshell
 def execute_command(tn, command, prompt):
@@ -118,7 +119,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -138,7 +139,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         notif = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -162,7 +163,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         notif = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -186,7 +187,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         notif = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)        
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -225,7 +226,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
  #       notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
         
  #       syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
- #       send_message(notif, jid)
+ #       send_message_detailed(notif)
   #      syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
   #      try:
   #          write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -249,7 +250,7 @@ def ssh_connectivity_check(switch_user, switch_password, ipadd, cmd):
         notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -330,7 +331,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -349,7 +350,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         notif = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -373,7 +374,7 @@ def get_file_sftp(switch_user, switch_password, ipadd, remoteFilePath, localFile
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         notif = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -515,7 +516,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "Timed out", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -533,7 +534,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
             notif = ("SSH Authentication failed when connecting to OmniSwitch {0}, we cannot collect logs or proceed for remediation action").format(ipadd)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "AuthenticationException", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -556,7 +557,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         notif = ("OmniSwitch {0} is unreachable, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "DeviceUnreachable", "IP_Address": ipadd}, "fields": {"count": 1}}])
@@ -582,7 +583,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -601,7 +602,7 @@ def get_tech_support_sftp(switch_user, switch_password, host, ipadd):
         notif = ("\"The show tech support eng complete\" command on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -684,7 +685,7 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -741,7 +742,7 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -805,7 +806,7 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -877,7 +878,7 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -945,7 +946,7 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1009,7 +1010,7 @@ def collect_command_output_flapping(switch_user, switch_password, port, ipadd):
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1063,8 +1064,10 @@ def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
                 notif = ("Preventive Maintenance Application - We detected an High CPU on OmniSwitch {0}/{1}. We are not able to collect logs - reason: Timeout when establishing SSH Session to OmniSwitch {1}").format(host,ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
-                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")   
+                send_message_detailed(notif)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+                syslog.syslog(syslog.LOG_INFO, "Script exit")
+                os._exit(1)    
             elif output != None:
                 output = str(output)
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
@@ -1077,7 +1080,7 @@ def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1086,7 +1089,8 @@ def collect_command_output_health_cpu(switch_user, switch_password, host, ipadd)
                     print(str(error))
                 except Exception as error:
                     print(str(error))
-                    pass 
+                    pass
+                syslog.syslog(syslog.LOG_INFO, "Script exit") 
                 os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -1133,8 +1137,10 @@ def collect_command_output_health_memory(switch_user, switch_password, host, ipa
                 notif = ("Preventive Maintenance Application - We detected an High Memory on OmniSwitch {0}/{1}. We are not able to collect logs - reason: Timeout when establishing SSH Session to OmniSwitch {1}").format(host,ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
-                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")   
+                send_message_detailed(notif)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+                syslog.syslog(syslog.LOG_INFO, "Script exit")
+                os._exit(1)    
             elif output != None:
                 output = str(output)
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
@@ -1147,7 +1153,7 @@ def collect_command_output_health_memory(switch_user, switch_password, host, ipa
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1156,7 +1162,8 @@ def collect_command_output_health_memory(switch_user, switch_password, host, ipa
                     print(str(error))
                 except Exception as error:
                     print(str(error))
-                    pass 
+                    pass
+                syslog.syslog(syslog.LOG_INFO, "Script exit") 
                 os._exit(1)
     date = datetime.date.today()
     date_hm = datetime.datetime.today()
@@ -1200,8 +1207,10 @@ def collect_command_output_health_port(switch_user, switch_password, port, type,
                 notif = ("Preventive Maintenance Application - We detected an High consumption on port {0} on OmniSwitch {1}/{2}. We are not able to collect logs - reason: Timeout when establishing SSH Session to OmniSwitch {2}").format(port,host,ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
-                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")               
+                send_message_detailed(notif)
+                syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+                syslog.syslog(syslog.LOG_INFO, "Script exit")
+                os._exit(1)               
             elif output != None or output != 0:
                 output = str(output)
                 output_decode = bytes(output, "utf-8").decode("unicode_escape")
@@ -1214,8 +1223,9 @@ def collect_command_output_health_port(switch_user, switch_password, port, type,
                 notif = ("Preventive Maintenance Application - We detected an High consumption on port {0} on OmniSwitch {1}/{2}. We are not able to collect logs - reason: Timeout when establishing SSH Session to OmniSwitch {2}").format(port,host,ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+                syslog.syslog(syslog.LOG_INFO, "Script exit")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
                     syslog.syslog(syslog.LOG_INFO, "Statistics saved")
@@ -1280,7 +1290,7 @@ def collect_command_output_violation(switch_user, switch_password, port, source,
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1344,7 +1354,7 @@ def collect_command_output_spb(switch_user, switch_password, host, ipadd, adjace
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1406,7 +1416,7 @@ def collect_command_output_stp(switch_user, switch_password, decision, host, ipa
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1469,7 +1479,7 @@ def collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1506,7 +1516,7 @@ def collect_command_output_fan(switch_user, switch_password, fan_id, host, ipadd
             notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1574,7 +1584,7 @@ def collect_command_output_ni(switch_user, switch_password, ni_id, host, ipadd):
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1634,7 +1644,7 @@ def collect_command_output_ps(switch_user, switch_password, psid, host, ipadd):
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1719,7 +1729,7 @@ def collect_command_output_vc(switch_user, switch_password, vcid, host, ipadd):
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1777,7 +1787,7 @@ def collect_command_output_linkagg(switch_user, switch_password, agg, host, ipad
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1841,7 +1851,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1876,7 +1886,7 @@ def collect_command_output_poe(switch_user, switch_password, host, ipadd, port, 
         notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -1987,7 +1997,7 @@ def collect_command_output_ddm(switch_user, switch_password, host, ipadd, chassi
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -2052,7 +2062,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -2100,7 +2110,7 @@ def collect_command_output_aaa(switch_user, switch_password, protocol, ipadd):
         notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -2151,7 +2161,7 @@ def authentication_failure(switch_user, switch_password, user, source_ip, protoc
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -2205,7 +2215,7 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
             notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -2220,7 +2230,7 @@ def collect_command_output_lldp_port_description(switch_user, switch_password, p
         notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         try:
@@ -2279,7 +2289,7 @@ def collect_command_output_lldp_port_capability(switch_user, switch_password, po
             notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -2294,7 +2304,7 @@ def collect_command_output_lldp_port_capability(switch_user, switch_password, po
         notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         try:
@@ -2358,7 +2368,7 @@ def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
             notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -2373,7 +2383,7 @@ def get_arp_entry(switch_user, switch_password, lldp_mac_address, ipadd):
         notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         try:
@@ -2686,7 +2696,7 @@ def isUpLink(switch_user, switch_password, port_number, ipadd):
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-                send_message(notif, jid)
+                send_message_detailed(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
                     write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {"Reason": "CommandExecution", "IP_Address": ipadd, "Exception": exception}, "fields": {"count": 1}}])
@@ -2701,7 +2711,7 @@ def isUpLink(switch_user, switch_password, port_number, ipadd):
             notif = ("Command {0} execution on OmniSwitch {1} failed - {2}").format(switch_cmd,ipadd, exception)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -2786,7 +2796,7 @@ if __name__ == "__main__":
 #    print(b)
     try:
         syslog.syslog(syslog.LOG_INFO, "Starting tests") 
-        login_switch, pass_switch, mails, rainbow_jid, ip_server_log, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+        switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
         jid = "570e12872d768e9b52a8b975@openrainbow.com"
         switch_password = "switch"
         switch_user = "admin"
@@ -2804,7 +2814,7 @@ if __name__ == "__main__":
         #get_file_sftp(switch_user, switch_password, ipadd, filename_pmd, localFilePath)
         #filename_path, subject, action, result, category = get_tech_support_sftp(switch_user, switch_password, host, ipadd)
         filename_path = "/var/log/server/support_tools_OmniSwitch.log"
-        #send_file(filename_path, subject, action, result, category, jid)
+        #send_file_detailed(filename_path, subject, action, result, category)
         #filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
         #send_file(filename_path, subject, action, result,category, jid)
         #filename_path, subject, action, result, category = collect_command_output_storm(switch_user, switch_password, port, source, decision, host, ipadd)

@@ -20,7 +20,7 @@ path = "/opt/ALE_Script"
 vna_url = "https://vna.preprod.omniaccess-stellar-asset-tracking.com/"
 # Get informations from ALE_script.conf (mails, mails_raw, company name)
 
-switch_user, switch_password, mails, jid1, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Aim of this script: notify ALE Admin that Preventive Maintenance setup is called and provides customer environment data. Automate the VNA Worklow deployment and Rainbow Bubble
 
@@ -97,14 +97,12 @@ try:
         syslog.syslog(syslog.LOG_INFO, "Generating the workflow_generic.json file")
         with open(path + "/VNA_Workflow/json/workflow_generic.json", "r", errors='ignore') as file_json:
             json_result = str(file_json.read())
-            json_result = re.sub(r"\$room", room, json_result)
             json_result = re.sub(r"\$email", mail, json_result)
             json_result = re.sub(r"\$company", company, json_result)
-            json_result = re.sub(r"\$name", name, json_result)
         with open(path + "/VNA_Workflow/json/workflow_generic_result.json", "w", errors='ignore') as file_json:
             file_json.write(json_result)
         with open(path + "/VNA_Workflow/json/workflow_generic_result.json", "r", errors='ignore') as file_json:
-            data = str(file_json.read())
+            data_json = json.load(file_json)
         #syslog.syslog(syslog.LOG_DEBUG, json_result)
 
     # REST-API method GET for Login to VNA
@@ -135,7 +133,6 @@ try:
         syslog.syslog(syslog.LOG_INFO, "API for importing the workflow to VNA - /management/api/tenants/{}/flows/import/")
         url = vna_url + "/management/api/tenants/{}/flows/import/".format(
             tenant_id)  # This URL contains the tenant_id and enable the import
-        payload = data
         headers = {
             'Origin': vna_url,
             'Referer': vna_url + '/app/editor',
@@ -147,7 +144,7 @@ try:
         syslog.syslog(syslog.LOG_INFO, "URL: " + url)
         headers_str = str(headers)
         syslog.syslog(syslog.LOG_INFO, "Headers: " + headers_str)
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, json=data_json)
         response_str = str(response)
         syslog.syslog(syslog.LOG_INFO, "Notification sent - VNA Answer: " + response_str)
         json_response = json.loads(response.text)
@@ -161,21 +158,18 @@ try:
         url = vna_url + "/management/api/tenants/{}/flows/{}/imported".format(
             tenant_id, id)  # This URL validate the import use the tenant_id but also the import_id from the import request
         # replacement of different fields to specify the IDs in the .json before sending it out
+        data_json = json.loads(payload)
         headers = {
             'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',
             'Content-Type': 'application/json',
             'Cookie': 'JSESSIONID=80E64766B76B28CBFF0B44B3876ADA01'
         }
 
-        payload = re.sub(r"\$tenantName1", "NBDNotif_Classic_"+company, payload, 1)
-        payload = re.sub(r"\$tenantName2", "NBDNotif_File_"+company, payload, 1)
-        payload = re.sub(r"\$tenantName3", "NBDNotif_Alert_" +company, payload, 1)
-        payload = re.sub(r"\$tenantName4", "NBDNotif_Test_"+company, payload, 1)
         syslog.syslog(syslog.LOG_INFO, "URL: " + url)
         headers_str = str(headers)
         syslog.syslog(syslog.LOG_INFO, "Headers: " + headers_str)
         #syslog.syslog(syslog.LOG_DEBUG, "Payload: " + payload)
-        response = requests.request("PUT", url, headers=headers, data=payload)
+        response = requests.request("PUT", url, headers=headers, json=data_json)
         response_str = str(response)
         syslog.syslog(syslog.LOG_INFO, "Notification sent - VNA Answer: " + response_str)
         if response.status_code == 200:
@@ -193,7 +187,7 @@ try:
         url = vna_url + "/management/api/tenants/{}/flows/{}/deploy".format(
             tenant_id, id)
         syslog.syslog(syslog.LOG_INFO, "URL: " + url)
-        response = requests.request("PUT", url, headers=headers, data=payload)
+        response = requests.request("PUT", url, headers=headers, json=data_json)
         response_str = str(response)
         syslog.syslog(syslog.LOG_INFO, "Notification sent - VNA Answer: " + response_str)
         if response.status_code == 200:
@@ -209,17 +203,18 @@ try:
 
     # REST-API for sending Welcome gif to Rainbow bubble
         syslog.syslog(syslog.LOG_INFO, "API for sending Welcome GIF to Rainbow Bubble/Rainhow JID")
-        url = vna_url + "/api/flows/NBDNotif_File_{0}".format(company)
+        url = vna_url + "api/flows/NBDNotif_File_{0}".format(company)
         payload = open(path + "/VNA_Workflow/images/giphy.gif", "rb")
-        headers = {	
-            'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',	
-            'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",	
-            'Content-Type': 'image/gif',	
-            'jid1': '{0}'.format(jid1), 	
-            'subject': '{0}'.format('sending Welcome gif to Rainbow bubble'),	
-            'action': '{0}'.format('Welcome to the Club'),	
-            'result': '{0}'.format('Status: Success'),	
-            'Email': '0'	
+        headers = {
+            'Authorization': 'Basic anRyZWJhb2w6anRyZWJhb2w=',
+            'X-VNA-Authorization': "7ad68b7b-00b5-4826-9590-7172eec0d469",
+            'Content-Type': 'image/gif',
+            'jid1': '{0}'.format(jid1),
+            'roomid': '{0}'.format(room),
+            'subject': '{0}'.format('sending Welcome gif to Rainbow bubble'),
+            'action': '{0}'.format('Welcome to the Club'),
+            'result': '{0}'.format('Status: Success'),
+            'email': '0'
         }
         syslog.syslog(syslog.LOG_INFO, "URL: " + url)
         headers_str = str(headers)

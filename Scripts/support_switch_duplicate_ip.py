@@ -7,9 +7,9 @@ import re
 import json
 import paramiko
 import threading
-from support_tools_OmniSwitch import isEssential, ssh_connectivity_check, file_setup_qos, format_mac, get_credentials, add_new_save, check_save, script_has_run_recently, send_file
+from support_tools_OmniSwitch import isEssential, ssh_connectivity_check, file_setup_qos, format_mac, get_credentials, add_new_save, check_save, script_has_run_recently
 from time import strftime, localtime
-from support_send_notification import send_message, send_message_request_advanced, send_message_request
+from support_send_notification import *
 from database_conf import *
 import syslog
 
@@ -20,7 +20,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 dir="/opt/ALE_Script"
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
     syslog.syslog(syslog.LOG_INFO, "Executing function enable_qos_ddos")
@@ -50,7 +50,7 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
@@ -67,7 +67,7 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
             notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
@@ -85,7 +85,7 @@ def enable_qos_ddos(user, password, ipadd, ipadd_ddos):
         notif = ("The python script execution on OmniSwitch {0} failed - {1}").format(ipadd, exception)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         try:
             write_api.write(bucket, org, [{"measurement": "support_ssh_exception", "tags": {
@@ -177,7 +177,7 @@ if save_resp == "0":
         notif = "Preventive Maintenance Application - An IP address duplication (Duplicate IP: {0}) on port {1} of OmniSwitch {2} / {3} has been detected.\nDo you want to blocklist the MAC Address: {4} ?".format(ip_dup,port,host,ipadd,mac)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Adaptive Card of type Advanced")
-        answer = send_message_request_advanced(notif, jid,feature)
+        answer = send_message_request_advanced(notif, feature)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         syslog.syslog(syslog.LOG_INFO, "Rainbow Adaptive Card Answer: " + answer)
         print(answer)
@@ -187,7 +187,7 @@ if save_resp == "0":
         notif = "Preventive Maintenance Application - An IP address duplication (Duplicate IP: {0}) on port {1} of OmniSwitch {2} / {3} has been detected.\nDo you want to blocklist the MAC Address: {4} ?".format(ip_dup,port,host,ipadd,mac)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Adaptive Card")
-        answer = send_message_request(notif, jid)  
+        answer = send_message_request_detailed(notif)  
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
     if isEssential(ip_dup):
@@ -195,7 +195,7 @@ if save_resp == "0":
         notif = "Preventive Maintenance Application - An IP duplication has been detected on your network that involves essential IP Address {} therefore we do not proceed further".format(ip_dup)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Send Notification")
-        send_message(notif,jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent - exit")
         sys.exit()
 
@@ -204,7 +204,7 @@ if save_resp == "0":
         notif = "Preventive Maintenance Application - An IP duplication has been detected on your network that involves an OmniSwitch chassis/interfaces MAC-Address therefore we do not proceed further".format(ip_dup)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Send Notification")
-        send_message(notif,jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent - exit")    
         sys.exit()
        
@@ -248,21 +248,20 @@ if answer == '1':
     syslog.syslog(syslog.LOG_INFO, "Anwser received is Yes")
     syslog.syslog(syslog.LOG_INFO, "Executing function enable_qos_ddos")
     enable_qos_ddos(switch_user, switch_password, ipadd, mac)
-    if jid != '':
-        syslog.syslog(syslog.LOG_INFO, "Executing function enable_qos_ddos")
-        notif = "Preventive Maintenance Application - An IP Address duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(mac, ipadd)
-        syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-        syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Send Notification")
-        send_message(notif,jid)
-        syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")    
-        try:
-            write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
-            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        except UnboundLocalError as error:
-            print(error)
-        except Exception as error:
-            print(error)
-            pass
+    syslog.syslog(syslog.LOG_INFO, "Executing function enable_qos_ddos")
+    notif = "Preventive Maintenance Application - An IP Address duplication has been detected on your network and QOS policy has been applied to prevent access for the MAC Address {0} to device {1}".format(mac, ipadd)
+    syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
+    syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Send Notification")
+    send_message_detailed(notif)
+    syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")    
+    try:
+        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])
+        syslog.syslog(syslog.LOG_INFO, "Statistics saved")
+    except UnboundLocalError as error:
+        print(error)
+    except Exception as error:
+        print(error)
+        pass
 ## Value 3 when we return advanced value like Disable port x/x/x
 elif answer == '3':
     syslog.syslog(syslog.LOG_INFO, "Anwser received is " + feature)
@@ -280,7 +279,7 @@ elif answer == '3':
     syslog.syslog(syslog.LOG_INFO, "Action: " + action)
     syslog.syslog(syslog.LOG_INFO, "Result: " + result)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-    send_file(filename_path, subject, action, result, category, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     try:
         write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "IP_dup": ip_dup, "mac": mac}, "fields": {"count": 1}}])

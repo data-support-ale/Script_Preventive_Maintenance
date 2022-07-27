@@ -58,7 +58,7 @@ SYSTEM_ROUTING_TOTAL = prometheus_client.Gauge(
     "Routing_Table_Total_Entries", 'Metrics scraped with python', ['name', 'ip'])
 path = "/opt/ALE_Script/"
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 
 class IPThread(threading.Thread):

@@ -5,7 +5,7 @@ import os
 import json
 from support_tools_OmniSwitch import get_credentials, get_tech_support_sftp
 from support_tools_Stellar import collect_logs
-from support_send_notification import send_message_detailed, send_file_detailed
+from support_send_notification import *
 from time import strftime, localtime
 import time
 
@@ -56,19 +56,19 @@ if command in ["send_message", "both"]:
     set_decision(ipadd, "2")
     if ipadd == host:
         info = ("Preventive Maintenance Application - The following pattern \"{0}\" is noticed on WLAN Stellar AP {1}").format(pattern,ipadd)
-        send_message_detailed(info, jid1, jid2, jid3)
+        send_message_detailed(info)
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
 
     else:
         info = ("Preventive Maintenance Application - The following pattern \"{0}\" is noticed on OmniSwitch {1}/{2}").format(pattern,host,ipadd)
-        send_message_detailed(info, jid1, jid2, jid3)
+        send_message_detailed(info)
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=info, exception='')
 
 if command in ["send_file", "both"]:
     set_decision(ipadd, "2")
     if ipadd == host:
         filename_path, subject, action, result, category = collect_logs(login_AP, pass_AP, ipadd, pattern)
-        send_file_detailed(subject, jid1, action, result, company, filename_path)
+        send_file_detailed(filename_path, subject, action, result, category)
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 
     else:
@@ -78,7 +78,8 @@ if command in ["send_file", "both"]:
         action = ("The following pattern \"{0}\" is noticed on OmniSwitch {1}/{2} - Tech-support eng complete is collected and stored in server {3}").format(pattern,host,ipadd,ip_server)
         result = "Please contact ALE Customer Support team for further troubleshooting"
         filename_path = "/var/log/devices/lastlog_custom.json"
-        send_file_detailed(subject, jid1, action, result, company, filename_path)
+        category = "custom_rule"
+        send_file_detailed(filename_path, subject, action, result, category)
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
 
 os.system('logger -t montag -p user.info Process terminated')

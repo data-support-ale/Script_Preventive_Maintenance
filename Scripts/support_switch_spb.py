@@ -18,7 +18,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 # Log sample
 #{"@timestamp":"2022-01-11T14:30:23+01:00","type":"syslog_json","relayip":"10.130.7.245","hostname":"os6900_vc_core","message":"<134>Jan 11 14:30:23 OS6900_VC_Core swlogd isis_spb_0 ADJACENCY INFO: Lost L1 adjacency with e8e7.32f5.b58b on ifId 1013","end_msg":""}
@@ -87,7 +87,7 @@ syslog.syslog(syslog.LOG_INFO, "Subject: " + subject)
 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-send_file(filename_path, subject, action, result, category, jid)
+send_file_detailed(filename_path, subject, action, result, category)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 sleep(1)

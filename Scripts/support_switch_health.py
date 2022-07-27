@@ -6,8 +6,8 @@ import json
 import re
 from time import strftime, localtime
 from datetime import datetime, timedelta
-from support_tools_OmniSwitch import get_credentials, collect_command_output_health_port, collect_command_output_health_memory, collect_command_output_health_cpu, send_file, get_tech_support_sftp
-from support_send_notification import send_message
+from support_tools_OmniSwitch import get_credentials, collect_command_output_health_port, collect_command_output_health_memory, collect_command_output_health_cpu, send_file_detailed, get_tech_support_sftp
+from support_send_notification import send_message_detailed
 from database_conf import *
 import syslog
 
@@ -18,7 +18,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') as log_file:
@@ -63,7 +63,7 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -99,7 +99,7 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
                 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
                 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-                send_file(filename_path, subject, action, result, category, jid)
+                send_file_detailed(filename_path, subject, action, result, category)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             elif topic == "memory":
                 syslog.syslog(syslog.LOG_INFO, "Executing function collect_command_output_health_memory")
@@ -108,7 +108,7 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
                 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
                 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-                send_file(filename_path, subject, action, result, category, jid)
+                send_file_detailed(filename_path, subject, action, result, category)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Health": topic, "VC_Unit": nb_vc}, "fields": {"count": 1}}])
@@ -134,7 +134,7 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
                 syslog.syslog(syslog.LOG_INFO, "Action: " + action)
                 syslog.syslog(syslog.LOG_INFO, "Result: " + result)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-                send_file(filename_path, subject, action, result, category, jid)
+                send_file_detailed(filename_path, subject, action, result, category)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             except IndexError as error:
                 print(error)
@@ -152,7 +152,7 @@ with open("/var/log/devices/lastlog_switch_health.json", "r", errors='ignore') a
             syslog.syslog(syslog.LOG_INFO, "Result: Find enclosed to this notification the log collection for further analysis")
             syslog.syslog(syslog.LOG_INFO, " Executing function get_tech_support_sftp")
             get_tech_support_sftp(switch_user, switch_password, host, ipadd)
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:

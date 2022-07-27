@@ -6,7 +6,7 @@ import json
 import re
 from time import strftime, localtime
 from support_tools_OmniSwitch import get_credentials
-from support_send_notification import send_message
+from support_send_notification import send_message_detailed
 from database_conf import *
 import syslog
 
@@ -16,7 +16,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_file:
@@ -54,7 +54,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
             notif = ("Preventive Maintenance Application - The Virtual Chassis Unit {0} of OmniSwitch {1} / {2} is DOWN.\nRemote Chassis no longer in the topology.").format(nb_vc,host,ipadd)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "VC_Unit_Down": nb_vc}, "fields": {"count": 1}}])
@@ -81,7 +81,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
             notif = ("Preventive Maintenance Application - The Virtual Chassis Unit {0} of OmniSwitch {1} / {2} is DOWN.\nWe received NI Down event from this unit.").format(nb_vc,host,ipadd)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -107,7 +107,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
         notif = ("Preventive Maintenance Application - The Virtual Chassis Unit of OmniSwitch {0} / {1} is doing a TakeOver.").format(host,ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send notification")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         try:
@@ -130,7 +130,7 @@ with open("/var/log/devices/lastlog_vc_down.json", "r", errors='ignore') as log_
             notif = ("Preventive Maintenance Application - The Virtual Chassis Unit of OmniSwitch {0} / {1} is reloading by {2}.").format(host,ipadd,reason)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send notification")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "VC_Unit_Down": "Reload", "Reason": reason}, "fields": {"count": 1}}])

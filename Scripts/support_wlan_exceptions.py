@@ -96,7 +96,7 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         except UnboundLocalError as error:
             print(error)
@@ -122,7 +122,7 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         except UnboundLocalError as error:
@@ -149,7 +149,7 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         except UnboundLocalError as error:
@@ -176,7 +176,7 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         except UnboundLocalError as error:
@@ -201,7 +201,7 @@ with open("/var/log/devices/lastlog_wlan_exceptions.json", "r", errors='ignore')
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
         except UnboundLocalError as error:

@@ -5,10 +5,10 @@ import sys
 import os
 import re
 import json
-from support_tools_OmniSwitch import get_credentials, collect_command_output_storm, send_file, script_has_run_recently, get_file_sftp, port_monitoring, ssh_connectivity_check
+from support_tools_OmniSwitch import get_credentials, collect_command_output_storm, send_file_detailed, script_has_run_recently, get_file_sftp, port_monitoring, ssh_connectivity_check
 from time import strftime, localtime, sleep
 import datetime
-from support_send_notification import send_message_request, send_message
+from support_send_notification import *
 from database_conf import *
 from support_tools_OmniSwitch import add_new_save, check_save
 import syslog
@@ -20,7 +20,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 date = datetime.date.today()
 date_hm = datetime.datetime.today()
@@ -99,13 +99,13 @@ if save_resp == "0":
     syslog.syslog(syslog.LOG_INFO, "Action: " + action)
     syslog.syslog(syslog.LOG_INFO, "Result: " + result)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-    send_file(filename_path, subject, action, result, category, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
     notif = ("A {0} Storm Threshold violation occurs on OmniSwitch {1} / {2} port {3}.\nDo you want to disable this port?\nThe port-monitoring capture of port {3} is available on Server directory /tftpboot/").format(reason,host,ipadd,port)
 #    notif = "A " + reason + " Storm Threshold violation occurs on OmniSwitch " + host + " port " + port + ". Do you want to disable this port? The port-monitoring capture of port " + port + " is available on Server " + ip_server + " directory /tftpboot/"
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card " + notif)
-    answer = send_message_request(notif, jid)
+    answer = send_message_request_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             
     print(answer)
@@ -130,7 +130,7 @@ elif save_resp == "-1":
     syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
     notif = "Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Never, we do not proceed further".format(port, ipadd, ip_server)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card " + notif)
-    send_message(notif, jid)
+    send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     try:
         print(port)
@@ -151,7 +151,7 @@ elif save_resp == "1":
     syslog.syslog(syslog.LOG_INFO, "Decision saved to Yes and remember")
     notif = "Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ipadd, ip_server)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card " + notif)
-    send_message(notif, jid)
+    send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 else:
     answer = '1'
@@ -159,7 +159,7 @@ else:
 
     notif = "Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ipadd, ip_server)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card " + notif)
-    send_message(notif, jid)
+    send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 if answer == '1':
@@ -170,7 +170,7 @@ if answer == '1':
     syslog.syslog(syslog.LOG_INFO, "Action: " + action)
     syslog.syslog(syslog.LOG_INFO, "Result: " + result)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-    send_file(filename_path, subject, action, result, category, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 elif answer == '2':

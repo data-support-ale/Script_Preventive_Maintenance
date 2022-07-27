@@ -18,7 +18,7 @@ syslog.openlog('support_switch_loop')
 syslog.syslog(syslog.LOG_INFO, "Executing script")
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 
 def process(ipadd, hostname, port, agg):
@@ -40,7 +40,7 @@ def process(ipadd, hostname, port, agg):
             notif = "A network loop has been detected on your network on the linkagg {} - System Description: N/A - OmniSwitch {}/{}.\nIf you click on Yes, the following actions will be done: Port Admin Down.".format(agg, ipadd, hostname)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             if answer == "2":
@@ -85,7 +85,7 @@ def process(ipadd, hostname, port, agg):
             notif = "A network loop has been detected on your network port {} - on OmniSwitch {}/{}.\nIf you click on Yes, the following actions will be done: Port Admin Down.".format(port, ipadd, hostname)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Adaptive Card")
-            answer = send_message_request(notif, jid)
+            answer = send_message_request_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             if answer == "2":
@@ -126,7 +126,7 @@ def process(ipadd, hostname, port, agg):
         syslog.syslog(syslog.LOG_INFO, "Action: " + action)
         syslog.syslog(syslog.LOG_INFO, "Result: " + result)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
-        send_file(filename_path, subject, action, result, category, jid)
+        send_file_detailed(filename_path, subject, action, result, category)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
         # disable_debugging
         appid = "slNi"

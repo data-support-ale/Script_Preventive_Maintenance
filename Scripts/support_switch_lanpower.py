@@ -4,8 +4,8 @@ import sys
 import os
 import json
 from time import strftime, localtime, sleep
-from support_tools_OmniSwitch import get_credentials, send_file, collect_command_output_poe, check_save, add_new_save, ssh_connectivity_check
-from support_send_notification import send_message, send_message_request, send_message_request_advanced
+from support_tools_OmniSwitch import get_credentials, collect_command_output_poe, check_save, add_new_save, ssh_connectivity_check
+from support_send_notification import *
 from database_conf import *
 import re
 import syslog
@@ -17,7 +17,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log_file:
@@ -67,7 +67,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -102,7 +102,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -139,7 +139,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -174,7 +174,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -209,7 +209,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Port": port, "Reason": reason}, "fields": {"count": 1}}])
@@ -243,7 +243,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -275,7 +275,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
             syslog.syslog(syslog.LOG_INFO, "Action: " + action)
             syslog.syslog(syslog.LOG_INFO, "Result: " + result)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")            
-            send_file(filename_path, subject, action, result, category, jid)
+            send_file_detailed(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             try:
@@ -312,7 +312,7 @@ if save_resp == "0":
             notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
             syslog.syslog(syslog.LOG_INFO, notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card Advanced with 4th option: " + feature)
-            answer = send_message_request_advanced(notif, jid, feature)
+            answer = send_message_request_advanced(notif, feature)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
             print(answer)
@@ -330,7 +330,7 @@ if save_resp == "0":
             , reason: {3}.\nDo you want to disable PoE on this port? " + ip_server).format(host,ipadd,port,reason,ip_server)
             syslog.syslog(syslog.LOG_INFO, notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card Advanced with 4th option: " + feature)
-            answer = send_message_request_advanced(notif, jid, feature)
+            answer = send_message_request_advanced(notif, feature)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             if answer == "2":
                 add_new_save(ipadd, port, "lanpower", choice="always")
@@ -374,11 +374,11 @@ if answer == '1':
     ssh_connectivity_check(switch_user, switch_password, ipadd, cmd)
     syslog.syslog(syslog.LOG_INFO, "SSH Session end")
 
-    if jid != '':
+    if jid1 != '':
         notif = "Preventive Maintenance Application - PoE is administratively disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 elif answer == '2':
@@ -404,7 +404,7 @@ elif answer == '3':
         notif = "Capacitor-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     elif high_resistance_detection_status == "enabled":
         syslog.syslog(syslog.LOG_INFO, "High Resistance Detection is enabled and received answer 3")
@@ -416,7 +416,7 @@ elif answer == '3':
         notif = "High-Resistance-Detection is administratively disabled on slot 1/1 of OmniSwitch: {}/{}".format(host,ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
     elif reason == "(Illegal class)":
         syslog.syslog(syslog.LOG_INFO, "Illegal class and received answer 3")
@@ -428,7 +428,7 @@ elif answer == '3':
         notif = "4Pair is disabled on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")       
     ### else it corresponds to PoE Reload
     else:
@@ -443,7 +443,7 @@ elif answer == '3':
         notif = "PoE is reloaded on port 1/1/{} of OmniSwitch: {}/{}".format(port,host,ipadd)
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-        send_message(notif, jid)
+        send_message_detailed(notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")     
 
 else:

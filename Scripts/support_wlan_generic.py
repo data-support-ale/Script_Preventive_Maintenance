@@ -13,13 +13,14 @@ import re
 from unicodedata import category
 
 from paramiko import Channel
-from support_tools_Stellar import get_credentials, vlan_limit_reached_tools, sta_limit_reached_tools
-from support_send_notification import send_message, send_alert, send_alert_advanced, send_file
+from support_tools_OmniSwitch import get_credentials
+from support_tools_Stellar import vlan_limit_reached_tools, sta_limit_reached_tools
+from support_send_notification import *
 #from support_OV_get_wlan import OvHandler
 from database_conf import *
 
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 def deassociation(ipadd, device_mac, reason, reason_number):
     message = "Preventive Maintenance Application - WLAN Deassociation detected reason : {0} from WLAN Stellar AP {1}, client MAC Address {2}".format(reason, ipadd, device_mac)
@@ -27,8 +28,8 @@ def deassociation(ipadd, device_mac, reason, reason_number):
     os.system('logger -t montag -p user.info ' + message_bis)
     message_content_1 = "WLAN Alert - There is a WLAN deassociation detected on server {0} from WLAN Stellar AP {1}, Device's MAC Address: {2} .".format(ip_server, ipadd, device_mac)
     print(message_content_1)
-    send_message(message, jid)
-    send_message(message_reason, jid)
+    send_message_detailed(message)
+    send_message_detailed(message_reason)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_deassociation", "tags": {"AP_IPAddr": ipadd, "Client_MAC": device_mac, "Reason_Deassociation": reason, "topic": "deauth"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -48,17 +49,18 @@ def deassociation(ipadd, device_mac, reason, reason_number):
     # If client does not exist on OV WLAN Client list
     # if clientName != None:
     #   info =  "The client {0} MAC Address: {1} is associated to Radio Channel: {2}".format(clientName,device_mac,channel)
-    # send_message(info,jid)
+    # send_message_detailed(info)
     # if category != None:
     #   info =  "This client device category is: {0}".format(category)
-    # send_message(info,jid)
+    # send_message_detailed(info)
 
 
 def reboot(ipadd):
     os.system('logger -t montag -p user.info reboot detected')
-    message_content_1 = "Preventive Maintenance Application - WLAN Alert - There is a reboot detected on server {0} from WLAN Stellar AP {1}".format(ip_server, ipadd)
-    send_alert(message_content_1, jid)
-    send_message(message_reason, jid)
+    subject = "Preventive Maintenance Application - WLAN Alert - There is a reboot detected on server {0} from WLAN Stellar AP {1}".format(ip_server, ipadd)
+    action, result = ""
+    send_alert_detailed(subject, action, result)
+    send_message_detailed(message_reason)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "sysreboot"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -73,8 +75,8 @@ def unexpected_reboot(ipadd):
     subject = ("Preventive Maintenance Application - There is an unexpected reboot detected on server {0} from WLAN Stellar AP {1}").format(ip_server, ipadd)
     action = "Please check the LANPOWER is running fine on LAN OmniSwitch and verify the capacitor-detection is disabled"
     result = "More details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000066402"
-    send_alert_advanced(subject, action, result, jid)
-    send_message(message_reason, jid)
+    send_alert_detailed(subject, action, result)
+    send_message_detailed(message_reason)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "unexpected_reboot"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -86,9 +88,9 @@ def unexpected_reboot(ipadd):
 
 def upgrade(ipadd, upgrade_version):
     os.system('logger -t montag -p user.info upgrade detected')
-    message_content_1 = "Preventive Maintenance Application - WLAN Alert - There is an upgrade detected on server {0} from WLAN Stellar AP {1} - Version: {2}".format(ip_server, ipadd, upgrade_version)
-    send_alert(message_content_1, jid)
-    send_message(message_reason, jid)
+    subject = "Preventive Maintenance Application - WLAN Alert - There is an upgrade detected on server {0} from WLAN Stellar AP {1} - Version: {2}".format(ip_server, ipadd, upgrade_version)
+    send_alert_detailed(subject, "", "")
+    send_message_detailed(message_reason)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "sysupgrade", "Version": upgrade_version}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -103,8 +105,8 @@ def exception(ipadd):
     subject = ("Preventive Maintenance Application - There is a Fatal exception detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
     action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
     result = "If WLAN Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6 and others, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737  and https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058376. If WLAN Stellar AP is running AWOS 4.0.0 there is a known issue related to Voice and Video awareness fixed in AWOS 4.0.1, more details here https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000061233  "
-    send_alert_advanced(subject, action, result, jid)
-    send_message(message_reason, jid)
+    send_alert_detailed(subject, action, result)
+    send_message_detailed(message_reason)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "exception"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -119,8 +121,8 @@ def internal_error(ipadd):
     subject = ("Preventive Maintenance Application - There is an Internal Error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
     action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
     result = "If WLAN Stellar AP is running AWOS 3.0.7 there is a known issue related to IPv6, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000056737"
-    send_alert_advanced(subject, action, result, jid)
-    send_message(message_reason, jid)
+    send_alert_detailed(subject, action, result)
+    send_message_detailed(message_reason)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "internal error"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -135,8 +137,8 @@ def target_asserted(ipadd):
     subject = ("Preventive Maintenance Application - There is a Target Asserted error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
     action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
     result = "This is a known issue fixed in AWOS 4.0.0 MR-3, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000058976"
-    send_alert_advanced(subject, action, result, jid)
-    send_message(message_reason, jid)
+    send_alert_detailed(subject, action, result)
+    send_message_detailed(message_reason)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "target asserted"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -152,8 +154,8 @@ def kernel_panic(ipadd):
     subject = ("Preventive Maintenance Application - There is a Kernel Panic error detected on server {0} from WLAN Stellar AP: {1}").format(ip_server, ipadd)
     action = "There is high probability that WLAN Stellar AP is rebooting following this exception"
     result = "This is a known issue fixed in AWOS 4.0.4 MR-4, more details in the Technical Knowledge Base https://myportal.al-enterprise.com/alebp/s/tkc-redirect?000067381"
-    send_alert_advanced(subject, action, result, jid)
-    send_message(message_reason, jid)
+    send_alert_detailed(subject, action, result)
+    send_message_detailed(message_reason)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_ap_reboot", "tags": {"AP_IPAddr": ipadd, "Reason": "kernel panic"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -166,8 +168,8 @@ def kernel_panic(ipadd):
 def sta_limit_reached(ipadd, login_AP, pass_AP):
     os.system('logger -t montag -p user.info Associated STA Limit Reached!')
     filename_path, subject, action, result, category = sta_limit_reached_tools(login_AP, pass_AP, ipadd)
-    send_file(filename_path, subject, action, result, category, jid)
-    send_message(message_reason, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
+    send_message_detailed(message_reason)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_sta_limit", "tags": {"AP_IPAddr": ipadd, "Reason": "STA limit reached"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -180,8 +182,8 @@ def sta_limit_reached(ipadd, login_AP, pass_AP):
 def vlan_limit_reached(ipadd, login_AP, pass_AP):
     os.system('logger -t montag -p user.info Associated VLAN Limit Reached!')
     filename_path, subject, action, result, category = vlan_limit_reached_tools(login_AP, pass_AP, ipadd)
-    send_file(filename_path, subject, action, result, category, jid)
-    send_message(message_reason, jid)
+    send_file_detailed(filename_path, subject, action, result, category)
+    send_message_detailed(message_reason)
     try:
         write_api.write(bucket, org, [{"measurement": "support_wlan_vlan_limit", "tags": {"AP_IPAddr": ipadd, "Reason": "VLAN limit reached"}, "fields": {"count": 1}}])
     except UnboundLocalError as error:
@@ -621,7 +623,7 @@ def extract_Policy():
             os.system('logger -t montag -p user.info Access to SSID not authorized as per Location Policy')
             try:
                 info = "Preventive Maintenance Application - Access to WLAN SSID not authorized as per Location Policy"
-                send_message(info,jid)
+                send_message_detailed(info)
                 write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Location Policy"}, "fields": {"count": 1}}])
                 sys.exit()
             except UnboundLocalError as error:
@@ -643,7 +645,7 @@ def extract_Policy():
             os.system('logger -t montag -p user.info Access to SSID not authorized as per Period Policy')
             try:
                 info = "Preventive Maintenance Application - Access to WLAN SSID not authorized as per Period Policy"
-                send_message(info,jid)
+                send_message_detailed(info)
                 write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Period Policy"}, "fields": {"count": 1}}])
                 sys.exit()
             except UnboundLocalError as error:
@@ -665,7 +667,7 @@ def extract_Policy():
             os.system('logger -t montag -p user.info Access to WLAN SSID not authorized as there is no OmniVista/UPAM access policy matching')
             try:
                 info = "Preventive Maintenance Application - Access to WLAN SSID not authorized as there is no Access Policy matching with Radius Access-Request"
-                send_message(info,jid)
+                send_message_detailed(info)
                 write_api.write(bucket, org, [{"measurement": "support_wlan_policy", "tags": {"Client_MAC": device_mac, "Reason": "Rejected by Can't Match Access Policy"}, "fields": {"count": 1}}])
                 sys.exit()
             except UnboundLocalError as error:
@@ -772,7 +774,7 @@ def extract_WIPS():
                 print(device_mac)
                 message = "Preventive Maintenance Application - WLAN WIPS - Adding Client's MAC Address {0} in the Block List".format(device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
-                send_message(message, jid)
+                send_message_detailed(message)
                 try:
                    write_api.write(bucket, org, [{"measurement": "support_wlan_wips", "tags": {"Client_MAC": device_mac, "Reason": "Added in BlockList"}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:
@@ -787,9 +789,9 @@ def extract_WIPS():
                 reason = re.findall(r"status (.*?),", msg)[0]
                 print(reason)
                 print(device_mac)
-                message = "Preventive Maintenance Application - WLAN Client MAC Address {0} authentication rejected by ACL".format(device_mac)
+                subject = "Preventive Maintenance Application - WLAN Client MAC Address {0} authentication rejected by ACL".format(device_mac)
                 os.system('logger -t montag -p user.info  ' + message)
-                send_alert(message, jid)
+                send_alert_detailed(subject, "","")
                 try:
                    write_api.write(bucket, org, [{"measurement": "support_wlan_wips", "tags": {"Client_MAC": device_mac, "Reason": reason}, "fields": {"count": 1}}])
                 except UnboundLocalError as error:

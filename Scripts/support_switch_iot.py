@@ -5,8 +5,8 @@ import sys
 import os
 import json
 from time import strftime, localtime
-from support_tools_Stellar import get_credentials, send_file, ssh_connectivity_check
-from support_send_notification import send_message
+from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check
+from support_send_notification import *
 from database_conf import *
 import re
 import syslog
@@ -18,7 +18,7 @@ syslog.syslog(syslog.LOG_INFO, "Executing script")
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 script_name = sys.argv[0]
 
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 last = ""
 with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file:
@@ -75,7 +75,7 @@ with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file
             notif = ("Preventive Maintenance Application - IoT Profiling module disconnected on the WLAN Stellar AP {0} - IoT Service is {1}.").format(ipadd, service_status)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "MQTT Status": "mqtt disconnect or is empty"}, "fields": {"count": 1}}])
@@ -102,7 +102,7 @@ with open("/var/log/devices/lastlog_iot.json", "r", errors='ignore') as log_file
             notif = ("Preventive Maintenance Application - IoT Profiling module is enabled but OmniSwitch {0} / {1} cannot reach OmniVista IP Address {2} port 1883 - please ensure OmniVista is reachable from default-VRF (Device Profiling feature is not VRF-Aware)").format(ipadd, host, ov_ip)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-            send_message(notif, jid)
+            send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
                 write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "MQTT Status": "Unable to connect"}, "fields": {"count": 1}}])

@@ -3,10 +3,10 @@
 from http.client import OK
 import sys
 import os
-from support_tools_OmniSwitch import get_credentials, detect_port_loop, isUpLink, ssh_connectivity_check, debugging, add_new_save, check_save, send_file, collect_command_output_network_loop, script_has_run_recently
+from support_tools_OmniSwitch import get_credentials, detect_port_loop, isUpLink, ssh_connectivity_check, debugging, add_new_save, check_save, collect_command_output_network_loop, script_has_run_recently
 from time import strftime, localtime, sleep
 import re  # Regex
-from support_send_notification import send_message, send_message_request
+from support_send_notification import *
 from database_conf import *
 
 # Script init
@@ -14,7 +14,7 @@ script_name = sys.argv[0]
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
 
 # Get informations from logs.
-switch_user, switch_password, mails, jid, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
+switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass, random_id, company = get_credentials()
 
 content_variable = open('/var/log/devices/lastlog_loop.json', 'r')
 file_lines = content_variable.readlines()
@@ -71,7 +71,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
 
     if save_resp == "0":
         info = "A loop has been detected on your network from the port {0} on device {1}.\nIf you click on Yes, the following action will be done: Port Admin Down".format(port, ipadd)
-        answer = send_message_request(info, jid)
+        answer = send_message_request_detailed(info)
 
         if answer == "2":
             add_new_save(ipadd, port, "port_disable", choice="always")
@@ -82,12 +82,12 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         #if isUpLink(switch_user, switch_password, port, ipadd):
         #    answer = "0"
         #    info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
-        #    send_message(info,jid)
+        #    send_message_detailed(info)
 
     elif save_resp == "-1":
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
         info = "Preventive Maintenance Application - A loop has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Never, we do not proceed further".format(port, ipadd, ip_server)
-        send_message(info,jid)
+        send_message_detailed(info)
         appid = "slNi"
         subapp = "all"
         level = "info"
@@ -106,7 +106,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
     else:
         answer = '1'
         info = "Preventive Maintenance Application - A loop has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ipadd, ip_server)
-        send_message(info,jid)
+        send_message_detailed(info)
 
     if answer == '1':
         l_switch_cmd = []
@@ -130,7 +130,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
 #                        print(error)
 #                        pass 
 #                    info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
-#                    send_message(info,jid)
+#                    send_message_detailed(info)
 #                    sys.exit()
 #                else:
                  ## if port is member of more than 2 VLAN tagged
@@ -145,7 +145,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
 #                            print(error)
 #                            pass 
 #                        info = "A loop has been detected on your network from the port {0} on device {1}. The port is detected as an Uplink, we do not proceed further".format(port, ipadd, ip_server)
-#                        send_message(info,jid)
+#                        send_message_detailed(info)
 #                        sys.exit()
 #                    else:
 #                        pass   
@@ -164,7 +164,7 @@ if detect_port_loop():  # if there is more than 10 log with less of 2 seconds ap
         # disable_port(switch_user,switch_password,ipadd,port)
         os.system('logger -t montag -p user.info Port disabled')
         filename_path, subject, action, result, category = collect_command_output_network_loop(switch_user, switch_password, ipadd, port)
-        send_file(filename_path, subject, action, result, category, jid)
+        send_file_detailed(filename_path, subject, action, result, category)
         sleep(5)
         # Disable debugging logs "swlog appid bcmd subapp 3 level debug2"
         appid = "slNi"
