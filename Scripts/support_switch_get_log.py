@@ -57,16 +57,15 @@ pattern = ""
 if len(sys.argv) > 1:
     pattern = sys.argv[1]
     print(pattern)
-    info = ("We received following pattern from RSyslog {0}").format(pattern)
-    syslog.syslog(syslog.LOG_INFO, info)
+    notif = ("We received following pattern from RSyslog {0}").format(pattern)
+    syslog.syslog(syslog.LOG_INFO, notif)
 
 
 notif = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. We are collecting logs on syslog server".format(ipadd, pattern)
 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Sending notification")
 send_message_detailed(notif)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-send_message_detailed(message_reason)
 try:
     write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Pattern": pattern}, "fields": {"count": 1}}])
     syslog.syslog(syslog.LOG_INFO, "Statistics saved")
@@ -83,12 +82,6 @@ get_tech_support_sftp(switch_user, switch_password, host, ipadd)
 syslog.syslog(syslog.LOG_INFO, "Tech_support collected")
 print("Starting collecting additionnal logs")
 syslog.syslog(syslog.LOG_INFO, "Starting collecting additionnal logs")
-
-notif = "A Pattern {1} has been detected in switch(IP : {0}) syslogs. Tech-support eng complete is collected and stored in /tftpboot/ on server IP Address: {2}".format(ipadd, pattern, ip_server)
-syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
-send_message_detailed(notif)
-syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 ##########################Get More LOGS########################################
 text = "More logs about the switch : {0} \n\n\n".format(ipadd)
@@ -159,7 +152,7 @@ filename = attachment_path + '/{0}.txt'.format(filename)
 print(filename)
 
 
-notif = "Additional logs collected from switch(IP : {0}) syslogs. and stored in " + attachment_path + " on server IP Address: {2}".format(ipadd, pattern, ip_server)
+notif = "Tech-Support file and additional logs collected from switch(IP : {0}) syslogs. and stored in " + attachment_path + " on server IP Address: {2}".format(ipadd, pattern, ip_server)
 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
 send_message_detailed(notif)

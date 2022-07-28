@@ -314,5 +314,6 @@ with open("/var/log/devices/lastlog_ddos_ip.json", "r", errors='ignore') as log_
     else:
         print("Script support_enable_qos no pattern match - exiting script")
         syslog.syslog(syslog.LOG_INFO, "Script support_enable_qos no pattern match - exiting script")
-        sys.exit()
         open('/var/log/devices/lastlog_ddos_ip.json', 'w').close()
+        sys.exit()
+
