@@ -176,7 +176,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
             l_switch_cmd.append("d chg L3_ENTRY_SINGLE;exit")
             l_switch_cmd.append("d chg UNKNOWN_UCAST_BLOCK_MASK;exit")
             l_switch_cmd.append("d chg UNKNOWN_UCAST_BLOCK_MASK;exit")
-
+            l_switch_cmd.append("d chg mpls_entry;exit")
             #for switch_cmd in l_switch_cmd:
             #    for ipadd in ipadd_list:
             for ipadd in ipadd_list:
