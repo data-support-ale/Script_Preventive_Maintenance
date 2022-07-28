@@ -92,9 +92,9 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
     syslog.syslog(syslog.LOG_INFO, "List of IP Addresses: " + str(ipadd_list))
     
     # Sample log
-    # OS6900_VC swlogd saaCmm sm-proto INFO: SPB:SPB-500-e8-e7-32-cc-f3-4f - Iteration packet loss 4/0
+    # Jul 28 10:16:29 OS6900_VC swlogd saaCmm sm-proto INFO: ZNA_IP_Ping - Iteration packet loss 5/0
 
-    if "Iteration packet loss" and "SPB-500" in msg:
+    if "Iteration packet loss" and "ZNA_IP_Ping" in msg:
         try:
             pattern = "Iteration packet loss"
             syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
