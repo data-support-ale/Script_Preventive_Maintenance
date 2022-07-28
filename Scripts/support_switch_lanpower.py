@@ -43,7 +43,7 @@ with open("/var/log/devices/lastlog_lanpower.json", "r", errors='ignore') as log
         exit()
     except IndexError:
         print("Index error in regex")
-        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_lanpower.json - JSONDecodeError")
+        syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_lanpower.json - Index error in regex")
         exit()
 
     # Sample log
