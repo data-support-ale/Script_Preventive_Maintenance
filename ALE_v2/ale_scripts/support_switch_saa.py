@@ -53,7 +53,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
     # Sample log
     # OS6900_VC swlogd saaCmm sm-proto INFO: SPB:SPB-500-e8-e7-32-cc-f3-4f - Iteration packet loss 4/0
 
-    if "Iteration packet loss" in msg:
+    if "Iteration packet loss" and "ZNA_IP_Ping" in msg:
         try:
             pattern = "Iteration packet loss"
             syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
@@ -66,9 +66,9 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Notification sent")
 
             l_switch_cmd = []
-            l_switch_cmd.append("show system; show chassis; show arp; show spb isis nodes; show spb isis adjacency; show spb isis bvlans; show spb isis unicast-table \
-            show spb isis spf bvlan 200; show spb isis spf bvlan 300; show spb isis spf bvlan 400; show spb isis spf bvlan 500; show spb isis spf bvlan 600 \
-            show service spb; show spb isis services; show service access; show service 2 debug-info; show service 3 debug-info; show service 4 debug-info \
+            l_switch_cmd.append("show system; show chassis; show saa statistics history; show arp; show spb isis nodes; show spb isis adjacency; show spb isis bvlans; show spb isis unicast-table; \
+            show spb isis spf bvlan 200; show spb isis spf bvlan 300; show spb isis spf bvlan 400; show spb isis spf bvlan 500; show spb isis spf bvlan 600; \
+            show service spb; show spb isis services; show service access; show service 2 debug-info; show service 3 debug-info; show service 4 debug-info; \
             show service 5 debug-info; show service 6 debug-info; show service 32000 debug-info; show unp user")
 
             for switch_cmd in l_switch_cmd:
