@@ -128,39 +128,16 @@ if save_resp == "0":
         syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Port: " + port + " Choice: " + " Never")
 elif save_resp == "-1":
     syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
-    notif = "Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Never, we do not proceed further".format(port, ipadd, ip_server)
-    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card " + notif)
-    send_message_detailed(notif)
-    syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-    try:
-        print(port)
-        print(reason)
-        print(ipadd)
-        write_api.write(bucket, org, [{"measurement": str(os.path.basename(__file__)), "tags": {"IP": ipadd, "Reason": reason, "port": port}, "fields": {"count": 1}}])
-        syslog.syslog(syslog.LOG_INFO, "Statistics saved")
-        sys.exit()   
-    except UnboundLocalError as error:
-       print(error)
-       sys.exit()
-    except Exception as error:
-       print(error)
-       sys.exit() 
+    sys.exit() 
 
 elif save_resp == "1":
     answer = '2'
     syslog.syslog(syslog.LOG_INFO, "Decision saved to Yes and remember")
-    notif = "Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ipadd, ip_server)
-    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card " + notif)
-    send_message_detailed(notif)
-    syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
+
 else:
     answer = '1'
     syslog.syslog(syslog.LOG_INFO, "No answer - Decision set to Yes")    
 
-    notif = "Preventive Maintenance Application - A Storm Threshold violation has been detected on your network from the port {0} on device {1}.\nDecision saved for this switch/port is set to Always, we do proceed for disabling the interface".format(port, ipadd, ip_server)
-    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card " + notif)
-    send_message_detailed(notif)
-    syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
 if answer == '1':
     syslog.syslog(syslog.LOG_INFO, "Decision set to Yes - Interface is administratively disabled and log collected")

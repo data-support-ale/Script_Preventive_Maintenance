@@ -132,7 +132,7 @@ pmd_issue(ipadd, jid1)
 
 ### TECH-SUPPORT ENG COMPLETE ###
 syslog.syslog(syslog.LOG_INFO, "Executing function get_tech_support_sftp")
-#get_tech_support_sftp(switch_user, switch_password, host, ipadd)
+get_tech_support_sftp(switch_user, switch_password, host, ipadd)
 
 ### get PMD FILE ###
 print("Starting collecting PMD file")

@@ -230,7 +230,7 @@ with open("/var/log/devices/lastlog_flapping.json", "r", errors='ignore') as log
             exit()
         except IndexError:
             print("Index error in regex")
-            syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_flapping.json - JSONDecodeError")
+            syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_flapping.json - IndexError")
             exit()
 
         if(ipadd == last_ip and port == last_port):

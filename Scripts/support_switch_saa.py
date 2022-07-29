@@ -7,7 +7,7 @@ import os
 import json
 import datetime
 from time import strftime, localtime, time, sleep
-from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, get_file_sftp
+from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, get_file_sftp, get_tech_support_sftp
 from support_send_notification import *
 from database_conf import *
 import re
@@ -87,7 +87,7 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
         syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_saa.json - IndexError")
         exit()
     
-    ipadd_list = ['10.69.145.69', '10.69.145.72', '10.69.147.135','10.69.147.136']
+    ipadd_list = ['10.69.145.69', '10.69.145.73']
     #ipadd_list = ['10.69.147.135']
     syslog.syslog(syslog.LOG_INFO, "List of IP Addresses: " + str(ipadd_list))
     
@@ -106,10 +106,11 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
             send_message_detailed(notif)
             syslog.syslog(syslog.LOG_INFO, "Notification sent")
 
+
             l_switch_cmd = []
-            l_switch_cmd.append("show system; show chassis; show arp; show spb isis nodes; show spb isis adjacency; show spb isis bvlans; show spb isis unicast-table \
-            show spb isis spf bvlan 200; show spb isis spf bvlan 300; show spb isis spf bvlan 400; show spb isis spf bvlan 500; show spb isis spf bvlan 600 \
-            show service spb; show spb isis services; show service access; show service 2 debug-info; show service 3 debug-info; show service 4 debug-info \
+            l_switch_cmd.append("show system; show chassis; show saa statistics history; show arp; show spb isis nodes; show spb isis adjacency; show spb isis bvlans; show spb isis unicast-table; \
+            show spb isis spf bvlan 200; show spb isis spf bvlan 300; show spb isis spf bvlan 400; show spb isis spf bvlan 500; show spb isis spf bvlan 600; \
+            show service spb; show spb isis services; show service access; show service 2 debug-info; show service 3 debug-info; show service 4 debug-info; \
             show service 5 debug-info; show service 6 debug-info; show service 32000 debug-info; show unp user")
 
             for switch_cmd in l_switch_cmd:
@@ -255,49 +256,20 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
                 send_file_detailed(filename_path, subject, action, result, category)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
-            ##### Port monitoring to check if frames are received with VLAN Tag 4095 #####
-            '''
-            try:
-                ip = "10.130.7.245"
-                switch_cmd = ("no port-monitoring 1")
-                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)  
-                port = "2/1/6"
-                ip = "10.130.7.245"
-                switch_cmd = ("port-monitoring 1 source port " + port + " file /flash/pmonitor.enc size 10 timeout 120 inport capture-type full")
-                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)  
-                switch_cmd = ("port-monitoring 1 resume")
-                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd) 
-                port = "1/1/6"
-                ip = "10.130.7.245"
-                switch_cmd = ("port-monitoring 1 source port " + port + " file /flash/pmonitor.enc size 10 timeout 120 inport capture-type full")
-                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)  
-                switch_cmd = ("port-monitoring 1 resume")
-                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd) 
-                port = "2/1/9"
-                ip = "10.130.7.245"
-                switch_cmd = ("port-monitoring 1 source port " + port + " file /flash/pmonitor.enc size 10 timeout 120 inport capture-type full")
-                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)
-                switch_cmd = ("port-monitoring 1 resume")
-                cmd = "sshpass -p {0} ssh -o StrictHostKeyChecking=no  {1}@{2} {3}".format(switch_password, switch_user, ip, switch_cmd)    
-            except:
-                info = "Service Assurance Agent - Port Monitoring failed on OmniSwitch {0}".format(ip)
-                send_message_detailed(info)
-                pass
-            
-            sleep(120)
-
-            try:
-                filename= '{0}_pmonitor_saa.enc'.format(host)
-                remoteFilePath = '/flash/pmonitor.enc'
-                localFilePath = "/tftpboot/{0}_{1}-{2}_{3}_{4}".format(date,date_hm.hour,date_hm.minute,ip,filename)
-                get_file_sftp(switch_user, switch_password, ip, remoteFilePath, localFilePath)
-                info = "Service Assurance Agent - Port Monitoring capture {0} - download success".format(localFilePath)
-                send_message_detailed(info)               
-            except:
-                info = "Service Assurance Agent - Port Monitoring capture - download failed"
-                send_message_detailed(info)
-                pass
-            '''
+            ##### Collecting Tech-Support files #####
+            for switch_cmd in l_switch_cmd:
+                syslog.syslog(syslog.LOG_INFO, "   ")
+                syslog.syslog(syslog.LOG_INFO, "Collecting CLI logs on OmniSwitch: " + ipadd)
+                syslog.syslog(syslog.LOG_INFO, "   ")
+                for ipadd in ipadd_list:
+                    try:
+                        syslog.syslog(syslog.LOG_INFO, "Executing function get_tech_support_sftp")
+                        get_tech_support_sftp(switch_user, switch_password, host, ipadd)
+                    except Exception as exception:
+                        print(exception)
+                        syslog.syslog(syslog.LOG_INFO, "Command execution failed")
+                        break
+                    pass
         except UnboundLocalError as error:
             print(error)
             syslog.syslog(syslog.LOG_INFO, "UnboundLocalError - Notification sent")

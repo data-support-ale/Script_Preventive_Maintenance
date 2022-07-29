@@ -64,13 +64,13 @@ if "FULL" in final_state:
     syslog.syslog(syslog.LOG_DEBUG, "Final State is FULL")
     notif = ("Preventive Maintenance Application - OSPF Neighbor state change on OmniSwitch {0} / {1}.\n\nDetails:\n- Router-ID: {2}\n- Neighbor-ID {3}\n- Initial State: {4}\n- Final State: {5}.").format(host,ipadd,router_id,neighbor_ip,initial_state,final_state)
     syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Sending notification")
     send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 else:
     notif = ("Preventive Maintenance Application - OSPF Neighbor state change on OmniSwitch {0} / {1}.\n\nDetails:\n- Router-ID: {2}\n- Neighbor-ID {3}\n- Initial State: {4}\n- Final State: {5}\nPlease check the OSPF Neighbor node connectivity.").format(host,ipadd,router_id,neighbor_ip,initial_state,final_state)
     syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
-    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
+    syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Sending notification")
     send_message_detailed(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
 
