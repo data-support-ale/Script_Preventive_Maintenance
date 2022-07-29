@@ -32,8 +32,6 @@ script_name = sys.argv[0]
 pattern = sys.argv[1]
 print(pattern)
 set_rule_pattern(pattern)
-# info = ("We received following pattern from RSyslog {0}").format(pattern)
-# os.system('logger -t montag -p user.info ' + info)
 
 # Get informations from logs.
 switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company, room_id = get_credentials()
@@ -358,7 +356,15 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
         print(answer)
         syslog.syslog(syslog.LOG_INFO, "Executing function set_decision: " + answer)
         set_decision(ipadd, answer)
-             
+        try:
+            mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Decision received: " + answer, exception='')
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")    
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass               
     else:
         feature = "Reload PoE on port"
         notif = ("A LANPOWER issue is detected on OmniSwitch {0} / {1} Port: 1/1/{2} \
@@ -370,7 +376,15 @@ if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
         print(answer)
         syslog.syslog(syslog.LOG_INFO, "Executing function set_decision: " + answer)
         set_decision(ipadd, answer)
-
+        try:
+            mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Decision received: " + answer, exception='')
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+        except UnboundLocalError as error:
+            print(error)
+            sys.exit()
+        except Exception as error:
+            print(error)
+            pass   
 # elif save_resp == "-1":
 elif 'No' in decision:
     print("Decision saved to No - script exit")
@@ -405,7 +419,7 @@ if answer == '1':
     set_decision(ipadd, "4")
     try:
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Decision set to Yes", exception='')
-        syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+        syslog.syslog(syslog.LOG_INFO, "Statistics saved")    
     except UnboundLocalError as error:
         print(error)
         sys.exit()
@@ -460,7 +474,7 @@ elif answer == '3':
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Sending notification")
         send_message(notif)
-        set_decision(ipadd, "3")
+        set_decision(ipadd, "4")
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
         syslog.syslog(syslog.LOG_INFO, "Statistics saved")  
     elif reason == "(Illegal class)":
@@ -474,7 +488,7 @@ elif answer == '3':
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Sending notification")
         send_message(notif)
-        set_decision(ipadd, "3")
+        set_decision(ipadd, "4")
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
         syslog.syslog(syslog.LOG_INFO, "Statistics saved")             
     ### else it corresponds to PoE Reload
@@ -491,7 +505,7 @@ elif answer == '3':
         syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
         syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
         send_message(notif)
-        set_decision(ipadd, "3")
+        set_decision(ipadd, "4")
         mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
         syslog.syslog(syslog.LOG_INFO, "Statistics saved")       
 

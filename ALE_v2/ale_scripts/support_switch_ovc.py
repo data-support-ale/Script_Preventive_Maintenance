@@ -4,18 +4,33 @@ import sys
 import os
 import json
 from time import strftime, localtime
-from support_tools_OmniSwitch import get_credentials, send_file, collect_command_output_ovc, check_save, add_new_save, ssh_connectivity_check
-from support_send_notification import send_message, send_message_request_advanced
+from support_tools_OmniSwitch import get_credentials, collect_command_output_ovc, ssh_connectivity_check
+from support_send_notification import *
 from database_conf import *
 import re
+import time
 import syslog
 
 syslog.openlog('support_switch_ovcirrus')
 syslog.syslog(syslog.LOG_INFO, "Executing script")
 
 
+from pattern import set_rule_pattern, set_portnumber, set_decision, get_decision, mysql_save
+
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+_runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
+
+path = os.path.dirname(__file__)
+print(os.path.abspath(os.path.join(path,os.pardir)))
+sys.path.insert(1,os.path.abspath(os.path.join(path,os.pardir)))
+from alelog import alelog
+
+# Script init
 script_name = sys.argv[0]
+
+pattern = sys.argv[1]
+print(pattern)
+set_rule_pattern(pattern)
 
 switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company = get_credentials()
 
@@ -45,16 +60,29 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
         print("Index error in regex")
         syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_ovc.json - Index error in regex")
         exit()
-    syslog.syslog(syslog.LOG_INFO, "Executing function check_save")
-    save_resp = check_save(ipadd, 0, "cloud_agent")
+
+
     # Sample log
     # OS6860E swlogd OPENVPN(168) Data: TCP: connect to [AF_INET]18.194.174.46:443 failed: S_errno_EHOSTUNREACH
     if "S_errno_EHOSTUNREACH" in msg:
         pattern = "S_errno_EHOSTUNREACH"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        if save_resp == "-1":
-            print("Decision saved to No - script exit")
-            syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
+        syslog.syslog(syslog.LOG_INFO, "Executing function set_portnumber 0")
+        set_portnumber("0")
+        if alelog.rsyslog_script_timeout(ipadd + "0" + pattern, time.time()):
+            print("Less than 5 min")
+            syslog.syslog(syslog.LOG_INFO, "Script executed within 5 minutes interval - script exit")
+            exit(0)
+
+        syslog.syslog(syslog.LOG_INFO, "Executing function get_decision")
+        decision = get_decision(ipadd)
+        if (len(decision) != 0) and ('No' in decision):
+            print("Decision saved set to Never")
+            syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - script exit")
+            sys.exit()
+        else:
+            pass
+
         try:
             vpn_ip, reason = re.findall(r"\[AF_INET\](.*?):443 failed: (.*)", msg)[0]
             print(vpn_ip)
@@ -66,7 +94,9 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
             send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
+            set_decision(ipadd, "4")
+            mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -78,9 +108,21 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
     elif "S_errno_ETIMEDOUT" in msg:
         pattern = "S_errno_ETIMEDOUT"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        if save_resp == "-1":
-            print("Decision saved to No - script exit")
-            syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
+        syslog.syslog(syslog.LOG_INFO, "Executing function set_portnumber 0")
+        set_portnumber("0")
+        if alelog.rsyslog_script_timeout(ipadd + "0" + pattern, time.time()):
+            print("Less than 5 min")
+            syslog.syslog(syslog.LOG_INFO, "Script executed within 5 minutes interval - script exit")
+            exit(0)
+
+        syslog.syslog(syslog.LOG_INFO, "Executing function get_decision")
+        decision = get_decision(ipadd)
+        if (len(decision) != 0) and ('No' in decision):
+            print("Decision saved set to Never")
+            syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - script exit")
+            sys.exit()
+        else:
+            pass
         try:
             vpn_ip, reason = re.findall(r"[AF_INET](.*?):443 failed: (.*)", msg)[0]
             filename_path, subject, action, result, category = collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, host, ipadd)
@@ -90,7 +132,9 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
             send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
+            set_decision(ipadd, "4")
+            mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -102,9 +146,21 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
     elif "Cannot resolve host address" in msg:
         pattern = "Cannot resolve host address"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        if save_resp == "-1":
-            print("Decision saved to No - script exit")
-            syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
+        syslog.syslog(syslog.LOG_INFO, "Executing function set_portnumber 0")
+        set_portnumber("0")
+        if alelog.rsyslog_script_timeout(ipadd + "0" + pattern, time.time()):
+            print("Less than 5 min")
+            syslog.syslog(syslog.LOG_INFO, "Script executed within 5 minutes interval - script exit")
+            exit(0)
+
+        syslog.syslog(syslog.LOG_INFO, "Executing function get_decision")
+        decision = get_decision(ipadd)
+        if (len(decision) != 0) and ('No' in decision):
+            print("Decision saved set to Never")
+            syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - script exit")
+            sys.exit()
+        else:
+            pass
         try:
             vpn_ip= re.findall(r"Cannot resolve host address: (.*?):443", msg)[0]
             reason = "Cannot resolve host address"
@@ -115,7 +171,9 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
             send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
+            set_decision(ipadd, "4")
+            mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as error:
             print(error)
             sys.exit()
@@ -127,11 +185,22 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
     elif "Invalid process status" in msg:
         pattern = "Invalid process status"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        if save_resp == "-1":
-            print("Decision saved to No - script exit")
-            syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
+        syslog.syslog(syslog.LOG_INFO, "Executing function set_portnumber 0")
+        set_portnumber("0")
+        if alelog.rsyslog_script_timeout(ipadd + "0" + pattern, time.time()):
+            print("Less than 5 min")
+            syslog.syslog(syslog.LOG_INFO, "Script executed within 5 minutes interval - script exit")
+            exit(0)
 
-            
+        syslog.syslog(syslog.LOG_INFO, "Executing function get_decision")
+        decision = get_decision(ipadd)
+        if (len(decision) != 0) and ('No' in decision):
+            print("Decision saved set to Never")
+            syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - script exit")
+            sys.exit()
+        else:
+            pass
+
         try:
             reason = "Invalid process status"
             vpn_ip = "0"
@@ -142,21 +211,36 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
             send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
+            set_decision(ipadd, "4")
+            mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as error:
             print(error)
             sys.exit()
         except IndexError as error:
             print(error)
+            sys.exit()
     # Sample log
     # OS6860E OPENVPN(168) Data: Fatal TLS error (check_tls_errors_co), restarting
     elif "Fatal TLS error" in msg:
         pattern = "Fatal TLS error"
         syslog.syslog(syslog.LOG_INFO, "Pattern matching: " + pattern)
-        if save_resp == "-1":
-            print("Decision saved to No - script exit")
-            syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
-            
+        syslog.syslog(syslog.LOG_INFO, "Executing function set_portnumber 0")
+        set_portnumber("0")
+        if alelog.rsyslog_script_timeout(ipadd + "0" + pattern, time.time()):
+            print("Less than 5 min")
+            syslog.syslog(syslog.LOG_INFO, "Script executed within 5 minutes interval - script exit")
+            exit(0)
+
+        syslog.syslog(syslog.LOG_INFO, "Executing function get_decision")
+        decision = get_decision(ipadd)
+        if (len(decision) != 0) and ('No' in decision):
+            print("Decision saved set to Never")
+            syslog.syslog(syslog.LOG_INFO, "Decision saved set to Never - script exit")
+            sys.exit()
+        else:
+            pass
+
         try:
             reason = "Fatal TLS error"
             vpn_ip = "0"
@@ -172,20 +256,24 @@ with open("/var/log/devices/lastlog_ovc.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Send File")      
             send_file(filename_path, subject, action, result, category)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-
-
+            set_decision(ipadd, "4")
+            mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=action, exception='')
+            syslog.syslog(syslog.LOG_INFO, "Statistics saved")
         except UnboundLocalError as error:
             print(error)
             sys.exit()
         except IndexError as error:
             print(error)
+            sys.exit()
     else:
         print("no pattern match - exiting script")
+        syslog.syslog(syslog.LOG_INFO, "No pattern match - exiting script")
         sys.exit()
 
+syslog.syslog(syslog.LOG_INFO, "Executing function get_decision")
+decision = get_decision(ipadd)
 
-
-if save_resp == "0":
+if (len(decision) == 0) or (len(decision) == 1 and decision[0] == 'Yes'):
         syslog.syslog(syslog.LOG_INFO, "No Decision saved")
         if reason == "S_errno_EHOSTUNREACH" or reason == "S_errno_ETIMEDOUT":
             feature = "Restart Cloud-Agent"
@@ -196,10 +284,17 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             syslog.syslog(syslog.LOG_INFO, "Rainbow Adaptive Card Answer: " + answer)
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, "0", "cloud_agent", choice="always")
-            elif answer == "0":
-                add_new_save(ipadd, "0", "cloud_agent", choice="never")       
+            syslog.syslog(syslog.LOG_INFO, "Executing function set_decision: " + answer)
+            set_decision(ipadd, answer)
+            try:
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Decision received: " + answer, exception='')
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass      
         else:
             feature = "Restart Cloud-Agent"
             notif = "A Cloud-Agent issue is detected on OmniSwitch " + host + " reason: " + reason + ".\nDo you want to disable the Cloud-Agent on this switch? This command will result in device being disconnected from OV in cloud. " + ip_server
@@ -209,19 +304,25 @@ if save_resp == "0":
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             syslog.syslog(syslog.LOG_INFO, "Rainbow Adaptive Card Answer: " + answer)
             print(answer)
-            if answer == "2":
-                add_new_save(ipadd, "0", "cloud_agent", choice="always")
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Choice: " + " Always")
-
-            elif answer == "0":
-                add_new_save(ipadd, "0", "cloud_agent", choice="never")             
-                syslog.syslog(syslog.LOG_INFO, "Add new save function - IP Address: " + ipadd + " Choice: " + " Never")
-
-elif save_resp == "-1":
+            syslog.syslog(syslog.LOG_INFO, "Executing function set_decision: " + answer)
+            set_decision(ipadd, answer)
+            try:
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Decision received: " + answer, exception='')
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
+            except Exception as error:
+                print(error)
+                pass  
+# elif save_resp == "-1":
+elif 'No' in decision:
     print("Decision saved to No - script exit")
-    syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit")
-        
-elif save_resp == "1":
+    syslog.syslog(syslog.LOG_INFO, "Decision saved to No - script exit") 
+    sys.exit()   
+
+# elif save_resp == "1":
+elif 'yes and remember' in [d.lower() for d in decision]:
     answer = '2'
     print("Decision saved to Yes and remember")
     syslog.syslog(syslog.LOG_INFO, "Decision saved to Yes and remember")
@@ -230,6 +331,7 @@ else:
     syslog.syslog(syslog.LOG_INFO, "No answer - Decision set to Yes - Script exit - will be called by next occurence")    
 
 syslog.syslog(syslog.LOG_INFO, "Rainbow Acaptive Card answer: " + answer)
+
 if answer == '1':
     syslog.syslog(syslog.LOG_INFO, "Decision set to Yes - cloud-agent is disabled")
     # DISABLE Cloud-agent
@@ -244,7 +346,16 @@ if answer == '1':
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
     answer = send_message(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")       
-
+    set_decision(ipadd, "4")
+    try:
+        mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Decision set to Yes", exception='')
+        syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except Exception as error:
+        print(error)
+        pass  
 elif answer == '2':
     syslog.syslog(syslog.LOG_INFO, "Decision is Yes and Remember - cloud-agent admin-state disable")
     # DISABLE Cloud-agent
@@ -255,6 +366,16 @@ elif answer == '2':
         syslog.syslog(syslog.LOG_INFO, "Command executed: " + switch_cmd)
         ssh_connectivity_check(switch_user, switch_password, ipadd, switch_cmd)
         syslog.syslog(syslog.LOG_INFO, "SSH Session end")
+    set_decision(ipadd, "4")
+    try:
+        mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Decision set to Yes and Remember", exception='')
+        syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except Exception as error:
+        print(error)
+        pass  
 ## Value 3 when we return advanced value we reload the Cloud-Agent
 elif answer == '3':
     syslog.syslog(syslog.LOG_INFO, "Decision is Yes and Remember - cloud-agent is reloaded")
@@ -268,7 +389,16 @@ elif answer == '3':
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow Adaptive Card")
     answer = send_message(notif)
     syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent") 
-
+    set_decision(ipadd, "4")
+    try:
+        mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif + " Decision set to Reload Cloud-Agent", exception='')
+        syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision")    
+    except UnboundLocalError as error:
+        print(error)
+        sys.exit()
+    except Exception as error:
+        print(error)
+        pass 
 else:
     print("No decision matching - script exit")
     syslog.syslog(syslog.LOG_INFO, "No decision matching - script exit")

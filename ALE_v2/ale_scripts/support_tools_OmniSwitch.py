@@ -665,13 +665,12 @@ def collect_command_output_tcam(switch_user, switch_password, host, ipadd):
             else:
                 exception = "Timeout"
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                _info = notif + ' ; ' + 'command executed - {0}'.format(switch_cmd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
                 send_message(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
-                    mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=_info, exception=exception)
+                    mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=notif, exception=exception)
                 except UnboundLocalError as exception:
                     print(exception)
                     return exception 
@@ -728,13 +727,12 @@ def collect_command_output_network_loop(switch_user, switch_password, ipadd, por
         else:
             exception = "Timeout"
             notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-            _info = notif + ' ; ' + 'command executed - {0}'.format(switch_cmd)
             syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
             send_message(notif)
             syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
             try:
-                mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=_info, exception=exception)
+                mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=notif, exception=exception)
             except UnboundLocalError as exception:
                 print(exception)
                 return exception 
@@ -795,13 +793,12 @@ def collect_command_output_ovc(switch_user, switch_password, vpn_ip, reason, hos
             else:
                 exception = "Timeout"
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                _info = notif + ' ; ' + 'command executed - {0}'.format(switch_cmd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
                 send_message(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
-                    mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=_info, exception=exception)
+                    mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=notif, exception=exception)
                     syslog.syslog(syslog.LOG_INFO, "Statistics saved")
                 except UnboundLocalError as exception:
                     print(exception)
@@ -874,9 +871,8 @@ def collect_command_output_mqtt(switch_user, switch_password, ovip, host, ipadd)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
                 send_message(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
-                _info = notif + ' ; ' + 'command executed - {0}'.format(switch_cmd)
                 try:
-                    mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=_info, exception=exception)
+                    mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=notif, exception=exception)
                     syslog.syslog(syslog.LOG_INFO, "Statistics saved")
                 except UnboundLocalError as exception:
                     print(exception)
@@ -939,13 +935,12 @@ def collect_command_output_storm(switch_user, switch_password, port, source, dec
             else:
                 exception = "Timeout"
                 notif = ("Timeout when establishing SSH Session to OmniSwitch {0}, we cannot collect logs").format(ipadd)
-                _info = notif + ' ; ' + 'command executed - {0}'.format(switch_cmd)
                 syslog.syslog(syslog.LOG_INFO, "Notification: " + notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Calling VNA API - Rainbow notification")
                 send_message(notif)
                 syslog.syslog(syslog.LOG_INFO, "Logs collected - Notification sent")
                 try:
-                    mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=_info, exception=exception)
+                    mysql_save(runtime=runtime, ip_address=ipadd,result='failure', reason=notif, exception=exception)
                     syslog.syslog(syslog.LOG_INFO, "Statistics saved")
                 except UnboundLocalError as error:
                     print(str(error))

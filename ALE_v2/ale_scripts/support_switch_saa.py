@@ -10,13 +10,30 @@ from support_tools_OmniSwitch import get_credentials, ssh_connectivity_check, ge
 from support_send_notification import *
 from database_conf import *
 import re
+import time
 import syslog
 
 syslog.openlog('support_switch_saa')
 syslog.syslog(syslog.LOG_INFO, "   ")
 syslog.syslog(syslog.LOG_INFO, "Executing script")
 syslog.syslog(syslog.LOG_INFO, "   ")
+
+from pattern import set_rule_pattern, set_portnumber, set_decision, mysql_save
+
+
+path = os.path.dirname(__file__)
+print(os.path.abspath(os.path.join(path,os.pardir)))
+sys.path.insert(1,os.path.abspath(os.path.join(path,os.pardir)))
+from alelog import alelog
+
+pattern = sys.argv[1]
+print(pattern)
+set_rule_pattern(pattern)
+# info = ("We received following pattern from RSyslog {0}").format(pattern)
+# os.system('logger -t montag -p user.info ' + info)
+
 runtime = strftime("%d_%b_%Y_%H_%M_%S", localtime())
+_runtime = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
 switch_user, switch_password, mails, jid1, jid2, jid3, ip_server, login_AP, pass_AP, tech_pass,  company = get_credentials()
 
@@ -49,6 +66,12 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
         print("Index error in regex")
         syslog.syslog(syslog.LOG_INFO, "File /var/log/devices/lastlog_saa.json - IndexError")
         exit()
+    syslog.syslog(syslog.LOG_INFO, "Executing function set_portnumber 0")
+    set_portnumber("0")
+    if alelog.rsyslog_script_timeout(ipadd + "0" + pattern, time.time()):
+        print("Less than 5 min")
+        syslog.syslog(syslog.LOG_INFO, "Script executed within 5 minutes interval - script exit")
+        exit(0)
     
     # Sample log
     # OS6900_VC swlogd saaCmm sm-proto INFO: SPB:SPB-500-e8-e7-32-cc-f3-4f - Iteration packet loss 4/0
@@ -64,7 +87,13 @@ with open("/var/log/devices/lastlog_saa.json", "r", errors='ignore') as log_file
             syslog.syslog(syslog.LOG_INFO, "Calling VNA API - Rainbow Notification")
             send_message(notif)
             syslog.syslog(syslog.LOG_INFO, "Notification sent")
-
+            try:
+                set_decision(ipadd, "4")
+                mysql_save(runtime=_runtime, ip_address=ipadd, result='success', reason=notif, exception='')
+                syslog.syslog(syslog.LOG_INFO, "Statistics saved with no decision") 
+            except UnboundLocalError as error:
+                print(error)
+                sys.exit()
             l_switch_cmd = []
             l_switch_cmd.append("show system; show chassis; show saa statistics history; show arp; show spb isis nodes; show spb isis adjacency; show spb isis bvlans; show spb isis unicast-table; \
             show spb isis spf bvlan 200; show spb isis spf bvlan 300; show spb isis spf bvlan 400; show spb isis spf bvlan 500; show spb isis spf bvlan 600; \
